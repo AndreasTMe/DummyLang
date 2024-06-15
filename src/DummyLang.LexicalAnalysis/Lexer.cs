@@ -1,7 +1,18 @@
-﻿namespace DummyLang.LexicalAnalysis;
+﻿using System.Collections.Generic;
+using System.Text;
+
+namespace DummyLang.LexicalAnalysis;
 
 public sealed class Lexer
 {
+    private static readonly Dictionary<string, TokenType> Keywords = new()
+    {
+        { "var", TokenType.Var },
+        { "const", TokenType.Const },
+        { "fun", TokenType.Fun },
+        { "return", TokenType.Return }
+    };
+
     private readonly string _source;
 
     private int _position;
@@ -52,19 +63,74 @@ public sealed class Lexer
 
     private Token ReadWord()
     {
-        // TODO: Implement ReadWord method
-        return new Token(TokenType.Invalid, string.Empty);
+        var sb = new StringBuilder();
+        sb.Append(_current);
+
+        while (_position < _source.Length)
+        {
+            var current = _source[_position];
+
+            if (!char.IsLetterOrDigit(current) && current != '_')
+            {
+                break;
+            }
+
+            sb.Append(current);
+            _position++;
+        }
+
+        var word = sb.ToString();
+
+        return new Token(Keywords.GetValueOrDefault(word, TokenType.Identifier), word);
     }
 
     private Token ReadNumber()
     {
-        // TODO: Implement ReadNumber method
-        return new Token(TokenType.Invalid, string.Empty);
+        var hasDot = false;
+        var sb = new StringBuilder();
+        sb.Append(_current);
+
+        while (_position < _source.Length)
+        {
+            var current = _source[_position];
+
+            if (!char.IsDigit(current) && current != '.')
+            {
+                break;
+            }
+
+            if (current == '.')
+            {
+                if (hasDot)
+                {
+                    return new Token(TokenType.Invalid, string.Empty);
+                }
+
+                hasDot = true;
+            }
+
+            sb.Append(current);
+            _position++;
+        }
+
+        return new Token(TokenType.Number, sb.ToString());
     }
 
     private Token ReadOther()
     {
-        // TODO: Implement ReadOther method
-        return new Token(TokenType.Invalid, string.Empty);
+        while (char.IsWhiteSpace(_current))
+        {
+            if (_position >= _source.Length)
+            {
+                return new Token(TokenType.Eof, string.Empty);
+            }
+
+            _current = _source[_position];
+            _position++;
+        }
+
+        _position--;
+
+        return ReadNext();
     }
 }

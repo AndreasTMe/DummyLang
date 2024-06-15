@@ -5,6 +5,19 @@ namespace DummyLang.LexicalAnalysis.Tests;
 public class LexerTests
 {
     [Fact]
+    public void Next_Nothing_ShouldReturnCorrectTokens()
+    {
+        // Arrange
+        const string source = "        \t    \n";
+
+        // Act
+        var lexer = new Lexer(source);
+
+        // Assert
+        Assert.Equal(TokenType.Eof, lexer.ReadNext().Type);
+    }
+    
+    [Fact]
     public void Next_SimpleInput_ShouldReturnCorrectTokens()
     {
         // Arrange
@@ -54,7 +67,7 @@ public class LexerTests
         Assert.Equal(TokenType.Var, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Identifier, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Assign, lexer.ReadNext().Type);
-        Assert.Equal(TokenType.Integer, lexer.ReadNext().Type);
+        Assert.Equal(TokenType.Number, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Semicolon, lexer.ReadNext().Type);
         
         Assert.Equal(TokenType.Var, lexer.ReadNext().Type);
@@ -62,7 +75,7 @@ public class LexerTests
         Assert.Equal(TokenType.Colon, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Identifier, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Assign, lexer.ReadNext().Type);
-        Assert.Equal(TokenType.Integer, lexer.ReadNext().Type);
+        Assert.Equal(TokenType.Number, lexer.ReadNext().Type);
         Assert.Equal(TokenType.Semicolon, lexer.ReadNext().Type);
         
         Assert.Equal(TokenType.Const, lexer.ReadNext().Type);
@@ -101,5 +114,31 @@ public class LexerTests
         Assert.Equal(TokenType.Semicolon, lexer.ReadNext().Type);
         
         Assert.Equal(TokenType.Eof, lexer.ReadNext().Type);
+    }
+    
+    [Fact]
+    public void Next_FloatingPointNumbers_ShouldReturnCorrectTokens()
+    {
+        // Arrange
+        const string validSource = "const correct = 0.1234;";
+        const string invalidSource = "const wrong = 0.123.45.678;";
+
+        // Act
+        var validLexer = new Lexer(validSource);
+        var invalidLexer = new Lexer(invalidSource);
+
+        // Assert
+        Assert.Equal(TokenType.Const, validLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Identifier, validLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Assign, validLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Number, validLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Semicolon, validLexer.ReadNext().Type);
+
+        Assert.Equal(TokenType.Eof, validLexer.ReadNext().Type);
+        
+        Assert.Equal(TokenType.Const, invalidLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Identifier, invalidLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Assign, invalidLexer.ReadNext().Type);
+        Assert.Equal(TokenType.Invalid, invalidLexer.ReadNext().Type);
     }
 }

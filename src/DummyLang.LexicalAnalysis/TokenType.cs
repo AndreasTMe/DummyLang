@@ -29,7 +29,7 @@ public enum TokenType
     
     // Identifiers
     Identifier,
-    Integer,
+    Number,
     
     // Keywords
     Var,
