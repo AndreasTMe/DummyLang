@@ -1,24 +1,30 @@
 ﻿namespace DummyLang.LexicalAnalysis;
 
-public enum TokenType
+public enum TokenType : byte
 {
-    Invalid = 0,
+    None = 0,
     Eof,
-    
+
     // Delimiters
     Comma,
+    Dot,
     Semicolon,
     Colon,
-    
+
     // Operators
     Assign,
+    Bang,
+    Equal,
+    NotEqual,
     Plus,
     Minus,
     Star,
     Slash,
     LessThan,
+    LessThanOrEqual,
     GreaterThan,
-    
+    GreaterThanOrEqual,
+
     // Parentheses
     LeftParen,
     RightParen,
@@ -26,14 +32,19 @@ public enum TokenType
     RightBrace,
     LeftBracket,
     RightBracket,
-    
+
     // Identifiers
     Identifier,
     Number,
-    
+
     // Keywords
     Var,
     Const,
     Fun,
+    If,
+    Else,
+    Break,
+    While,
+    Continue,
     Return
 }
