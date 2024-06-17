@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using DummyLang.LexicalAnalysis.Extensions;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace DummyLang.LexicalAnalysis;
@@ -20,86 +22,64 @@ public sealed class Tokenizer
 
     private string _source = string.Empty;
     private int _index;
+    private int _line;
+    private int _column;
 
     public void Use(in string? newSource)
     {
         _source = newSource ?? string.Empty;
         _index = 0;
+        _line = 1;
+        _column = 1;
     }
 
     public Token ReadNext()
     {
         if (_index >= _source.Length)
         {
-            return new Token(TokenType.Eof, string.Empty, TokenPosition.At(_source.Length));
+            return new Token(TokenType.Eof, string.Empty, TokenPosition.At(_line, _column, _source.Length, 0));
         }
 
         var current = _source[_index];
-        var currentIndex = _index;
-        _index++;
 
         switch (current)
         {
             case ',':
-                return new Token(TokenType.Comma, ",", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Comma);
             case '.':
-                return new Token(TokenType.Dot, ".", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Dot);
             case ';':
-                return new Token(TokenType.Semicolon, ";", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Semicolon);
             case ':':
-                return new Token(TokenType.Colon, ":", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Colon);
             case '=':
-                if (PeekNext() != '=')
-                {
-                    return new Token(TokenType.Assign, "=", TokenPosition.At(currentIndex));
-                }
-
-                _index++;
-                return new Token(TokenType.Equal, "==", TokenPosition.At(currentIndex, _index - 1));
+                return GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal);
             case '!':
-                if (PeekNext() != '=')
-                {
-                    return new Token(TokenType.Bang, "!", TokenPosition.At(currentIndex));
-                }
-
-                _index++;
-                return new Token(TokenType.NotEqual, "!=", TokenPosition.At(currentIndex, _index - 1));
+                return GenerateTokenBasedOnNext(TokenType.Bang, TokenType.NotEqual);
             case '+':
-                return new Token(TokenType.Plus, "+", TokenPosition.At(currentIndex));
+                return GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus);
             case '-':
-                return new Token(TokenType.Minus, "-", TokenPosition.At(currentIndex));
+                return GenerateTokenBasedOnNext(TokenType.Minus, TokenType.MinusMinus);
             case '*':
-                return new Token(TokenType.Star, "*", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Star);
             case '/':
-                return new Token(TokenType.Slash, "/", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.Slash);
             case '<':
-                if (PeekNext() != '=')
-                {
-                    return new Token(TokenType.LessThan, "<", TokenPosition.At(currentIndex));
-                }
-
-                _index++;
-                return new Token(TokenType.LessThanOrEqual, "<=", TokenPosition.At(currentIndex, _index - 1));
+                return GenerateTokenBasedOnNext(TokenType.LessThan, TokenType.LessThanOrEqual);
             case '>':
-                if (PeekNext() != '=')
-                {
-                    return new Token(TokenType.GreaterThan, ">", TokenPosition.At(currentIndex));
-                }
-
-                _index++;
-                return new Token(TokenType.GreaterThanOrEqual, ">=", TokenPosition.At(currentIndex, _index - 1));
+                return GenerateTokenBasedOnNext(TokenType.GreaterThan, TokenType.GreaterThanOrEqual);
             case '(':
-                return new Token(TokenType.LeftParen, "(", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.LeftParen);
             case ')':
-                return new Token(TokenType.RightParen, ")", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.RightParen);
             case '{':
-                return new Token(TokenType.LeftBrace, "{", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.LeftBrace);
             case '}':
-                return new Token(TokenType.RightBrace, "}", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.RightBrace);
             case '[':
-                return new Token(TokenType.LeftBracket, "[", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.LeftBracket);
             case ']':
-                return new Token(TokenType.RightBracket, "]", TokenPosition.At(currentIndex));
+                return GenerateToken(TokenType.RightBracket);
             default:
                 return char.IsLetter(current) || current == '_'
                     ? ReadWord(current)
@@ -109,9 +89,50 @@ public sealed class Tokenizer
         }
     }
 
+    private Token GenerateToken(TokenType type)
+    {
+        var stringToken = type.GetStringToken();
+        var stringTokenLength = stringToken.Length;
+        if (stringTokenLength < 1)
+        {
+            throw new UnreachableException("This should never happen.");
+        }
+
+        var tokenPosition = stringTokenLength == 1
+            ? TokenPosition.At(_line, _column, _index)
+            : TokenPosition.At(_line, _column, _index, stringTokenLength);
+
+        _index += stringTokenLength;
+        _column += stringTokenLength;
+
+        return new Token(type, stringToken, tokenPosition);
+    }
+
+    private Token GenerateTokenBasedOnNext(
+        TokenType type,
+        params TokenType[] possibleTypes)
+    {
+        var sourceFromCurrentPosition = _source[_index..];
+
+        foreach (var possibleType in possibleTypes)
+        {
+            var stringToken = possibleType.GetStringToken();
+            if (!sourceFromCurrentPosition.StartsWith(stringToken))
+            {
+                continue;
+            }
+
+            return GenerateToken(possibleType);
+        }
+
+        return GenerateToken(type);
+    }
+
     private Token ReadWord(char current)
     {
-        var startIndex = _index - 1;
+        var startIndex = _index;
+        var startColumn = _column;
+        StepForward();
 
         var sb = new StringBuilder();
         sb.Append(current);
@@ -126,7 +147,7 @@ public sealed class Tokenizer
             }
 
             sb.Append(current);
-            _index++;
+            StepForward();
         }
 
         var word = sb.ToString();
@@ -134,12 +155,14 @@ public sealed class Tokenizer
         return new Token(
             KeywordTokens.GetValueOrDefault(word, TokenType.Identifier),
             word,
-            TokenPosition.At(startIndex, _index - 1));
+            TokenPosition.At(_line, startColumn, startIndex, word.Length));
     }
 
     private Token ReadNumber(char current)
     {
-        var startIndex = _index - 1;
+        var startIndex = _index;
+        var startColumn = _column;
+        StepForward();
 
         var sb = new StringBuilder();
         sb.Append(current);
@@ -154,31 +177,53 @@ public sealed class Tokenizer
             }
 
             sb.Append(current);
-            _index++;
+            StepForward();
         }
 
-        return new Token(TokenType.Number, sb.ToString(), TokenPosition.At(startIndex, _index - 1));
+        var number = sb.ToString();
+
+        return new Token(
+            TokenType.Integer,
+            number,
+            TokenPosition.At(_line, startColumn, startIndex, number.Length));
     }
 
     private Token ReadOther(char current)
     {
-        var startIndex = _index - 1;
-        
+        var startIndex = _index;
+        var count = 1;
+
         while (char.IsWhiteSpace(current))
         {
+            StepForward(current == '\n');
+
             if (_index >= _source.Length)
             {
-                return new Token(TokenType.Eof, string.Empty, TokenPosition.At(startIndex, _index));
+                return new Token(
+                    TokenType.Eof,
+                    string.Empty,
+                    TokenPosition.At(_line, _column, startIndex, count));
             }
 
             current = _source[_index];
-            _index++;
+            count++;
         }
-
-        _index--;
 
         return ReadNext();
     }
 
-    private char PeekNext() => _index < _source.Length ? _source[_index] : '\0';
+    private void StepForward(bool isNewLine = false)
+    {
+        _index++;
+        
+        if (isNewLine)
+        {
+            _line++;
+            _column = 1;
+        }
+        else
+        {
+            _column++;
+        }
+    }
 }

@@ -35,14 +35,14 @@ public class Token : IEquatable<Token>
 
         return Type == other.Type
                && Value == other.Value
-               && Position.Start == other.Position.Start
-               && Position.End == other.Position.End
+               && Position.Index == other.Position.Index
+               && Position.Width == other.Position.Width
                && GetHashCode() == other.GetHashCode();
     }
 
     public override bool Equals(object? obj) => obj is Token other && Equals(other);
 
-    public override int GetHashCode() => HashCode.Combine((int)Type, Value, Position.Start, Position.End);
+    public override int GetHashCode() => HashCode.Combine((int)Type, Value, Position.Index, Position.Width);
 
     public static bool operator ==(Token left, Token right) => left.Equals(right);
 

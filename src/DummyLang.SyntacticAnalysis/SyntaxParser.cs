@@ -1,7 +1,7 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Expressions;
-using DummyLang.SyntacticAnalysis.Expressions.Literals;
+using DummyLang.SyntacticAnalysis.Utilities;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis;
@@ -45,7 +45,7 @@ public class SyntaxParser
 
         return this;
     }
-    
+
     public SyntaxTree GenerateSyntax()
     {
         SyntaxTree tree = new();
@@ -85,20 +85,26 @@ public class SyntaxParser
             ? _tokens[^1]
             : _tokens[index];
     }
-
-    private Expression ParseExpression()
+    
+    private Expression ParseExpression(OperatorPrecedence previousPrecedence = 0)
     {
-        return ParseAdditiveExpression();
-    }
+        var left = ParseExpressionBasedOnCurrentToken();
 
-    private Expression ParseAdditiveExpression()
-    {
-        var left = ParseMultiplicativeExpression();
-
-        while (Current.Type == TokenType.Plus || Current.Type == TokenType.Minus)
+        while (true)
         {
+            var currentPrecedence = GetOperatorPrecedence();
+            if (currentPrecedence == OperatorPrecedence.None)
+            {
+                return new InvalidExpression<Expression>($"Invalid token: {Current.Value} at {Current.Position}");
+            }
+
+            if (currentPrecedence <= previousPrecedence)
+            {
+                break;
+            }
+
             var op = GetAndMoveToNext();
-            var right = ParseMultiplicativeExpression();
+            var right = ParseExpression(currentPrecedence);
 
             left = new BinaryExpression(left, op, right);
         }
@@ -106,28 +112,47 @@ public class SyntaxParser
         return left;
     }
 
-    private Expression ParseMultiplicativeExpression()
+    private Expression ParseExpressionBasedOnCurrentToken()
     {
-        var left = ParsePrimaryExpression();
-
-        while (Current.Type == TokenType.Star || Current.Type == TokenType.Slash)
+        switch (Current.Type)
         {
-            var op = GetAndMoveToNext();
-            var right = ParsePrimaryExpression();
+            case TokenType.PlusPlus:
+            case TokenType.MinusMinus:
+            {
+                return new InvalidExpression<Expression>("Not supported expression type.");
+            }
+            case TokenType.LeftParen:
+            {
+                var leftParen = GetAndMoveToNext();
+                var expression = ParseExpression();
 
-            left = new BinaryExpression(left, op, right);
+                if (Current.Type == TokenType.RightParen)
+                {
+                    return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
+                }
+
+                var parenthesisedExpression = new ParenthesisedExpression(leftParen, expression, Token.None);
+                return new InvalidExpression<ParenthesisedExpression>(parenthesisedExpression);
+            }
+            case TokenType.Integer:
+                return new LiteralExpression(GetAndMoveToNext());
+            default:
+                return new InvalidExpression<Expression>("Not supported expression type.");
         }
-
-        return left;
     }
 
-    private Expression ParsePrimaryExpression()
+    private OperatorPrecedence GetOperatorPrecedence()
     {
-        if (Current.Type == TokenType.Number)
+        switch (Current.Type)
         {
-            return new NumberLiteral(GetAndMoveToNext());
+            case TokenType.Plus:
+            case TokenType.Minus:
+                return OperatorPrecedence.Additive;
+            case TokenType.Star:
+            case TokenType.Slash:
+                return OperatorPrecedence.Multiplicative;
+            default:
+                return OperatorPrecedence.None;
         }
-
-        return default!;
     }
 }

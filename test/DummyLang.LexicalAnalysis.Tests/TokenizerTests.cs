@@ -13,9 +13,14 @@ public class TokenizerTests
         // Act
         var tokenizer = new Tokenizer();
         tokenizer.Use(source);
+        var token = tokenizer.ReadNext();
 
         // Assert
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Eof, Value: "", Position: { Start: 0, End: 14 } });
+        Assert.Equal(TokenType.Eof, token.Type);
+        Assert.Equal("", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 1, Index: 0, Width: 14 });
+        
+        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
     }
 
     [Fact]
@@ -27,24 +32,133 @@ public class TokenizerTests
         // Act
         var tokenizer = new Tokenizer();
         tokenizer.Use(source);
+        var token = tokenizer.ReadNext();
 
         // Assert
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Assign, Position: { Start: 0, End: 0 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Plus, Position: { Start: 1, End: 1 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Minus, Position: { Start: 2, End: 2 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Star, Position: { Start: 3, End: 3 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Slash, Position: { Start: 4, End: 4 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.LessThan, Position: { Start: 5, End: 5 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.GreaterThan, Position: { Start: 6, End: 6 } });
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Plus, token.Type);
+        Assert.Equal("+", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 2, Index: 1, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Minus, token.Type);
+        Assert.Equal("-", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 3, Index: 2, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Star, token.Type);
+        Assert.Equal("*", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 4, Index: 3, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Slash, token.Type);
+        Assert.Equal("/", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 5, Index: 4, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LessThan, token.Type);
+        Assert.Equal("<", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 6, Index: 5, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.GreaterThan, token.Type);
+        Assert.Equal(">", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 7, Index: 6, Width: 1 });
 
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.LeftParen, Position: { Start: 7, End: 7 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.RightParen, Position: { Start: 8, End: 8 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.LeftBrace, Position: { Start: 9, End: 9 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.RightBrace, Position: { Start: 10, End: 10 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.LeftBracket, Position: { Start: 11, End: 11 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.RightBracket, Position: { Start: 12, End: 12 } });
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftParen, token.Type);
+        Assert.Equal("(", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 8, Index: 7, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightParen, token.Type);
+        Assert.Equal(")", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 9, Index: 8, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftBrace, token.Type);
+        Assert.Equal("{", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 10, Index: 9, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightBrace, token.Type);
+        Assert.Equal("}", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 11, Index: 10, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftBracket, token.Type);
+        Assert.Equal("[", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 12, Index: 11, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightBracket, token.Type);
+        Assert.Equal("]", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 13, Index: 12, Width: 1 });
 
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Eof, Position: { Start: 13, End: 13 } });
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Eof, token.Type);
+        Assert.Equal("", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 14, Index: 13, Width: 0 });
+        
+        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
+    }
+    
+    [Fact]
+    public void Next_MultiCharacterTokenTypes_ShouldReturnCorrectTokens()
+    {
+        // Arrange
+        const string source = "var result = 1 != 2;";
+
+        // Act
+        var tokenizer = new Tokenizer();
+        tokenizer.Use(source);
+        var token = tokenizer.ReadNext();
+
+        // Assert
+        Assert.Equal(TokenType.Var, token.Type);
+        Assert.Equal("var", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("result", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 5, Index: 4, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 12, Index: 11, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("1", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 14, Index: 13, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.NotEqual, token.Type);
+        Assert.Equal("!=", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 16, Index: 15, Width: 2 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("2", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 19, Index: 18, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 20, Index: 19, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Eof, token.Type);
+        Assert.Equal("", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 21, Index: 20, Width: 0 });
+        
+        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
     }
 
     [Fact]
@@ -65,79 +179,301 @@ public class TokenizerTests
         // Act
         var tokenizer = new Tokenizer();
         tokenizer.Use(source);
+        var token = tokenizer.ReadNext();
 
         // Assert
-        Assert.Equal(TokenType.Var, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Assign, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Number, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Semicolon, tokenizer.ReadNext().Type);
+        // Line 1
+        Assert.Equal(TokenType.Var, token.Type);
+        Assert.Equal("var", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("five", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 5, Index: 4, Width: 4 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 10, Index: 9, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("5", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 12, Index: 11, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 13, Index: 12, Width: 1 });
+        
+        // Line 2
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Var, token.Type);
+        Assert.Equal("var", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 1, Index: 15, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("ten", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 5, Index: 19, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Colon, token.Type);
+        Assert.Equal(":", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 8, Index: 22, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("Number", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 10, Index: 24, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 17, Index: 31, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("10", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 19, Index: 33, Width: 2 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 2, Column: 21, Index: 35, Width: 1 });
 
-        Assert.Equal(TokenType.Var, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Colon, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Assign, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Number, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Semicolon, tokenizer.ReadNext().Type);
-
-        Assert.Equal(TokenType.Const, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Assign, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Fun, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.LeftParen, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Colon, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Comma, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Colon, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.RightParen, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Colon, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.LeftBrace, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Return, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Plus, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Semicolon, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.RightBrace, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Semicolon, tokenizer.ReadNext().Type);
-
-        Assert.Equal(TokenType.Var, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Assign, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.LeftParen, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Comma, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Identifier, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.RightParen, tokenizer.ReadNext().Type);
-        Assert.Equal(TokenType.Semicolon, tokenizer.ReadNext().Type);
-
-        Assert.Equal(TokenType.Eof, tokenizer.ReadNext().Type);
+        // Line 3
+        // Line 4
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Const, token.Type);
+        Assert.Equal("const", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 1, Index: 40, Width: 5 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("add", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 7, Index: 46, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 11, Index: 50, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Fun, token.Type);
+        Assert.Equal("fun", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 13, Index: 52, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftParen, token.Type);
+        Assert.Equal("(", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 16, Index: 55, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("a", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 17, Index: 56, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Colon, token.Type);
+        Assert.Equal(":", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 18, Index: 57, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("Number", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 20, Index: 59, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Comma, token.Type);
+        Assert.Equal(",", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 26, Index: 65, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("b", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 28, Index: 67, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Colon, token.Type);
+        Assert.Equal(":", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 29, Index: 68, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("Number", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 31, Index: 70, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightParen, token.Type);
+        Assert.Equal(")", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 37, Index: 76, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Colon, token.Type);
+        Assert.Equal(":", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 38, Index: 77, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("Number", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 40, Index: 79, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftBrace, token.Type);
+        Assert.Equal("{", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 47, Index: 86, Width: 1 });
+        
+        // Line 5
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Return, token.Type);
+        Assert.Equal("return", token.Value);
+        Assert.True(token.Position is { Line: 5, Column: 5, Index: 93, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("a", token.Value);
+        Assert.True(token.Position is { Line: 5, Column: 12, Index: 100, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Plus, token.Type);
+        Assert.Equal("+", token.Value);
+        Assert.True(token.Position is { Line: 5, Column: 14, Index: 102, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("b", token.Value);
+        Assert.True(token.Position is { Line: 5, Column: 16, Index: 104, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 5, Column: 17, Index: 105, Width: 1 });
+        
+        // Line 6
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightBrace, token.Type);
+        Assert.Equal("}", token.Value);
+        Assert.True(token.Position is { Line: 6, Column: 1, Index: 108, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 6, Column: 2, Index: 109, Width: 1 });
+        
+        // Line 7
+        // Line 8
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Var, token.Type);
+        Assert.Equal("var", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 1, Index: 114, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("result", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 5, Index: 118, Width: 6 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 12, Index: 125, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("add", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 14, Index: 127, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.LeftParen, token.Type);
+        Assert.Equal("(", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 17, Index: 130, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("five", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 18, Index: 131, Width: 4 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Comma, token.Type);
+        Assert.Equal(",", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 22, Index: 135, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("ten", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 24, Index: 137, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.RightParen, token.Type);
+        Assert.Equal(")", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 27, Index: 140, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 28, Index: 141, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Eof, token.Type);
+        Assert.Equal("", token.Value);
+        Assert.True(token.Position is { Line: 8, Column: 29, Index: 142, Width: 0 });
+        
+        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
     }
 
     [Fact]
     public void Next_FloatingPointNumbers_ShouldReturnCorrectTokens()
     {
+        // TODO: Update when floats are added
         // Arrange
-        const string source = "const correct = 0.1234;";
+        const string source = "const value = 0.1234;";
 
         // Act
         var tokenizer = new Tokenizer();
         tokenizer.Use(source);
+        var token = tokenizer.ReadNext();
 
         // Assert
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Const, Position: { Start: 0, End: 4 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Identifier, Position: { Start: 6, End: 12 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Assign, Position: { Start: 14, End: 14 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Number, Position: { Start: 16, End: 16 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Dot, Position: { Start: 17, End: 17 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Number, Position: { Start: 18, End: 21 } });
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Semicolon, Position: { Start: 22, End: 22 } });
+        Assert.Equal(TokenType.Const, token.Type);
+        Assert.Equal("const", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 5 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("value", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 7, Index: 6, Width: 5 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Assign, token.Type);
+        Assert.Equal("=", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 13, Index: 12, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("0", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 15, Index: 14, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Dot, token.Type);
+        Assert.Equal(".", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 16, Index: 15, Width: 1 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal("1234", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 17, Index: 16, Width: 4 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Semicolon, token.Type);
+        Assert.Equal(";", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 21, Index: 20, Width: 1 });
 
-        Assert.True(tokenizer.ReadNext() is { Type: TokenType.Eof, Position: { Start: 23, End: 23 } });
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Eof, token.Type);
+        Assert.Equal("", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 22, Index: 21, Width: 0 });
+        
+        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
     }
 }

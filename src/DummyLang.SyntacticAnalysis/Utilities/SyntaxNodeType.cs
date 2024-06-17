@@ -4,5 +4,7 @@ public enum SyntaxNodeType
 {
     None,
     LiteralExpression,
-    BinaryExpression
+    UnaryExpression,
+    BinaryExpression,
+    ParenthesisedExpression,
 }

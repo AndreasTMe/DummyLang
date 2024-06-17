@@ -2,7 +2,6 @@
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Internal;
 using DummyLang.SyntacticAnalysis.Utilities;
-using System;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 

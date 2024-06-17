@@ -17,7 +17,9 @@ public enum TokenType : byte
     Equal,
     NotEqual,
     Plus,
+    PlusPlus,
     Minus,
+    MinusMinus,
     Star,
     Slash,
     LessThan,
@@ -35,7 +37,7 @@ public enum TokenType : byte
 
     // Identifiers
     Identifier,
-    Number,
+    Integer,
 
     // Keywords
     Var,
