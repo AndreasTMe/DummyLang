@@ -24,8 +24,10 @@ public enum TokenType : byte
     Slash,
     LessThan,
     LessThanOrEqual,
+    LeftBitShift,
     GreaterThan,
     GreaterThanOrEqual,
+    RightBitShift,
 
     // Parentheses
     LeftParen,

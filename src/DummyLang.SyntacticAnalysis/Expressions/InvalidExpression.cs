@@ -5,24 +5,18 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 public sealed class InvalidExpression<T> : Expression
     where T : Expression
 {
-    public override SyntaxNodeType Type { get; }
-
     public T? Expression { get; }
     public string? Message { get; }
 
     public InvalidExpression(T expression)
     {
-        Type = expression.Type;
         Expression = expression;
-
         Message = null;
     }
 
     public InvalidExpression(string message)
     {
-        Type = SyntaxNodeType.None;
         Expression = default;
-
         Message = message;
     }
 

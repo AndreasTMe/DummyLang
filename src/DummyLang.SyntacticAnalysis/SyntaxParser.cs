@@ -70,35 +70,14 @@ public class SyntaxParser
 
     private Token GetAndMoveToNext() => _index < _tokens.Count ? _tokens[_index++] : Token.None;
 
-    private Token LookAtNext() => LookAt(1);
-
-    private Token LookAt(int position)
-    {
-        var index = _index + position;
-
-        if (index < 0)
-        {
-            return Token.None;
-        }
-
-        return index >= _tokens.Count
-            ? _tokens[^1]
-            : _tokens[index];
-    }
-    
     private Expression ParseExpression(OperatorPrecedence previousPrecedence = 0)
     {
         var left = ParseExpressionBasedOnCurrentToken();
 
-        while (true)
+        while (Current.IsBinaryOperator())
         {
             var currentPrecedence = GetOperatorPrecedence();
-            if (currentPrecedence == OperatorPrecedence.None)
-            {
-                return new InvalidExpression<Expression>($"Invalid token: {Current.Value} at {Current.Position}");
-            }
-
-            if (currentPrecedence <= previousPrecedence)
+            if (currentPrecedence == OperatorPrecedence.None || currentPrecedence <= previousPrecedence)
             {
                 break;
             }
@@ -116,10 +95,17 @@ public class SyntaxParser
     {
         switch (Current.Type)
         {
+            case TokenType.Plus:
+            case TokenType.Minus:
+            case TokenType.Bang: // TODO: Special case for bang pairs (!!true = true)
             case TokenType.PlusPlus:
             case TokenType.MinusMinus:
             {
-                return new InvalidExpression<Expression>("Not supported expression type.");
+                // TODO: case TokenType.Tilde:
+                // TODO: case TokenType.Ampersand:
+                // TODO: case TokenType.Star:
+
+                return new UnaryExpression(GetAndMoveToNext(), ParseExpression(OperatorPrecedence.Unary));
             }
             case TokenType.LeftParen:
             {
@@ -134,8 +120,26 @@ public class SyntaxParser
                 var parenthesisedExpression = new ParenthesisedExpression(leftParen, expression, Token.None);
                 return new InvalidExpression<ParenthesisedExpression>(parenthesisedExpression);
             }
+            case TokenType.Identifier:
             case TokenType.Integer:
-                return new LiteralExpression(GetAndMoveToNext());
+            {
+                var literalExpression = new LiteralExpression(GetAndMoveToNext());
+
+                if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
+                {
+                    return literalExpression;
+                }
+
+                var expression = new PrimaryExpression(literalExpression, GetAndMoveToNext());
+
+                // BUG: When writing something like: "var i = 1++2", but if you do that, you deserve the bug :)
+                while (Current.Type == TokenType.PlusPlus || Current.Type == TokenType.MinusMinus)
+                {
+                    expression = new PrimaryExpression(expression, GetAndMoveToNext());
+                }
+
+                return expression;
+            }
             default:
                 return new InvalidExpression<Expression>("Not supported expression type.");
         }
@@ -145,6 +149,9 @@ public class SyntaxParser
     {
         switch (Current.Type)
         {
+            case TokenType.LeftBitShift:
+            case TokenType.RightBitShift:
+                return OperatorPrecedence.Bitshift;
             case TokenType.Plus:
             case TokenType.Minus:
                 return OperatorPrecedence.Additive;

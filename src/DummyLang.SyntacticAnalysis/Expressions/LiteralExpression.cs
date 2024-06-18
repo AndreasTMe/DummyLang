@@ -5,8 +5,6 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class LiteralExpression : Expression
 {
-    public override SyntaxNodeType Type => SyntaxNodeType.LiteralExpression;
-    
     public Token Token { get; }
 
     public LiteralExpression(Token token)

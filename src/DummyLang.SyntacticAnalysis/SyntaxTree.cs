@@ -8,8 +8,6 @@ public sealed class SyntaxTree
 {
     public abstract class Node
     {
-        public abstract SyntaxNodeType Type { get; }
-
         public abstract void PrettyPrint(int indent);
     }
     

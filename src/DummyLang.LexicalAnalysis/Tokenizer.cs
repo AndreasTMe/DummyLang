@@ -65,9 +65,13 @@ public sealed class Tokenizer
             case '/':
                 return GenerateToken(TokenType.Slash);
             case '<':
-                return GenerateTokenBasedOnNext(TokenType.LessThan, TokenType.LessThanOrEqual);
+                return GenerateTokenBasedOnNext(
+                    TokenType.LessThan,
+                    TokenType.LessThanOrEqual, TokenType.LeftBitShift);
             case '>':
-                return GenerateTokenBasedOnNext(TokenType.GreaterThan, TokenType.GreaterThanOrEqual);
+                return GenerateTokenBasedOnNext(
+                    TokenType.GreaterThan,
+                    TokenType.GreaterThanOrEqual, TokenType.RightBitShift);
             case '(':
                 return GenerateToken(TokenType.LeftParen);
             case ')':
@@ -215,7 +219,7 @@ public sealed class Tokenizer
     private void StepForward(bool isNewLine = false)
     {
         _index++;
-        
+
         if (isNewLine)
         {
             _line++;

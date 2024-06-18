@@ -6,8 +6,6 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class ParenthesisedExpression : Expression
 {
-    public override SyntaxNodeType Type => SyntaxNodeType.ParenthesisedExpression;
-
     public Token LeftParen { get; }
     public Expression Expression { get; }
     public Token RightParen { get; }
