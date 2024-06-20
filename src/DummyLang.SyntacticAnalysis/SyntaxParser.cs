@@ -15,7 +15,7 @@ public class SyntaxParser
     private Token _current = Token.None;
     private int _index;
 
-    private Token Current
+    internal Token Current
     {
         get
         {
@@ -27,6 +27,8 @@ public class SyntaxParser
             return _current;
         }
     }
+
+    internal int TotalTokens => _tokens.Count;
 
     public SyntaxParser Feed(string source)
     {
@@ -110,13 +112,16 @@ public class SyntaxParser
             case TokenType.Star:
             case TokenType.Ampersand:
             {
+                var previousType = Current.Type;
                 var expression = new UnaryExpression(GetAndMoveToNext(), ParseExpression(OperatorPrecedence.Unary));
 
-                if (Current.Type != TokenType.Identifier)
+                if (Current.Type != TokenType.Identifier
+                    && previousType != TokenType.Plus
+                    && previousType != TokenType.Minus)
                 {
                     return new InvalidExpression<UnaryExpression>(expression);
                 }
-                
+
                 return expression;
             }
             case TokenType.LeftParen:

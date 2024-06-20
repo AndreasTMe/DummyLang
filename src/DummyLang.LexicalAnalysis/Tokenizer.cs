@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DummyLang.LexicalAnalysis;
 
-public sealed class Tokenizer
+public sealed partial class Tokenizer
 {
     private static readonly Dictionary<string, TokenType> KeywordTokens = new()
     {
@@ -20,10 +21,17 @@ public sealed class Tokenizer
         { Keywords.Return, TokenType.Return }
     };
 
+    private static readonly Dictionary<TokenType, Regex[]> NumberPatterns = new()
+    {
+        { TokenType.Real, [RealNumberPattern()] },
+        { TokenType.Integer, [BinaryNumberPattern(), HexadecimalNumberPattern(), IntegerNumberPattern()] }
+    };
+
     private string _source = string.Empty;
     private int _index;
     private int _line;
     private int _column;
+
 
     public void Use(in string? newSource)
     {
@@ -92,10 +100,10 @@ public sealed class Tokenizer
                 return GenerateToken(TokenType.RightBracket);
             default:
                 return char.IsLetter(current) || current == '_'
-                    ? ReadWord(current)
+                    ? ReadWord()
                     : char.IsDigit(current)
-                        ? ReadNumber(current)
-                        : ReadOther(current);
+                        ? ReadNumber()
+                        : ReadOther();
         }
     }
 
@@ -138,8 +146,9 @@ public sealed class Tokenizer
         return GenerateToken(type);
     }
 
-    private Token ReadWord(char current)
+    private Token ReadWord()
     {
+        var current = _source[_index];
         var startIndex = _index;
         var startColumn = _column;
         StepForward();
@@ -168,38 +177,34 @@ public sealed class Tokenizer
             TokenPosition.At(_line, startColumn, startIndex, word.Length));
     }
 
-    private Token ReadNumber(char current)
+    private Token ReadNumber()
     {
-        var startIndex = _index;
-        var startColumn = _column;
-        StepForward();
-
-        var sb = new StringBuilder();
-        sb.Append(current);
-
-        while (_index < _source.Length)
+        foreach (var (token, patterns) in NumberPatterns)
         {
-            current = _source[_index];
-
-            if (!char.IsDigit(current))
+            foreach (var pattern in patterns)
             {
-                break;
-            }
+                var match = pattern.Match(_source[_index..]);
+                if (!match.Success)
+                {
+                    continue;
+                }
 
-            sb.Append(current);
-            StepForward();
+                var matchValue = match.Value;
+                var tokenPosition = TokenPosition.At(_line, _column, _index, matchValue.Length);
+
+                _index += matchValue.Length;
+                _column += matchValue.Length;
+
+                return new Token(token, matchValue, tokenPosition);
+            }
         }
 
-        var number = sb.ToString();
-
-        return new Token(
-            TokenType.Integer,
-            number,
-            TokenPosition.At(_line, startColumn, startIndex, number.Length));
+        return Token.None;
     }
 
-    private Token ReadOther(char current)
+    private Token ReadOther()
     {
+        var current = _source[_index];
         var startIndex = _index;
         var count = 1;
 
@@ -236,4 +241,16 @@ public sealed class Tokenizer
             _column++;
         }
     }
+
+    [GeneratedRegex("^0(?i)b[0-1]+(ul|u|l)?")]
+    private static partial Regex BinaryNumberPattern();
+
+    [GeneratedRegex("^0(?i)x[0-9a-f]+(ul|u|l)?")]
+    private static partial Regex HexadecimalNumberPattern();
+
+    [GeneratedRegex("^[0-9]+(?i)(ul|u|l)?")]
+    private static partial Regex IntegerNumberPattern();
+
+    [GeneratedRegex("^[0-9]+\\.[0-9]+(?i)(e[+|-][0-9]+)?(f|d|m)?")]
+    private static partial Regex RealNumberPattern();
 }

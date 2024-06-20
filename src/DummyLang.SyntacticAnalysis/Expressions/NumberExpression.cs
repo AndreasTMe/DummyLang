@@ -6,7 +6,7 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 public sealed class NumberExpression : Expression
 {
     public Token Token { get; }
-    public NumberType Type { get; set; }
+    public NumberType Type { get; }
 
     public NumberExpression(Token token, NumberType type)
     {
@@ -16,6 +16,6 @@ public sealed class NumberExpression : Expression
 
     public override void PrettyPrint(int indent)
     {
-        ConsoleUtilities.WriteLineFormatted($"{nameof(NumberExpression)}({Token.Value})", indent);
+        ConsoleUtilities.WriteLineFormatted($"{nameof(NumberExpression)}({Token.Value} : {Type})", indent);
     }
 }

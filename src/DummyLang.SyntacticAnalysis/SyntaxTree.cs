@@ -1,5 +1,4 @@
-﻿using DummyLang.SyntacticAnalysis.Utilities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis;
@@ -15,7 +14,7 @@ public sealed class SyntaxTree
     
     public IReadOnlyList<Node> Nodes => _nodes;
 
-    public void Add(in Node node)
+    internal void Add(in Node node)
     {
         _nodes.Add(node);
     }

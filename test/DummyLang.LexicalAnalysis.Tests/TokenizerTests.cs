@@ -423,57 +423,89 @@ public class TokenizerTests
     }
 
     [Fact]
-    public void Next_FloatingPointNumbers_ShouldReturnCorrectTokens()
+    public void Next_Numbers_ShouldReturnCorrectTokens()
     {
-        // TODO: Update when floats are added
         // Arrange
-        const string source = "const value = 0.1234;";
+        const string numberInteger = "12345";
+        const string numberUnsigned = "12345u";
+        const string numberLong = "12345l";
+        const string numberUnsignedLong = "12345ul";
+        const string numberBinary = "0b010101";
+        const string numberHex = "0x0123456789ABCDEF";
+        const string numberDouble1 = "123.45";
+        const string numberDouble2 = "123.45d";
+        const string numberFloat = "123.45f";
+        const string numberDecimal = "123.45m";
+        const string numberExponent = "123.45e-123f";
 
         // Act
         var tokenizer = new Tokenizer();
-        tokenizer.Use(source);
+        tokenizer.Use(numberInteger);
         var token = tokenizer.ReadNext();
 
         // Assert
-        Assert.Equal(TokenType.Const, token.Type);
-        Assert.Equal("const", token.Value);
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal(numberInteger, token.Value);
         Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 5 });
         
-        token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Identifier, token.Type);
-        Assert.Equal("value", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 7, Index: 6, Width: 5 });
-        
-        token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Assign, token.Type);
-        Assert.Equal("=", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 13, Index: 12, Width: 1 });
-        
+        tokenizer.Use(numberUnsigned);
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Integer, token.Type);
-        Assert.Equal("0", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 15, Index: 14, Width: 1 });
+        Assert.Equal(numberUnsigned, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 6 });
         
-        token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Dot, token.Type);
-        Assert.Equal(".", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 16, Index: 15, Width: 1 });
-        
+        tokenizer.Use(numberLong);
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Integer, token.Type);
-        Assert.Equal("1234", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 17, Index: 16, Width: 4 });
+        Assert.Equal(numberLong, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 6 });
         
+        tokenizer.Use(numberUnsignedLong);
         token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Semicolon, token.Type);
-        Assert.Equal(";", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 21, Index: 20, Width: 1 });
-
-        token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Eof, token.Type);
-        Assert.Equal("", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 22, Index: 21, Width: 0 });
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal(numberUnsignedLong, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 7 });
         
-        Assert.Equal(token.Position.Index + token.Position.Width, source.Length);
+        tokenizer.Use(numberBinary);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal(numberBinary, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 8 });
+        
+        tokenizer.Use(numberHex);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Integer, token.Type);
+        Assert.Equal(numberHex, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 18 });
+        
+        tokenizer.Use(numberDouble1);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Real, token.Type);
+        Assert.Equal(numberDouble1, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 6 });
+        
+        tokenizer.Use(numberDouble2);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Real, token.Type);
+        Assert.Equal(numberDouble2, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 7 });
+        
+        tokenizer.Use(numberFloat);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Real, token.Type);
+        Assert.Equal(numberFloat, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 7 });
+        
+        tokenizer.Use(numberDecimal);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Real, token.Type);
+        Assert.Equal(numberDecimal, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 7 });
+        
+        tokenizer.Use(numberExponent);
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Real, token.Type);
+        Assert.Equal(numberExponent, token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 12 });
     }
 }

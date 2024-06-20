@@ -3,10 +3,19 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
+        
+        <AssemblyName>DummyLang.SyntacticAnalysis</AssemblyName>
+        <RootNamespace>DummyLang.SyntacticAnalysis</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DummyLang.LexicalAnalysis\DummyLang.LexicalAnalysis.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>$(AssemblyName).Tests</_Parameter1>
+        </AssemblyAttribute>
     </ItemGroup>
 
     <ItemGroup>
