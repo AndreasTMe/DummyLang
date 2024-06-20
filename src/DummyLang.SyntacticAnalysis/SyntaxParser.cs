@@ -2,6 +2,7 @@
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis;
@@ -52,6 +53,8 @@ public class SyntaxParser
 
         while (_index < _tokens.Count)
         {
+            var lastIndex = _index;
+
             if (Current.IsEof() || Current.IsInvalid())
             {
                 break;
@@ -60,7 +63,10 @@ public class SyntaxParser
             var node = ParseExpression();
             tree.Add(node);
 
-            _index++;
+            if (lastIndex == _index)
+            {
+                _index++;
+            }
         }
 
         _tokens.Clear();
@@ -97,15 +103,21 @@ public class SyntaxParser
         {
             case TokenType.Plus:
             case TokenType.Minus:
-            case TokenType.Bang: // TODO: Special case for bang pairs (!!true = true)
             case TokenType.PlusPlus:
             case TokenType.MinusMinus:
+            case TokenType.Bang:
+            case TokenType.Tilde:
+            case TokenType.Star:
+            case TokenType.Ampersand:
             {
-                // TODO: case TokenType.Tilde:
-                // TODO: case TokenType.Ampersand:
-                // TODO: case TokenType.Star:
+                var expression = new UnaryExpression(GetAndMoveToNext(), ParseExpression(OperatorPrecedence.Unary));
 
-                return new UnaryExpression(GetAndMoveToNext(), ParseExpression(OperatorPrecedence.Unary));
+                if (Current.Type != TokenType.Identifier)
+                {
+                    return new InvalidExpression<UnaryExpression>(expression);
+                }
+                
+                return expression;
             }
             case TokenType.LeftParen:
             {
@@ -121,24 +133,74 @@ public class SyntaxParser
                 return new InvalidExpression<ParenthesisedExpression>(parenthesisedExpression);
             }
             case TokenType.Identifier:
-            case TokenType.Integer:
             {
-                var literalExpression = new LiteralExpression(GetAndMoveToNext());
+                var identifierExpression = new IdentifierExpression(GetAndMoveToNext());
 
                 if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
                 {
-                    return literalExpression;
+                    return identifierExpression;
                 }
 
-                var expression = new PrimaryExpression(literalExpression, GetAndMoveToNext());
+                var expression = new PrimaryExpression(identifierExpression, GetAndMoveToNext());
 
-                // BUG: When writing something like: "var i = 1++2", but if you do that, you deserve the bug :)
                 while (Current.Type == TokenType.PlusPlus || Current.Type == TokenType.MinusMinus)
                 {
                     expression = new PrimaryExpression(expression, GetAndMoveToNext());
                 }
 
                 return expression;
+            }
+            case TokenType.Integer:
+            {
+                var integerValue = Current.Value;
+                var integerType = NumberType.Integer;
+
+                if (integerValue.StartsWith("0x"))
+                {
+                    integerType = NumberType.Hexadecimal;
+                }
+                else if (integerValue.StartsWith("0b"))
+                {
+                    integerType = NumberType.Binary;
+                }
+                else if (integerValue.EndsWith("u", StringComparison.OrdinalIgnoreCase))
+                {
+                    integerType = NumberType.UnsignedInteger;
+                }
+                else if (integerValue.EndsWith("l", StringComparison.OrdinalIgnoreCase))
+                {
+                    integerType = NumberType.Long;
+                }
+                else if (integerValue.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
+                {
+                    integerType = NumberType.UnsignedLong;
+                }
+
+                return new NumberExpression(GetAndMoveToNext(), integerType);
+            }
+            case TokenType.Real:
+            {
+                var realValue = Current.Value;
+                var realType = NumberType.Double;
+
+                if (realValue.EndsWith("f", StringComparison.OrdinalIgnoreCase))
+                {
+                    realType = NumberType.Float;
+                }
+                else if (realValue.EndsWith("d", StringComparison.OrdinalIgnoreCase))
+                {
+                    realType = NumberType.Double;
+                }
+                else if (realValue.EndsWith("m", StringComparison.OrdinalIgnoreCase))
+                {
+                    realType = NumberType.Decimal;
+                }
+                else if (realValue.Contains('e', StringComparison.OrdinalIgnoreCase))
+                {
+                    realType = NumberType.WithExponent;
+                }
+
+                return new NumberExpression(GetAndMoveToNext(), realType);
             }
             default:
                 return new InvalidExpression<Expression>("Not supported expression type.");
@@ -149,6 +211,16 @@ public class SyntaxParser
     {
         switch (Current.Type)
         {
+            case TokenType.Assign:
+                return OperatorPrecedence.Assignment;
+            case TokenType.Equal:
+            case TokenType.NotEqual:
+                return OperatorPrecedence.Equality;
+            case TokenType.LessThan:
+            case TokenType.LessThanOrEqual:
+            case TokenType.GreaterThan:
+            case TokenType.GreaterThanOrEqual:
+                return OperatorPrecedence.Relational;
             case TokenType.LeftBitShift:
             case TokenType.RightBitShift:
                 return OperatorPrecedence.Bitshift;
@@ -157,6 +229,7 @@ public class SyntaxParser
                 return OperatorPrecedence.Additive;
             case TokenType.Star:
             case TokenType.Slash:
+            case TokenType.Percent:
                 return OperatorPrecedence.Multiplicative;
             default:
                 return OperatorPrecedence.None;

@@ -64,6 +64,10 @@ public sealed class Tokenizer
                 return GenerateToken(TokenType.Star);
             case '/':
                 return GenerateToken(TokenType.Slash);
+            case '%':
+                return GenerateToken(TokenType.Percent);
+            case '&':
+                return GenerateToken(TokenType.Ampersand);
             case '<':
                 return GenerateTokenBasedOnNext(
                     TokenType.LessThan,
@@ -72,6 +76,8 @@ public sealed class Tokenizer
                 return GenerateTokenBasedOnNext(
                     TokenType.GreaterThan,
                     TokenType.GreaterThanOrEqual, TokenType.RightBitShift);
+            case '~':
+                return GenerateToken(TokenType.Tilde);
             case '(':
                 return GenerateToken(TokenType.LeftParen);
             case ')':

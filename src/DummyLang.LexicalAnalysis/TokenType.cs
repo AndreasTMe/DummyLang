@@ -22,12 +22,15 @@ public enum TokenType : byte
     MinusMinus,
     Star,
     Slash,
+    Percent,
+    Ampersand,
     LessThan,
     LessThanOrEqual,
     LeftBitShift,
     GreaterThan,
     GreaterThanOrEqual,
     RightBitShift,
+    Tilde,
 
     // Parentheses
     LeftParen,
@@ -39,7 +42,14 @@ public enum TokenType : byte
 
     // Identifiers
     Identifier,
+    
+    // Literals
+    Boolean,
     Integer,
+    Real,
+    Character,
+    String,
+    Null,
 
     // Keywords
     Var,

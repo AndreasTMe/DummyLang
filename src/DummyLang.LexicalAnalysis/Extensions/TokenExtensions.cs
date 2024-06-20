@@ -14,6 +14,7 @@ public static class TokenExtensions
         || token.Type == TokenType.Minus
         || token.Type == TokenType.Star
         || token.Type == TokenType.Slash
+        || token.Type == TokenType.Percent
         || token.Type == TokenType.LessThan
         || token.Type == TokenType.LessThanOrEqual
         || token.Type == TokenType.LeftBitShift
