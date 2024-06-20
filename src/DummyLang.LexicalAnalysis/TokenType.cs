@@ -10,6 +10,10 @@ public enum TokenType : byte
     Dot,
     Semicolon,
     Colon,
+    
+    // Quotes
+    SingleQuote,
+    DoubleQuote,
 
     // Operators
     Assign,
@@ -20,10 +24,14 @@ public enum TokenType : byte
     PlusPlus,
     Minus,
     MinusMinus,
+    PointerAccess,
     Star,
     Slash,
     Percent,
     Ampersand,
+    DoubleAmpersand,
+    Pipe,
+    DoublePipe,
     LessThan,
     LessThanOrEqual,
     LeftBitShift,
@@ -31,6 +39,10 @@ public enum TokenType : byte
     GreaterThanOrEqual,
     RightBitShift,
     Tilde,
+    Range,
+    Caret,
+    QuestionMark,
+    DoubleQuestionMark,
 
     // Parentheses
     LeftParen,
@@ -60,5 +72,7 @@ public enum TokenType : byte
     Break,
     While,
     Continue,
-    Return
+    Return,
+    As,
+    Default
 }

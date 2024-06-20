@@ -8,19 +8,6 @@ namespace DummyLang.LexicalAnalysis;
 
 public sealed partial class Tokenizer
 {
-    private static readonly Dictionary<string, TokenType> KeywordTokens = new()
-    {
-        { Keywords.Var, TokenType.Var },
-        { Keywords.Const, TokenType.Const },
-        { Keywords.Fun, TokenType.Fun },
-        { Keywords.If, TokenType.If },
-        { Keywords.Else, TokenType.Else },
-        { Keywords.Break, TokenType.Break },
-        { Keywords.While, TokenType.While },
-        { Keywords.Continue, TokenType.Continue },
-        { Keywords.Return, TokenType.Return }
-    };
-
     private static readonly Dictionary<TokenType, Regex[]> NumberPatterns = new()
     {
         { TokenType.Real, [RealNumberPattern()] },
@@ -55,11 +42,15 @@ public sealed partial class Tokenizer
             case ',':
                 return GenerateToken(TokenType.Comma);
             case '.':
-                return GenerateToken(TokenType.Dot);
+                return GenerateTokenBasedOnNext(TokenType.Dot, TokenType.Range);
             case ';':
                 return GenerateToken(TokenType.Semicolon);
             case ':':
                 return GenerateToken(TokenType.Colon);
+            case '\'':
+                return GenerateToken(TokenType.SingleQuote);
+            case '\"':
+                return GenerateToken(TokenType.DoubleQuote);
             case '=':
                 return GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal);
             case '!':
@@ -67,7 +58,9 @@ public sealed partial class Tokenizer
             case '+':
                 return GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus);
             case '-':
-                return GenerateTokenBasedOnNext(TokenType.Minus, TokenType.MinusMinus);
+                return GenerateTokenBasedOnNext(
+                    TokenType.Minus,
+                    TokenType.MinusMinus, TokenType.PointerAccess);
             case '*':
                 return GenerateToken(TokenType.Star);
             case '/':
@@ -75,7 +68,13 @@ public sealed partial class Tokenizer
             case '%':
                 return GenerateToken(TokenType.Percent);
             case '&':
-                return GenerateToken(TokenType.Ampersand);
+                return GenerateTokenBasedOnNext(TokenType.Ampersand, TokenType.DoubleAmpersand);
+            case '|':
+                return GenerateTokenBasedOnNext(TokenType.Pipe, TokenType.DoublePipe);
+            case '^':
+                return GenerateToken(TokenType.Caret);
+            case '?':
+                return GenerateTokenBasedOnNext(TokenType.QuestionMark, TokenType.DoubleQuestionMark);
             case '<':
                 return GenerateTokenBasedOnNext(
                     TokenType.LessThan,
@@ -172,7 +171,7 @@ public sealed partial class Tokenizer
         var word = sb.ToString();
 
         return new Token(
-            KeywordTokens.GetValueOrDefault(word, TokenType.Identifier),
+            Keywords.Tokens.GetValueOrDefault(word, TokenType.Identifier),
             word,
             TokenPosition.At(_line, startColumn, startIndex, word.Length));
     }

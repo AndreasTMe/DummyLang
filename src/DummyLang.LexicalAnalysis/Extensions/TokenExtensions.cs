@@ -21,19 +21,4 @@ public static class TokenExtensions
         || token.Type == TokenType.GreaterThan
         || token.Type == TokenType.GreaterThanOrEqual
         || token.Type == TokenType.RightBitShift;
-
-    public static bool IsIdentifier(this Token token) =>
-        token.Type == TokenType.Identifier
-        || token.Type == TokenType.Integer;
-
-    public static bool IsKeyword(this Token token) =>
-        token.Type == TokenType.Var
-        || token.Type == TokenType.Const
-        || token.Type == TokenType.Fun
-        || token.Type == TokenType.If
-        || token.Type == TokenType.Else
-        || token.Type == TokenType.Break
-        || token.Type == TokenType.While
-        || token.Type == TokenType.Continue
-        || token.Type == TokenType.Return;
 }
