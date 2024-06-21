@@ -39,7 +39,7 @@ public enum TokenType : byte
     GreaterThanOrEqual,
     RightBitShift,
     Tilde,
-    Range,
+    DoubleDot,
     Caret,
     QuestionMark,
     DoubleQuestionMark,

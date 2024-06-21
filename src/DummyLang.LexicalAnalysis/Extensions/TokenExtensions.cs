@@ -20,5 +20,10 @@ public static class TokenExtensions
         || token.Type == TokenType.LeftBitShift
         || token.Type == TokenType.GreaterThan
         || token.Type == TokenType.GreaterThanOrEqual
-        || token.Type == TokenType.RightBitShift;
+        || token.Type == TokenType.RightBitShift
+        || token.Type == TokenType.Pipe
+        || token.Type == TokenType.DoublePipe
+        || token.Type == TokenType.Caret
+        || token.Type == TokenType.Ampersand
+        || token.Type == TokenType.DoubleAmpersand;
 }

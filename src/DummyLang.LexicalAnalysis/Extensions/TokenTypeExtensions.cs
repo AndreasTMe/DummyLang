@@ -9,7 +9,7 @@ internal static class TokenTypeExtensions
         {
             TokenType.Comma => ",",
             TokenType.Dot => ".",
-            TokenType.Range => "..",
+            TokenType.DoubleDot => "..",
             TokenType.Semicolon => ";",
             TokenType.Colon => ":",
             TokenType.Assign => "=",

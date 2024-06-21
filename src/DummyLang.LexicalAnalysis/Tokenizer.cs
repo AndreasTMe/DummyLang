@@ -42,7 +42,7 @@ public sealed partial class Tokenizer
             case ',':
                 return GenerateToken(TokenType.Comma);
             case '.':
-                return GenerateTokenBasedOnNext(TokenType.Dot, TokenType.Range);
+                return GenerateTokenBasedOnNext(TokenType.Dot, TokenType.DoubleDot);
             case ';':
                 return GenerateToken(TokenType.Semicolon);
             case ':':

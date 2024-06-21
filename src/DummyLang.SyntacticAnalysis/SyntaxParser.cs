@@ -112,17 +112,19 @@ public class SyntaxParser
             case TokenType.Star:
             case TokenType.Ampersand:
             {
-                var previousType = Current.Type;
-                var expression = new UnaryExpression(GetAndMoveToNext(), ParseExpression(OperatorPrecedence.Unary));
-
-                if (Current.Type != TokenType.Identifier
-                    && previousType != TokenType.Plus
-                    && previousType != TokenType.Minus)
+                var unaryOperator = GetAndMoveToNext();
+                if (Current.Type == TokenType.Identifier)
                 {
-                    return new InvalidExpression<UnaryExpression>(expression);
+                    return new UnaryExpression(unaryOperator, new IdentifierExpression(GetAndMoveToNext()));
                 }
 
-                return expression;
+                if ((unaryOperator.Type == TokenType.Plus || unaryOperator.Type == TokenType.Minus) &&
+                    (Current.Type == TokenType.Integer || Current.Type == TokenType.Real))
+                {
+                    return new UnaryExpression(unaryOperator, ParseNumberExpression(Current.Type == TokenType.Integer));
+                }
+
+                return new InvalidExpression<UnaryExpression>("Invalid unary expression.");
             }
             case TokenType.LeftParen:
             {
@@ -156,66 +158,83 @@ public class SyntaxParser
                 return expression;
             }
             case TokenType.Integer:
-            {
-                var integerValue = Current.Value;
-                var integerType = NumberType.Integer;
-
-                if (integerValue.StartsWith("0x"))
-                {
-                    integerType = NumberType.Hexadecimal;
-                }
-                else if (integerValue.StartsWith("0b"))
-                {
-                    integerType = NumberType.Binary;
-                }
-                else if (integerValue.EndsWith("u", StringComparison.OrdinalIgnoreCase))
-                {
-                    integerType = NumberType.UnsignedInteger;
-                }
-                else if (integerValue.EndsWith("l", StringComparison.OrdinalIgnoreCase))
-                {
-                    integerType = NumberType.Long;
-                }
-                else if (integerValue.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
-                {
-                    integerType = NumberType.UnsignedLong;
-                }
-
-                return new NumberExpression(GetAndMoveToNext(), integerType);
-            }
             case TokenType.Real:
-            {
-                var realValue = Current.Value;
-                var realType = NumberType.Double;
-
-                if (realValue.EndsWith("f", StringComparison.OrdinalIgnoreCase))
-                {
-                    realType = NumberType.Float;
-                }
-                else if (realValue.EndsWith("d", StringComparison.OrdinalIgnoreCase))
-                {
-                    realType = NumberType.Double;
-                }
-                else if (realValue.EndsWith("m", StringComparison.OrdinalIgnoreCase))
-                {
-                    realType = NumberType.Decimal;
-                }
-                else if (realValue.Contains('e', StringComparison.OrdinalIgnoreCase))
-                {
-                    realType = NumberType.WithExponent;
-                }
-
-                return new NumberExpression(GetAndMoveToNext(), realType);
-            }
+                return ParseNumberExpression(Current.Type == TokenType.Integer);
             default:
                 return new InvalidExpression<Expression>("Not supported expression type.");
         }
+    }
+
+    private NumberExpression ParseNumberExpression(bool isInteger)
+    {
+        if (isInteger)
+        {
+            var integerValue = Current.Value;
+            var integerType = NumberType.Integer;
+
+            if (integerValue.StartsWith("0x"))
+            {
+                integerType = NumberType.Hexadecimal;
+            }
+            else if (integerValue.StartsWith("0b"))
+            {
+                integerType = NumberType.Binary;
+            }
+            else if (integerValue.EndsWith("u", StringComparison.OrdinalIgnoreCase))
+            {
+                integerType = NumberType.UnsignedInteger;
+            }
+            else if (integerValue.EndsWith("l", StringComparison.OrdinalIgnoreCase))
+            {
+                integerType = NumberType.Long;
+            }
+            else if (integerValue.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
+            {
+                integerType = NumberType.UnsignedLong;
+            }
+
+            return new NumberExpression(GetAndMoveToNext(), integerType);
+        }
+
+        var realValue = Current.Value;
+        var realType = NumberType.Double;
+
+        if (realValue.EndsWith("f", StringComparison.OrdinalIgnoreCase))
+        {
+            realType = NumberType.Float;
+        }
+        else if (realValue.EndsWith("d", StringComparison.OrdinalIgnoreCase))
+        {
+            realType = NumberType.Double;
+        }
+        else if (realValue.EndsWith("m", StringComparison.OrdinalIgnoreCase))
+        {
+            realType = NumberType.Decimal;
+        }
+        else if (realValue.Contains('e', StringComparison.OrdinalIgnoreCase))
+        {
+            realType = NumberType.WithExponent;
+        }
+
+        return new NumberExpression(GetAndMoveToNext(), realType);
     }
 
     private OperatorPrecedence GetOperatorPrecedence()
     {
         switch (Current.Type)
         {
+            case TokenType.DoubleQuestionMark:
+                return OperatorPrecedence.NullCoalescing;
+            case TokenType.DoublePipe:
+                return OperatorPrecedence.ConditionalOr;
+            case TokenType.DoubleAmpersand:
+                return OperatorPrecedence.ConditionalAnd;
+            case TokenType.Pipe:
+                return OperatorPrecedence.BitwiseOr;
+            case TokenType.Caret:
+                return OperatorPrecedence.BitwiseXOr;
+            case TokenType.Ampersand:
+                return OperatorPrecedence.BitwiseAnd;
             case TokenType.Assign:
                 return OperatorPrecedence.Assignment;
             case TokenType.Equal:
@@ -236,6 +255,8 @@ public class SyntaxParser
             case TokenType.Slash:
             case TokenType.Percent:
                 return OperatorPrecedence.Multiplicative;
+            case TokenType.DoubleDot:
+                return OperatorPrecedence.Range;
             default:
                 return OperatorPrecedence.None;
         }
