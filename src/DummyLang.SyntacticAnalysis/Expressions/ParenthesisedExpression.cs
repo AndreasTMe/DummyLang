@@ -1,5 +1,4 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Internal;
 using DummyLang.SyntacticAnalysis.Utilities;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
@@ -10,21 +9,11 @@ public sealed class ParenthesisedExpression : Expression
     public Expression Expression { get; }
     public Token RightParen { get; }
 
-    public ParenthesisedExpression(Token leftParen, Expression expression, Token rightParen)
+    public ParenthesisedExpression(Token leftParen, Expression expression, Token? rightParen = null)
     {
-        if (leftParen.Type != TokenType.None && leftParen.Type != TokenType.LeftParen)
-        {
-            ThrowHelpers.NotLeftParenthesisOperator();
-        }
-
-        if (rightParen.Type != TokenType.None && rightParen.Type != TokenType.RightParen)
-        {
-            ThrowHelpers.NotRightParenthesisOperator();
-        }
-
         LeftParen = leftParen;
         Expression = expression;
-        RightParen = rightParen;
+        RightParen = rightParen ?? Token.None;
     }
 
     public override void PrettyPrint(int indent)

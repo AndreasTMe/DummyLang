@@ -4,10 +4,11 @@ using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace DummyLang.SyntacticAnalysis;
 
-public class SyntaxParser
+public partial class SyntaxParser
 {
     private readonly Tokenizer _tokenizer = new();
 
@@ -115,18 +116,22 @@ public class SyntaxParser
             case TokenType.Ampersand:
             {
                 var unaryOperator = GetAndMoveToNext();
+                Expression? expression = null;
+
                 if (Current.Type == TokenType.Identifier)
                 {
-                    return new UnaryExpression(unaryOperator, new IdentifierExpression(GetAndMoveToNext()));
+                    expression = new IdentifierExpression(GetAndMoveToNext());
                 }
 
                 if ((unaryOperator.Type == TokenType.Plus || unaryOperator.Type == TokenType.Minus) &&
                     (Current.Type == TokenType.Integer || Current.Type == TokenType.Real))
                 {
-                    return new UnaryExpression(unaryOperator, ParseNumberExpression(Current.Type == TokenType.Integer));
+                    expression = ParseNumberExpression(Current.Type == TokenType.Integer);
                 }
 
-                return new InvalidExpression<UnaryExpression>("Invalid unary expression.");
+                return new UnaryExpression(
+                    unaryOperator,
+                    expression ?? new InvalidExpression(GetAndMoveToNext(), "Invalid token next to a unary operator."));
             }
             case TokenType.LeftParen:
             {
@@ -138,8 +143,10 @@ public class SyntaxParser
                     return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
                 }
 
-                var parenthesisedExpression = new ParenthesisedExpression(leftParen, expression, Token.None);
-                return new InvalidExpression<ParenthesisedExpression>(parenthesisedExpression);
+                return new InvalidExpression(
+                    new ParenthesisedExpression(leftParen, expression),
+                    Token.ExpectedAt(Current.Position),
+                    "Expected a closing parenthesis token.");
             }
             case TokenType.Identifier:
             {
@@ -164,19 +171,26 @@ public class SyntaxParser
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
             case TokenType.Character:
             {
-                // TODO: Handle hex values
-                // TODO: Handle invalid escaped characters
-                var characterLiteralExpression = new CharacterLiteralExpression(GetAndMoveToNext());
-                var characterValue = characterLiteralExpression.CharacterToken.Value;
+                var characterToken = GetAndMoveToNext();
+                var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
 
-                if (characterValue.Length < 3
-                    || !characterValue.StartsWith('\'') || !characterValue.EndsWith('\'')
-                    || (characterValue.Length == 3 && (characterValue[1] == '\\' || characterValue[1] == '\'')))
+                switch (characterToken.Value)
                 {
-                    return new InvalidExpression<CharacterLiteralExpression>(characterLiteralExpression);
+                    case { Length: < 3 or 5 or 6 or 7 or > 8 }:
+                    case { Length: 3 } charVal
+                        when charVal[1] == '\'' || charVal[1] == '\\':
+                    case { Length: 4 } escapeVal
+                        when escapeVal[1] != '\\' || !"'\"\\0abfnrtv".Contains(escapeVal[2]):
+                    // ReSharper disable once PatternIsRedundant
+                    case { Length: 8 } hexVal
+                        when !HexCharPattern().Match(hexVal).Success:
+                        return new InvalidExpression(
+                            characterLiteralExpression,
+                            characterToken,
+                            "The token provided is an invalid character literal.");
+                    default:
+                        return characterLiteralExpression;
                 }
-
-                return characterLiteralExpression;
             }
             case TokenType.String:
             {
@@ -189,13 +203,15 @@ public class SyntaxParser
                     || (stringValue.Length == 3 && stringValue[1] == '\\')
                     || !stringValue.Replace("\\\"", "").EndsWith('\"'))
                 {
-                    return new InvalidExpression<StringLiteralExpression>(stringLiteralExpression);
+                    return new InvalidExpression(stringLiteralExpression, stringLiteralExpression.StringToken);
                 }
 
                 return stringLiteralExpression;
             }
             default:
-                return new InvalidExpression<Expression>("Not supported expression type.");
+                return new InvalidExpression(
+                    GetAndMoveToNext(),
+                    "Either the token is not and will not be supported or has not been implemented yet.");
         }
     }
 
@@ -295,4 +311,7 @@ public class SyntaxParser
                 return OperatorPrecedence.None;
         }
     }
+
+    [GeneratedRegex(@"(?i)^'\\x[0-9a-f]{4}'$")]
+    private static partial Regex HexCharPattern();
 }

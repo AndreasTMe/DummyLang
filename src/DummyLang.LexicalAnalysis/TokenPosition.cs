@@ -20,6 +20,4 @@ public readonly struct TokenPosition
     public static TokenPosition At(int line, int column, int index) => new(line, column, index, 1);
 
     public static TokenPosition At(int line, int column, int index, int width) => new(line, column, index, width);
-
-    public override string ToString() => $"(Line: {Line}, Column: {Column}, Index: {Index}, Width: {Width})";
 }

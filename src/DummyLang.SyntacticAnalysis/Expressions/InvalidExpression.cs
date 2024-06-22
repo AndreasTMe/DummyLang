@@ -1,36 +1,72 @@
-﻿using DummyLang.SyntacticAnalysis.Utilities;
+﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Utilities;
+using System;
+using System.Text;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class InvalidExpression<T> : Expression
-    where T : Expression
+public sealed class InvalidExpression : Expression
 {
-    public T? Expression { get; }
-    public string? Message { get; }
+    private static readonly StringBuilder Sb = new();
 
-    public InvalidExpression(T expression)
+    public override bool IsValid => false;
+
+    public Expression? Expression { get; }
+    public Token Token { get; }
+    public string Message { get; }
+    public string StackTrace { get; }
+
+    internal InvalidExpression(Expression? expression, Token token, string? message = null)
     {
         Expression = expression;
-        Message = null;
+
+        ArgumentNullException.ThrowIfNull(token.Position);
+        Token = token;
+
+        Sb.Clear();
+
+        if (token.Type != TokenType.None)
+        {
+            Sb.Append("Invalid token: [").Append(token.Value).Append("].");
+        }
+        else
+        {
+            Sb.Append("Invalid token.");
+        }
+
+        if (message != null)
+        {
+            Sb.Append(' ').Append(message);
+        }
+
+        Message = Sb.ToString();
+
+        Sb.Clear();
+        Sb.Append("line: ").Append(token.Position.Line)
+            .Append(", column: ").Append(token.Position.Column)
+            .Append(", index: ").Append(token.Position.Index)
+            .Append(", width: ").Append(token.Position.Width)
+            .Append('.');
+        StackTrace = Sb.ToString();
     }
 
-    public InvalidExpression(string message)
+    internal InvalidExpression(Token token, string? message = null)
+        : this(null, token, message)
     {
-        Expression = default;
-        Message = message;
     }
 
     public override void PrettyPrint(int indent)
     {
-        ConsoleUtilities.WriteLineFormatted(nameof(InvalidExpression<T>), indent);
+        ConsoleUtilities.WriteLineFormatted(nameof(InvalidExpression), indent);
 
-        if (Expression != null && Message == null)
+        Expression?.PrettyPrint(indent + 1);
+
+        if (Token.Type != TokenType.None)
         {
-            Expression.PrettyPrint(indent + 1);
+            ConsoleUtilities.WriteLineFormatted(Token.Type.ToString(), indent + 1);
         }
-        else if (Expression == null && Message != null)
-        {
-            ConsoleUtilities.WriteLineFormatted(Message, indent + 1);
-        }
+
+        ConsoleUtilities.WriteLineFormatted(Message, indent + 1);
+        ConsoleUtilities.WriteLineFormatted($"    {StackTrace}", indent + 1);
     }
 }

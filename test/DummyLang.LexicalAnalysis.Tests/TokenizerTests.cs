@@ -296,7 +296,6 @@ public class TokenizerTests
     [Fact]
     public void Next_InvalidCharacterInput_ShouldReturnCorrectTokens()
     {
-        // TODO: Failing test
         // Arrange
         const string source = """
                               'abc

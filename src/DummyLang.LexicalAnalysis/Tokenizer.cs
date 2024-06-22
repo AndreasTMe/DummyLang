@@ -180,7 +180,6 @@ public sealed partial class Tokenizer
 
     private Token ReadCharacter()
     {
-        // TODO: Handle hex values
         var source = _source.AsSpan(_index);
         var sb = new StringBuilder();
         var current = 0;
@@ -198,6 +197,10 @@ public sealed partial class Tokenizer
             if (maxIterations == 3 && source[current] == '\\')
             {
                 maxIterations = 4;
+            }
+            else if (maxIterations == 4 && current == 2 && source[current] == 'x')
+            {
+                maxIterations = 8;
             }
             
             current++;
