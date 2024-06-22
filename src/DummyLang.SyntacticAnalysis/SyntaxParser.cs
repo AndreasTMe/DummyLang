@@ -163,17 +163,37 @@ public class SyntaxParser
             case TokenType.Real:
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
             case TokenType.Character:
+            {
+                // TODO: Handle hex values
+                // TODO: Handle invalid escaped characters
                 var characterLiteralExpression = new CharacterLiteralExpression(GetAndMoveToNext());
-                return characterLiteralExpression.CharacterToken.Value.StartsWith('\'')
-                       && characterLiteralExpression.CharacterToken.Value.EndsWith('\'')
-                    ? characterLiteralExpression
-                    : new InvalidExpression<CharacterLiteralExpression>(characterLiteralExpression);
+                var characterValue = characterLiteralExpression.CharacterToken.Value;
+
+                if (characterValue.Length < 3
+                    || !characterValue.StartsWith('\'') || !characterValue.EndsWith('\'')
+                    || (characterValue.Length == 3 && (characterValue[1] == '\\' || characterValue[1] == '\'')))
+                {
+                    return new InvalidExpression<CharacterLiteralExpression>(characterLiteralExpression);
+                }
+
+                return characterLiteralExpression;
+            }
             case TokenType.String:
+            {
+                // TODO: Handle invalid escaped characters
                 var stringLiteralExpression = new StringLiteralExpression(GetAndMoveToNext());
-                return stringLiteralExpression.StringToken.Value.StartsWith('\"')
-                       && stringLiteralExpression.StringToken.Value.EndsWith('\"')
-                    ? stringLiteralExpression
-                    : new InvalidExpression<StringLiteralExpression>(stringLiteralExpression);
+                var stringValue = stringLiteralExpression.StringToken.Value;
+
+                if (stringValue.Length == 1
+                    || !stringValue.StartsWith('\"') || !stringValue.EndsWith('\"')
+                    || (stringValue.Length == 3 && stringValue[1] == '\\')
+                    || !stringValue.Replace("\\\"", "").EndsWith('\"'))
+                {
+                    return new InvalidExpression<StringLiteralExpression>(stringLiteralExpression);
+                }
+
+                return stringLiteralExpression;
+            }
             default:
                 return new InvalidExpression<Expression>("Not supported expression type.");
         }

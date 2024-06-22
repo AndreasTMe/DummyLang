@@ -148,7 +148,7 @@ public sealed partial class Tokenizer
 
     private Token ReadString()
     {
-        var source = _source[_index..].AsSpan();
+        var source = _source.AsSpan(_index);
         var sb = new StringBuilder();
         var escape = true;
 
@@ -180,37 +180,41 @@ public sealed partial class Tokenizer
 
     private Token ReadCharacter()
     {
-        var current = _source[_index];
-        var startIndex = _index;
-        var startColumn = _column;
-        StepForward();
-
+        // TODO: Handle hex values
+        var source = _source.AsSpan(_index);
         var sb = new StringBuilder();
-        sb.Append(current);
+        var current = 0;
+        var maxIterations = 3;
 
-        for (var i = 0; i < 3 && _index < _source.Length; i++)
+        while (current < maxIterations && current < source.Length)
         {
-            if (_source[_index - i] != '\\' && _source[_index] != '\'')
+            if (source[current] == '\n')
             {
                 break;
             }
+            
+            sb.Append(source[current]);
 
-            current = _source[_index];
-            sb.Append(current);
-            StepForward();
+            if (maxIterations == 3 && source[current] == '\\')
+            {
+                maxIterations = 4;
+            }
+            
+            current++;
         }
 
         var characterValue = sb.ToString();
+        var tokenPosition = TokenPosition.At(_line, _column, _index, characterValue.Length);
 
-        return new Token(
-            TokenType.Character,
-            characterValue,
-            TokenPosition.At(_line, startColumn, startIndex, characterValue.Length));
+        _index += characterValue.Length;
+        _column += characterValue.Length;
+
+        return new Token(TokenType.Character, characterValue, tokenPosition);
     }
 
     private Token ReadIdentifier()
     {
-        var source = _source[_index..].AsSpan();
+        var source = _source.AsSpan(_index);
         var sb = new StringBuilder();
 
         foreach (var character in source)
@@ -238,11 +242,13 @@ public sealed partial class Tokenizer
 
     private Token ReadNumber()
     {
+        var source = _source[_index..];
+        
         foreach (var (token, patterns) in NumberPatterns)
         {
             foreach (var pattern in patterns)
             {
-                var match = pattern.Match(_source[_index..]);
+                var match = pattern.Match(source);
                 if (!match.Success)
                 {
                     continue;

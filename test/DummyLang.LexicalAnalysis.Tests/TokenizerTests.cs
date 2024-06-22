@@ -310,8 +310,13 @@ public class TokenizerTests
 
         // Assert
         Assert.Equal(TokenType.Character, token.Type);
-        Assert.Equal("'abc", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 4 });
+        Assert.Equal("'ab", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 1, Index: 0, Width: 3 });
+        
+        token = tokenizer.ReadNext();
+        Assert.Equal(TokenType.Identifier, token.Type);
+        Assert.Equal("c", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 4, Index: 3, Width: 1 });
         
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
@@ -321,7 +326,7 @@ public class TokenizerTests
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Eof, token.Type);
         Assert.Equal("", token.Value);
-        Assert.True(token.Position is { Line: 2, Column: 9, Index: 7, Width: 0 });
+        Assert.True(token.Position is { Line: 2, Column: 9, Index: 14, Width: 0 });
     }
     
     [Fact]
