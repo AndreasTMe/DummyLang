@@ -5,7 +5,7 @@ using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests;
 
-public class SyntaxParserTests
+public partial class SyntaxParserTests
 {
     [Fact]
     public void Feed_SimpleExpression_ShouldReadThreeTokens()
@@ -23,7 +23,7 @@ public class SyntaxParserTests
     }
 
     [Fact]
-    public void GenerateSyntax_AddTwoNumbers_SyntaxTreeWithBinaryExpression()
+    public void GenerateSyntax_Expressions_SimpleBinaryExpression()
     {
         // Arrange
         const string source = "1 + 2";
@@ -39,13 +39,13 @@ public class SyntaxParserTests
         Assert.IsType<BinaryExpression>(syntaxTree.Nodes[0]);
 
         var expression = (BinaryExpression)syntaxTree.Nodes[0];
-        Assert.IsType<NumberExpression>(expression.Left);
-        Assert.IsType<NumberExpression>(expression.Right);
+        Assert.IsType<NumberLiteralExpression>(expression.Left);
+        Assert.IsType<NumberLiteralExpression>(expression.Right);
         Assert.Equal(TokenType.Plus, expression.Operator.Type);
     }
     
     [Fact]
-    public void GenerateSyntax_MoreComplexMath_GetCorrectSyntaxTree()
+    public void GenerateSyntax_Expressions_MoreComplexMathTree()
     {
         // Arrange
         const string source = "0b1010 + 2.0e-10f * (-3L - foo++)";
@@ -63,20 +63,20 @@ public class SyntaxParserTests
         var expression = (BinaryExpression)syntaxTree.Nodes[0];
         Assert.Equal(TokenType.Plus, expression.Operator.Type);
         
-        Assert.IsType<NumberExpression>(expression.Left);
-        var binary = (NumberExpression)expression.Left;
+        Assert.IsType<NumberLiteralExpression>(expression.Left);
+        var binary = (NumberLiteralExpression)expression.Left;
         Assert.Equal(NumberType.Binary, binary.Type);
-        Assert.Equal("0b1010", binary.Token.Value);
+        Assert.Equal("0b1010", binary.NumberToken.Value);
         
         // multiplication = 2.0e-10f * parenthesised
         Assert.IsType<BinaryExpression>(expression.Right);
         var multiplication = (BinaryExpression)expression.Right;
         Assert.Equal(TokenType.Star, multiplication.Operator.Type);
         
-        Assert.IsType<NumberExpression>(multiplication.Left);
-        var real = (NumberExpression)multiplication.Left;
+        Assert.IsType<NumberLiteralExpression>(multiplication.Left);
+        var real = (NumberLiteralExpression)multiplication.Left;
         Assert.Equal(NumberType.Float, real.Type);
-        Assert.Equal("2.0e-10f", real.Token.Value);
+        Assert.Equal("2.0e-10f", real.NumberToken.Value);
         
         // parenthesised = ( subtraction )
         Assert.IsType<ParenthesisedExpression>(multiplication.Right);
@@ -94,10 +94,10 @@ public class SyntaxParserTests
         var unary = (UnaryExpression)subtraction.Left;
         Assert.Equal(TokenType.Minus, unary.Token.Type);
         
-        Assert.IsType<NumberExpression>(unary.Expression);
-        var longInteger = (NumberExpression)unary.Expression;
+        Assert.IsType<NumberLiteralExpression>(unary.Expression);
+        var longInteger = (NumberLiteralExpression)unary.Expression;
         Assert.Equal(NumberType.Long, longInteger.Type);
-        Assert.Equal("3L", longInteger.Token.Value);
+        Assert.Equal("3L", longInteger.NumberToken.Value);
         
         // primary = foo++
         Assert.IsType<PrimaryExpression>(subtraction.Right);

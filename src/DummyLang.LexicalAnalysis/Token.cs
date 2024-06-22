@@ -27,7 +27,7 @@ public class Token : IEquatable<Token>
         {
             return false;
         }
-        
+
         if (ReferenceEquals(this, other))
         {
             return true;

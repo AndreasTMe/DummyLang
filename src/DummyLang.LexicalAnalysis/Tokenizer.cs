@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -47,10 +48,6 @@ public sealed partial class Tokenizer
                 return GenerateToken(TokenType.Semicolon);
             case ':':
                 return GenerateToken(TokenType.Colon);
-            case '\'':
-                return GenerateToken(TokenType.SingleQuote);
-            case '\"':
-                return GenerateToken(TokenType.DoubleQuote);
             case '=':
                 return GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal);
             case '!':
@@ -97,12 +94,16 @@ public sealed partial class Tokenizer
                 return GenerateToken(TokenType.LeftBracket);
             case ']':
                 return GenerateToken(TokenType.RightBracket);
+            case '\'':
+                return ReadCharacter();
+            case '\"':
+                return ReadString();
             default:
                 return char.IsLetter(current) || current == '_'
-                    ? ReadWord()
+                    ? ReadIdentifier()
                     : char.IsDigit(current)
                         ? ReadNumber()
-                        : ReadOther();
+                        : SkipWhiteSpace();
         }
     }
 
@@ -145,7 +146,39 @@ public sealed partial class Tokenizer
         return GenerateToken(type);
     }
 
-    private Token ReadWord()
+    private Token ReadString()
+    {
+        var source = _source[_index..].AsSpan();
+        var sb = new StringBuilder();
+        var escape = true;
+
+        foreach (var character in source)
+        {
+            sb.Append(character);
+
+            if ((character == '\"' && !escape) || character == '\n')
+            {
+                break;
+            }
+
+            escape = !escape && (character == '\\');
+        }
+
+        var stringValue = sb.ToString();
+        if (stringValue.EndsWith(Environment.NewLine))
+        {
+            stringValue = stringValue[..^Environment.NewLine.Length];
+        }
+        
+        var tokenPosition = TokenPosition.At(_line, _column, _index, stringValue.Length);
+
+        _index += stringValue.Length;
+        _column += stringValue.Length;
+
+        return new Token(TokenType.String, stringValue, tokenPosition);
+    }
+
+    private Token ReadCharacter()
     {
         var current = _source[_index];
         var startIndex = _index;
@@ -155,25 +188,52 @@ public sealed partial class Tokenizer
         var sb = new StringBuilder();
         sb.Append(current);
 
-        while (_index < _source.Length)
+        for (var i = 0; i < 3 && _index < _source.Length; i++)
         {
-            current = _source[_index];
-
-            if (!char.IsLetterOrDigit(current) && current != '_')
+            if (_source[_index - i] != '\\' && _source[_index] != '\'')
             {
                 break;
             }
 
+            current = _source[_index];
             sb.Append(current);
             StepForward();
         }
 
-        var word = sb.ToString();
+        var characterValue = sb.ToString();
 
         return new Token(
-            Keywords.Tokens.GetValueOrDefault(word, TokenType.Identifier),
-            word,
-            TokenPosition.At(_line, startColumn, startIndex, word.Length));
+            TokenType.Character,
+            characterValue,
+            TokenPosition.At(_line, startColumn, startIndex, characterValue.Length));
+    }
+
+    private Token ReadIdentifier()
+    {
+        var source = _source[_index..].AsSpan();
+        var sb = new StringBuilder();
+
+        foreach (var character in source)
+        {
+            if (!char.IsLetterOrDigit(character) && character != '_')
+            {
+                break;
+            }
+
+            sb.Append(character);
+        }
+
+        var identifierValue = sb.ToString();
+        var tokenPosition = TokenPosition.At(_line, _column, _index, identifierValue.Length);
+
+        _index += identifierValue.Length;
+        _column += identifierValue.Length;
+        
+
+        return new Token(
+            Keywords.Tokens.GetValueOrDefault(identifierValue, TokenType.Identifier),
+            identifierValue,
+            tokenPosition);
     }
 
     private Token ReadNumber()
@@ -188,20 +248,20 @@ public sealed partial class Tokenizer
                     continue;
                 }
 
-                var matchValue = match.Value;
-                var tokenPosition = TokenPosition.At(_line, _column, _index, matchValue.Length);
+                var numberValue = match.Value;
+                var tokenPosition = TokenPosition.At(_line, _column, _index, numberValue.Length);
 
-                _index += matchValue.Length;
-                _column += matchValue.Length;
+                _index += numberValue.Length;
+                _column += numberValue.Length;
 
-                return new Token(token, matchValue, tokenPosition);
+                return new Token(token, numberValue, tokenPosition);
             }
         }
 
         return Token.None;
     }
 
-    private Token ReadOther()
+    private Token SkipWhiteSpace()
     {
         var current = _source[_index];
         var startIndex = _index;

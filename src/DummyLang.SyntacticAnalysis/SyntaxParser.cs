@@ -67,7 +67,7 @@ public class SyntaxParser
 
             if (lastIndex == _index)
             {
-                _index++;
+                MoveToNext();
             }
         }
 
@@ -75,6 +75,8 @@ public class SyntaxParser
 
         return tree;
     }
+
+    private void MoveToNext() => _index++;
 
     private Token GetAndMoveToNext() => _index < _tokens.Count ? _tokens[_index++] : Token.None;
 
@@ -160,12 +162,24 @@ public class SyntaxParser
             case TokenType.Integer:
             case TokenType.Real:
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
+            case TokenType.Character:
+                var characterLiteralExpression = new CharacterLiteralExpression(GetAndMoveToNext());
+                return characterLiteralExpression.CharacterToken.Value.StartsWith('\'')
+                       && characterLiteralExpression.CharacterToken.Value.EndsWith('\'')
+                    ? characterLiteralExpression
+                    : new InvalidExpression<CharacterLiteralExpression>(characterLiteralExpression);
+            case TokenType.String:
+                var stringLiteralExpression = new StringLiteralExpression(GetAndMoveToNext());
+                return stringLiteralExpression.StringToken.Value.StartsWith('\"')
+                       && stringLiteralExpression.StringToken.Value.EndsWith('\"')
+                    ? stringLiteralExpression
+                    : new InvalidExpression<StringLiteralExpression>(stringLiteralExpression);
             default:
                 return new InvalidExpression<Expression>("Not supported expression type.");
         }
     }
 
-    private NumberExpression ParseNumberExpression(bool isInteger)
+    private NumberLiteralExpression ParseNumberExpression(bool isInteger)
     {
         if (isInteger)
         {
@@ -193,7 +207,7 @@ public class SyntaxParser
                 integerType = NumberType.UnsignedLong;
             }
 
-            return new NumberExpression(GetAndMoveToNext(), integerType);
+            return new NumberLiteralExpression(GetAndMoveToNext(), integerType);
         }
 
         var realValue = Current.Value;
@@ -216,7 +230,7 @@ public class SyntaxParser
             realType = NumberType.WithExponent;
         }
 
-        return new NumberExpression(GetAndMoveToNext(), realType);
+        return new NumberLiteralExpression(GetAndMoveToNext(), realType);
     }
 
     private OperatorPrecedence GetOperatorPrecedence()

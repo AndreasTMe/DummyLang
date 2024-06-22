@@ -10,10 +10,6 @@ public enum TokenType : byte
     Dot,
     Semicolon,
     Colon,
-    
-    // Quotes
-    SingleQuote,
-    DoubleQuote,
 
     // Operators
     Assign,
@@ -54,7 +50,7 @@ public enum TokenType : byte
 
     // Identifiers
     Identifier,
-    
+
     // Literals
     Boolean,
     Integer,
