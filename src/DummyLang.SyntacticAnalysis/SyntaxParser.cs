@@ -212,12 +212,14 @@ public partial class SyntaxParser
                         CharacterLiteralExpression.InvalidHexadecimalCharacter,
                     _ => string.Empty
                 };
-
-                CaptureDiagnosticsInfo(characterToken, diagnosticsMessage);
                 
-                return string.IsNullOrWhiteSpace(diagnosticsMessage)
-                    ? characterLiteralExpression
-                    : new InvalidExpression(characterToken, characterLiteralExpression);
+                if (string.IsNullOrWhiteSpace(diagnosticsMessage))
+                {
+                    return characterLiteralExpression;
+                }
+                
+                CaptureDiagnosticsInfo(characterToken, diagnosticsMessage);
+                return new InvalidExpression(characterToken, characterLiteralExpression);
             }
             case TokenType.String:
             {
@@ -235,12 +237,14 @@ public partial class SyntaxParser
                         StringLiteralExpression.ShouldNotEscapeLastDoubleQuote,
                     _ => string.Empty
                 };
+
+                if (string.IsNullOrWhiteSpace(diagnosticsMessage))
+                {
+                    return stringLiteralExpression;
+                }
                 
                 CaptureDiagnosticsInfo(stringToken, diagnosticsMessage);
-
-                return string.IsNullOrWhiteSpace(diagnosticsMessage)
-                    ? stringLiteralExpression
-                    : new InvalidExpression(stringToken, stringLiteralExpression);
+                return new InvalidExpression(stringToken, stringLiteralExpression);
             }
             default:
             {
