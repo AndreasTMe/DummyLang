@@ -143,7 +143,7 @@ public partial class SyntaxParser
 
                 if (expression is null)
                 {
-                    CaptureDiagnosticsInfo(unaryOperator, "Invalid token next to a unary operator.");
+                    CaptureDiagnosticsInfo(unaryOperator, UnaryExpression.AppliedToInvalidToken);
                 }
 
                 return new UnaryExpression(
@@ -160,11 +160,16 @@ public partial class SyntaxParser
                     return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
                 }
 
-                CaptureDiagnosticsInfo(Current, "A closing parenthesis token was expected.");
+                CaptureDiagnosticsInfo(Current, ParenthesisedExpression.ClosingParenthesisExpected);
 
                 return new InvalidExpression(
                     Token.ExpectedAt(Current.Position),
                     new ParenthesisedExpression(leftParen, expression));
+            }
+            case TokenType.RightParen:
+            {
+                CaptureDiagnosticsInfo(Current, ParenthesisedExpression.OpeningParenthesisExpected);
+                return new InvalidExpression(GetAndMoveToNext());
             }
             case TokenType.Identifier:
             {
@@ -192,45 +197,50 @@ public partial class SyntaxParser
                 var characterToken = GetAndMoveToNext();
                 var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
 
-                switch (characterToken.Value)
+                var diagnosticsMessage = characterToken.Value switch
                 {
-                    case { Length: < 3 or 5 or 6 or 7 or > 8 }:
-                    case var quoteVal
-                        when !quoteVal.StartsWith('\'') || !quoteVal.EndsWith('\''):
-                    case { Length: 3 } charVal
-                        when charVal[1] == '\'' || charVal[1] == '\\':
-                    case { Length: 4 } escapeVal
-                        when escapeVal[1] != '\\' || !"'\"\\0abfnrtv".Contains(escapeVal[2]):
+                    { Length: < 3 or 5 or 6 or 7 or > 8 } =>
+                        CharacterLiteralExpression.ShouldBeOfCertainLength,
+                    var quoteVal when !quoteVal.StartsWith('\'') || !quoteVal.EndsWith('\'') =>
+                        CharacterLiteralExpression.ShouldStartEndWithSingleQuote,
+                    { Length: 3 } charVal when charVal[1] == '\'' || charVal[1] == '\\' =>
+                        CharacterLiteralExpression.ShouldBeEscaped,
+                    { Length: 4 } escapeVal when escapeVal[1] != '\\' || !"'\"\\0abfnrtv".Contains(escapeVal[2]) =>
+                        CharacterLiteralExpression.InvalidEscapedCharacter,
                     // ReSharper disable once PatternIsRedundant
-                    case { Length: 8 } hexVal
-                        when !HexCharPattern().Match(hexVal).Success:
-                    {
-                        CaptureDiagnosticsInfo(characterToken, "The token provided is an invalid character literal.");
-                        return new InvalidExpression(characterToken, characterLiteralExpression);
-                    }
-                    default:
-                        return characterLiteralExpression;
-                }
+                    { Length: 8 } hexVal when !HexCharPattern().Match(hexVal).Success =>
+                        CharacterLiteralExpression.InvalidHexadecimalCharacter,
+                    _ => string.Empty
+                };
+
+                return string.IsNullOrWhiteSpace(diagnosticsMessage)
+                    ? characterLiteralExpression
+                    : new InvalidExpression(characterToken, characterLiteralExpression);
             }
             case TokenType.String:
             {
                 // TODO: Handle invalid escaped characters
-                var stringLiteralExpression = new StringLiteralExpression(GetAndMoveToNext());
-                var stringValue = stringLiteralExpression.StringToken.Value;
+                var stringToken = GetAndMoveToNext();
+                var stringLiteralExpression = new StringLiteralExpression(stringToken);
 
-                if (stringValue.Length == 1
-                    || !stringValue.StartsWith('\"') || !stringValue.EndsWith('\"')
-                    || stringValue is [_, '\\', _]
-                    || !stringValue.Replace("\\\"", "").EndsWith('\"'))
+                // !stringToken.Replace("\\\"", "").EndsWith('\"'))
+
+                var diagnosticsMessage = stringToken.Value switch
                 {
-                    return new InvalidExpression(stringLiteralExpression.StringToken, stringLiteralExpression);
-                }
+                    var quoteVal when !quoteVal.StartsWith('\"') || !quoteVal.EndsWith('\"') =>
+                        StringLiteralExpression.ShouldStartEndWithDoubleQuote,
+                    var escapeVal when escapeVal[^2] == '\\' =>
+                        StringLiteralExpression.ShouldNotEscapeLastDoubleQuote,
+                    _ => string.Empty
+                };
 
-                return stringLiteralExpression;
+                return string.IsNullOrWhiteSpace(diagnosticsMessage)
+                    ? stringLiteralExpression
+                    : new InvalidExpression(stringToken, stringLiteralExpression);
             }
             default:
             {
-                CaptureDiagnosticsInfo(Current, "Unsupported or unimplemented token.");
+                CaptureDiagnosticsInfo(Current, InvalidExpression.UnsupportedOrUnimplemented);
                 return new InvalidExpression(GetAndMoveToNext());
             }
         }

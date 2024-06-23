@@ -5,6 +5,8 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class InvalidExpression : Expression
 {
+    internal const string UnsupportedOrUnimplemented = "Unsupported or unimplemented token.";
+
     public override bool IsValid => false;
 
     public Token Token { get; }
@@ -24,7 +26,7 @@ public sealed class InvalidExpression : Expression
         {
             ConsoleUtilities.WriteLineFormatted("Oops! No info provided!", indent + 1);
         }
-        
+
         Expression?.PrettyPrint(indent + 1);
 
         if (Token.Type != TokenType.None)
