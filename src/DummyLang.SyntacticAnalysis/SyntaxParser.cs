@@ -143,7 +143,7 @@ public partial class SyntaxParser
 
                 if (expression is null)
                 {
-                    CaptureDiagnosticsInfo(unaryOperator, UnaryExpression.AppliedToInvalidToken);
+                    CaptureDiagnosticsInfo(unaryOperator, "Invalid token next to a unary operator.");
                 }
 
                 return new UnaryExpression(
