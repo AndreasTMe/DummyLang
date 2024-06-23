@@ -2,14 +2,14 @@
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Diagnostics;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace DummyLang.SyntacticAnalysis;
 
-public partial class SyntaxParser
+public class SyntaxParser
 {
     private static readonly SyntaxDiagnosticsHandler DiagnosticsHandler = new();
 
@@ -21,7 +21,7 @@ public partial class SyntaxParser
     private Token _current = Token.None;
     private int _index;
 
-    internal Token Current
+    private Token Current
     {
         get
         {
@@ -33,8 +33,6 @@ public partial class SyntaxParser
             return _current;
         }
     }
-
-    internal int TotalTokens => _tokens.Count;
 
     public SyntaxParser Feed(string sourcePath)
     {
@@ -54,6 +52,9 @@ public partial class SyntaxParser
 
         tokens.Add(token);
         _tokens = tokens;
+
+        _current = Token.None;
+        _index = 0;
 
         return this;
     }
@@ -81,7 +82,7 @@ public partial class SyntaxParser
         }
 
         _syntaxTree.CaptureDiagnostics(DiagnosticsHandler.Diagnostics);
-        
+
         _tokens.Clear();
         DiagnosticsHandler.Clear();
 
@@ -195,54 +196,58 @@ public partial class SyntaxParser
             case TokenType.Character:
             {
                 var characterToken = GetAndMoveToNext();
+                var characterValue = characterToken.Value;
                 var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
 
-                var diagnosticsMessage = characterToken.Value switch
+                var diagnosticMessage = string.Empty;
+
+                if (!characterValue.HasValidCharacterLength())
+                    diagnosticMessage = CharacterLiteralExpression.ShouldBeOfCertainLength;
+                else if (!characterValue.IsSurroundedBySingleQuotes())
+                    diagnosticMessage = CharacterLiteralExpression.ShouldStartEndWithSingleQuote;
+                else if (characterValue.IsUnescapedSingleQuoteOrBackslash())
+                    diagnosticMessage = CharacterLiteralExpression.ShouldBeEscaped;
+                else if (characterValue[1] == '\\')
                 {
-                    { Length: < 3 or 5 or 6 or 7 or > 8 } =>
-                        CharacterLiteralExpression.ShouldBeOfCertainLength,
-                    var quoteVal when !quoteVal.StartsWith('\'') || !quoteVal.EndsWith('\'') =>
-                        CharacterLiteralExpression.ShouldStartEndWithSingleQuote,
-                    { Length: 3 } charVal when charVal[1] == '\'' || charVal[1] == '\\' =>
-                        CharacterLiteralExpression.ShouldBeEscaped,
-                    { Length: 4 } escapeVal when escapeVal[1] != '\\' || !"'\"\\0abfnrtv".Contains(escapeVal[2]) =>
-                        CharacterLiteralExpression.InvalidEscapedCharacter,
-                    // ReSharper disable once PatternIsRedundant
-                    { Length: 8 } hexVal when !HexCharPattern().Match(hexVal).Success =>
-                        CharacterLiteralExpression.InvalidHexadecimalCharacter,
-                    _ => string.Empty
-                };
-                
-                if (string.IsNullOrWhiteSpace(diagnosticsMessage))
-                {
-                    return characterLiteralExpression;
+                    if (characterValue[2] == 'x')
+                    {
+                        // ReSharper disable once InvertIf
+                        if (!characterValue.IsValidHexadecimalCharacter())
+                            diagnosticMessage = CharacterLiteralExpression.InvalidEscapedCharacter;
+                    }
+                    else if (!characterValue.IsValidEscapedCharacter())
+                        diagnosticMessage = CharacterLiteralExpression.InvalidHexadecimalCharacter;
                 }
-                
-                CaptureDiagnosticsInfo(characterToken, diagnosticsMessage);
-                return new InvalidExpression(characterToken, characterLiteralExpression);
+
+                switch (string.IsNullOrWhiteSpace(diagnosticMessage))
+                {
+                    case false:
+                        CaptureDiagnosticsInfo(characterToken, CharacterLiteralExpression.ShouldBeOfCertainLength);
+                        return new InvalidExpression(characterToken, characterLiteralExpression);
+                    default:
+                        return characterLiteralExpression;
+                }
             }
             case TokenType.String:
             {
-                // TODO: Handle invalid escaped characters
                 var stringToken = GetAndMoveToNext();
+                var stringValue = stringToken.Value;
                 var stringLiteralExpression = new StringLiteralExpression(stringToken);
 
-                // !stringToken.Replace("\\\"", "").EndsWith('\"'))
+                var diagnosticsMessage = string.Empty;
 
-                var diagnosticsMessage = stringToken.Value switch
-                {
-                    var quoteVal when !quoteVal.StartsWith('\"') || !quoteVal.EndsWith('\"') =>
-                        StringLiteralExpression.ShouldStartEndWithDoubleQuote,
-                    var escapeVal when escapeVal[^2] == '\\' =>
-                        StringLiteralExpression.ShouldNotEscapeLastDoubleQuote,
-                    _ => string.Empty
-                };
+                if (!stringValue.IsSurroundedByDoubleQuotes())
+                    diagnosticsMessage = StringLiteralExpression.ShouldBeSurroundedByDoubleQuote;
+                else if (stringValue.EscapesLastDoubleQuote())
+                    diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
+                else if (stringValue.HasInvalidEscapedCharacters())
+                    diagnosticsMessage = StringLiteralExpression.InvalidEscapedCharacter;
 
                 if (string.IsNullOrWhiteSpace(diagnosticsMessage))
                 {
                     return stringLiteralExpression;
                 }
-                
+
                 CaptureDiagnosticsInfo(stringToken, diagnosticsMessage);
                 return new InvalidExpression(stringToken, stringLiteralExpression);
             }
@@ -256,54 +261,36 @@ public partial class SyntaxParser
 
     private NumberLiteralExpression ParseNumberExpression(bool isInteger)
     {
+        var number = Current.Value;
+
         if (isInteger)
         {
-            var integerValue = Current.Value;
             var integerType = NumberType.Integer;
 
-            if (integerValue.StartsWith("0x"))
-            {
+            if (number.StartsWith("0x"))
                 integerType = NumberType.Hexadecimal;
-            }
-            else if (integerValue.StartsWith("0b"))
-            {
+            else if (number.StartsWith("0b"))
                 integerType = NumberType.Binary;
-            }
-            else if (integerValue.EndsWith("u", StringComparison.OrdinalIgnoreCase))
-            {
-                integerType = NumberType.UnsignedInteger;
-            }
-            else if (integerValue.EndsWith("l", StringComparison.OrdinalIgnoreCase))
-            {
-                integerType = NumberType.Long;
-            }
-            else if (integerValue.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
-            {
+            else if (number.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
                 integerType = NumberType.UnsignedLong;
-            }
+            else if (number.EndsWith("u", StringComparison.OrdinalIgnoreCase))
+                integerType = NumberType.UnsignedInteger;
+            else if (number.EndsWith("l", StringComparison.OrdinalIgnoreCase))
+                integerType = NumberType.Long;
 
             return new NumberLiteralExpression(GetAndMoveToNext(), integerType);
         }
 
-        var realValue = Current.Value;
         var realType = NumberType.Double;
 
-        if (realValue.EndsWith("f", StringComparison.OrdinalIgnoreCase))
-        {
+        if (number.EndsWith("f", StringComparison.OrdinalIgnoreCase))
             realType = NumberType.Float;
-        }
-        else if (realValue.EndsWith("d", StringComparison.OrdinalIgnoreCase))
-        {
+        else if (number.EndsWith("d", StringComparison.OrdinalIgnoreCase))
             realType = NumberType.Double;
-        }
-        else if (realValue.EndsWith("m", StringComparison.OrdinalIgnoreCase))
-        {
+        else if (number.EndsWith("m", StringComparison.OrdinalIgnoreCase))
             realType = NumberType.Decimal;
-        }
-        else if (realValue.Contains('e', StringComparison.OrdinalIgnoreCase))
-        {
+        else if (number.Contains('e', StringComparison.OrdinalIgnoreCase))
             realType = NumberType.WithExponent;
-        }
 
         return new NumberLiteralExpression(GetAndMoveToNext(), realType);
     }
@@ -367,7 +354,4 @@ public partial class SyntaxParser
 
         DiagnosticsHandler.Capture(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column);
     }
-
-    [GeneratedRegex(@"(?i)^'\\x[0-9a-f]{4}'$")]
-    private static partial Regex HexCharPattern();
 }

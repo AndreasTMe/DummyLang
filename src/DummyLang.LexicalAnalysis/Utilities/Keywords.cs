@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DummyLang.LexicalAnalysis;
+namespace DummyLang.LexicalAnalysis.Utilities;
 
 internal static class Keywords
 {

@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis.Extensions;
+using DummyLang.LexicalAnalysis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,12 +8,12 @@ using System.Text.RegularExpressions;
 
 namespace DummyLang.LexicalAnalysis;
 
-public sealed partial class Tokenizer
+public sealed class Tokenizer
 {
     private static readonly Dictionary<TokenType, Regex[]> NumberPatterns = new()
     {
-        { TokenType.Real, [RealNumberPattern()] },
-        { TokenType.Integer, [BinaryNumberPattern(), HexadecimalNumberPattern(), IntegerNumberPattern()] }
+        { TokenType.Real, [Patterns.RealNumber()] },
+        { TokenType.Integer, [Patterns.BinaryNumber(), Patterns.HexadecimalNumber(), Patterns.IntegerNumber()] }
     };
 
     private string _source = string.Empty;
@@ -302,16 +303,4 @@ public sealed partial class Tokenizer
             _column++;
         }
     }
-
-    [GeneratedRegex("^0(?i)b[0-1]+(ul|u|l)?")]
-    private static partial Regex BinaryNumberPattern();
-
-    [GeneratedRegex("^0(?i)x[0-9a-f]+(ul|u|l)?")]
-    private static partial Regex HexadecimalNumberPattern();
-
-    [GeneratedRegex("^[0-9]+(?i)(ul|u|l)?")]
-    private static partial Regex IntegerNumberPattern();
-
-    [GeneratedRegex("^[0-9]+\\.[0-9]+(?i)(e[+|-][0-9]+)?(f|d|m)?")]
-    private static partial Regex RealNumberPattern();
 }

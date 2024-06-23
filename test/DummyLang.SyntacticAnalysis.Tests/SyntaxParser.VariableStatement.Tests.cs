@@ -2,7 +2,7 @@
 
 namespace DummyLang.SyntacticAnalysis.Tests;
 
-public partial class SyntaxParserTests
+public class VariableStatementSyntaxParserTests
 {
     [Fact]
     public void GenerateSyntax_Statements_ConstDeclaration()
