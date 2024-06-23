@@ -104,6 +104,7 @@ public partial class SyntaxParser
 
     private Expression ParseExpressionBasedOnCurrentToken()
     {
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (Current.Type)
         {
             case TokenType.Plus:
@@ -159,7 +160,7 @@ public partial class SyntaxParser
 
                 var expression = new PrimaryExpression(identifierExpression, GetAndMoveToNext());
 
-                while (Current.Type == TokenType.PlusPlus || Current.Type == TokenType.MinusMinus)
+                while (Current.Type is TokenType.PlusPlus or TokenType.MinusMinus)
                 {
                     expression = new PrimaryExpression(expression, GetAndMoveToNext());
                 }
@@ -200,7 +201,7 @@ public partial class SyntaxParser
 
                 if (stringValue.Length == 1
                     || !stringValue.StartsWith('\"') || !stringValue.EndsWith('\"')
-                    || (stringValue.Length == 3 && stringValue[1] == '\\')
+                    || stringValue is [_, '\\', _]
                     || !stringValue.Replace("\\\"", "").EndsWith('\"'))
                 {
                     return new InvalidExpression(stringLiteralExpression, stringLiteralExpression.StringToken);
