@@ -19,7 +19,7 @@ public partial class SyntaxParserTests
 
         // Assert
         Assert.Equal(4, parser.TotalTokens);
-        Assert.Equal(new Token(TokenType.Integer, "1", TokenPosition.At(1, 1, 0)), parser.Current);
+        Assert.Equal(new Token(TokenType.Integer, "1", TokenPosition.At(1, 1)), parser.Current);
     }
 
     [Fact]

@@ -44,8 +44,6 @@ public sealed class InvalidExpression : Expression
         Sb.Clear();
         Sb.Append("line: ").Append(token.Position.Line)
             .Append(", column: ").Append(token.Position.Column)
-            .Append(", index: ").Append(token.Position.Index)
-            .Append(", width: ").Append(token.Position.Width)
             .Append('.');
         StackTrace = Sb.ToString();
     }

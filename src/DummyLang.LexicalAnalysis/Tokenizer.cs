@@ -33,7 +33,7 @@ public sealed partial class Tokenizer
     {
         if (_index >= _source.Length)
         {
-            return new Token(TokenType.Eof, string.Empty, TokenPosition.At(_line, _column, _source.Length, 0));
+            return new Token(TokenType.Eof, string.Empty, TokenPosition.At(_line, _column));
         }
 
         var current = _source[_index];
@@ -116,9 +116,7 @@ public sealed partial class Tokenizer
             throw new UnreachableException("This should never happen.");
         }
 
-        var tokenPosition = stringTokenLength == 1
-            ? TokenPosition.At(_line, _column, _index)
-            : TokenPosition.At(_line, _column, _index, stringTokenLength);
+        var tokenPosition = TokenPosition.At(_line, _column);
 
         _index += stringTokenLength;
         _column += stringTokenLength;
@@ -170,7 +168,7 @@ public sealed partial class Tokenizer
             stringValue = stringValue[..^Environment.NewLine.Length];
         }
         
-        var tokenPosition = TokenPosition.At(_line, _column, _index, stringValue.Length);
+        var tokenPosition = TokenPosition.At(_line, _column);
 
         _index += stringValue.Length;
         _column += stringValue.Length;
@@ -207,7 +205,7 @@ public sealed partial class Tokenizer
         }
 
         var characterValue = sb.ToString();
-        var tokenPosition = TokenPosition.At(_line, _column, _index, characterValue.Length);
+        var tokenPosition = TokenPosition.At(_line, _column);
 
         _index += characterValue.Length;
         _column += characterValue.Length;
@@ -231,7 +229,7 @@ public sealed partial class Tokenizer
         }
 
         var identifierValue = sb.ToString();
-        var tokenPosition = TokenPosition.At(_line, _column, _index, identifierValue.Length);
+        var tokenPosition = TokenPosition.At(_line, _column);
 
         _index += identifierValue.Length;
         _column += identifierValue.Length;
@@ -258,7 +256,7 @@ public sealed partial class Tokenizer
                 }
 
                 var numberValue = match.Value;
-                var tokenPosition = TokenPosition.At(_line, _column, _index, numberValue.Length);
+                var tokenPosition = TokenPosition.At(_line, _column);
 
                 _index += numberValue.Length;
                 _column += numberValue.Length;
@@ -273,8 +271,6 @@ public sealed partial class Tokenizer
     private Token SkipWhiteSpace()
     {
         var current = _source[_index];
-        var startIndex = _index;
-        var count = 1;
 
         while (char.IsWhiteSpace(current))
         {
@@ -285,11 +281,10 @@ public sealed partial class Tokenizer
                 return new Token(
                     TokenType.Eof,
                     string.Empty,
-                    TokenPosition.At(_line, _column, startIndex, count));
+                    TokenPosition.At(_line, _column));
             }
 
             current = _source[_index];
-            count++;
         }
 
         return ReadNext();
