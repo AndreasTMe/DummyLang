@@ -1,5 +1,6 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
+using DummyLang.SyntacticAnalysis.Diagnostics;
 using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System;
@@ -10,8 +11,12 @@ namespace DummyLang.SyntacticAnalysis;
 
 public partial class SyntaxParser
 {
-    private readonly Tokenizer _tokenizer = new();
+    private static readonly SyntaxDiagnosticsHandler DiagnosticsHandler = new();
 
+    private readonly Tokenizer _tokenizer = new();
+    private readonly SyntaxTree _syntaxTree = new();
+
+    private string _sourcePath = string.Empty;
     private List<Token> _tokens = [];
     private Token _current = Token.None;
     private int _index;
@@ -31,9 +36,12 @@ public partial class SyntaxParser
 
     internal int TotalTokens => _tokens.Count;
 
-    public SyntaxParser Feed(string source)
+    public SyntaxParser Feed(string sourcePath)
     {
-        _tokenizer.Use(source);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+
+        _sourcePath = sourcePath;
+        _tokenizer.Use(sourcePath);
 
         var tokens = new List<Token>();
         var token = _tokenizer.ReadNext();
@@ -52,7 +60,7 @@ public partial class SyntaxParser
 
     public SyntaxTree GenerateSyntax()
     {
-        SyntaxTree tree = new();
+        _syntaxTree.Clear();
 
         while (_index < _tokens.Count)
         {
@@ -64,7 +72,7 @@ public partial class SyntaxParser
             }
 
             var node = ParseExpression();
-            tree.Add(node);
+            _syntaxTree.Insert(node);
 
             if (lastIndex == _index)
             {
@@ -74,7 +82,10 @@ public partial class SyntaxParser
 
         _tokens.Clear();
 
-        return tree;
+        _syntaxTree.CaptureDiagnostics(DiagnosticsHandler.Diagnostics);
+        DiagnosticsHandler.Clear();
+
+        return _syntaxTree;
     }
 
     private void MoveToNext() => _index++;
@@ -130,9 +141,14 @@ public partial class SyntaxParser
                     expression = ParseNumberExpression(Current.Type == TokenType.Integer);
                 }
 
+                if (expression is null)
+                {
+                    CaptureDiagnosticsInfo(unaryOperator, "Invalid token next to a unary operator.");
+                }
+
                 return new UnaryExpression(
                     unaryOperator,
-                    expression ?? new InvalidExpression(GetAndMoveToNext(), "Invalid token next to a unary operator."));
+                    expression ?? new InvalidExpression(GetAndMoveToNext()));
             }
             case TokenType.LeftParen:
             {
@@ -144,10 +160,11 @@ public partial class SyntaxParser
                     return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
                 }
 
+                CaptureDiagnosticsInfo(Current, "A closing parenthesis token was expected.");
+
                 return new InvalidExpression(
-                    new ParenthesisedExpression(leftParen, expression),
                     Token.ExpectedAt(Current.Position),
-                    "Expected a closing parenthesis token.");
+                    new ParenthesisedExpression(leftParen, expression));
             }
             case TokenType.Identifier:
             {
@@ -178,6 +195,8 @@ public partial class SyntaxParser
                 switch (characterToken.Value)
                 {
                     case { Length: < 3 or 5 or 6 or 7 or > 8 }:
+                    case var quoteVal
+                        when !quoteVal.StartsWith('\'') || !quoteVal.EndsWith('\''):
                     case { Length: 3 } charVal
                         when charVal[1] == '\'' || charVal[1] == '\\':
                     case { Length: 4 } escapeVal
@@ -185,10 +204,10 @@ public partial class SyntaxParser
                     // ReSharper disable once PatternIsRedundant
                     case { Length: 8 } hexVal
                         when !HexCharPattern().Match(hexVal).Success:
-                        return new InvalidExpression(
-                            characterLiteralExpression,
-                            characterToken,
-                            "The token provided is an invalid character literal.");
+                    {
+                        CaptureDiagnosticsInfo(characterToken, "The token provided is an invalid character literal.");
+                        return new InvalidExpression(characterToken, characterLiteralExpression);
+                    }
                     default:
                         return characterLiteralExpression;
                 }
@@ -204,15 +223,16 @@ public partial class SyntaxParser
                     || stringValue is [_, '\\', _]
                     || !stringValue.Replace("\\\"", "").EndsWith('\"'))
                 {
-                    return new InvalidExpression(stringLiteralExpression, stringLiteralExpression.StringToken);
+                    return new InvalidExpression(stringLiteralExpression.StringToken, stringLiteralExpression);
                 }
 
                 return stringLiteralExpression;
             }
             default:
-                return new InvalidExpression(
-                    GetAndMoveToNext(),
-                    "Either the token is not and will not be supported or has not been implemented yet.");
+            {
+                CaptureDiagnosticsInfo(Current, "Unsupported or unimplemented token.");
+                return new InvalidExpression(GetAndMoveToNext());
+            }
         }
     }
 
@@ -311,6 +331,23 @@ public partial class SyntaxParser
             default:
                 return OperatorPrecedence.None;
         }
+    }
+
+    private void CaptureDiagnosticsInfo(Token token, string message)
+    {
+        if (token.Type is TokenType.None or TokenType.Eof)
+        {
+            message = "Syntax Error: Invalid token. " + message.TrimStart();
+        }
+        else
+        {
+            message = $"Syntax Error: Invalid token ({token.Value}). " + message.TrimStart();
+        }
+
+        // TODO: Update when actual file path will be used
+        const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
+
+        DiagnosticsHandler.Capture(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column);
     }
 
     [GeneratedRegex(@"(?i)^'\\x[0-9a-f]{4}'$")]

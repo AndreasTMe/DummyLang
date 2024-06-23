@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DummyLang.Core", "src\Dummy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DummyLang.SyntacticAnalysis.Tests", "test\DummyLang.SyntacticAnalysis.Tests\DummyLang.SyntacticAnalysis.Tests.csproj", "{8DC890F6-94FE-42E1-8F37-0034278FD532}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DummyLang.Diagnostics", "src\DummyLang.Diagnostics\DummyLang.Diagnostics.csproj", "{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,7 @@ Global
 		{0B2A19F0-6C89-49BF-96FA-612CDD4F9E07} = {05DBCE50-6CDA-43A7-B8A1-A2E184F7544D}
 		{1EBC9E98-B5E7-4E7D-AED6-BA62B32A36D0} = {05DBCE50-6CDA-43A7-B8A1-A2E184F7544D}
 		{8DC890F6-94FE-42E1-8F37-0034278FD532} = {E39AD679-F25A-4AD0-8FD7-0CBD3C77872E}
+		{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89} = {05DBCE50-6CDA-43A7-B8A1-A2E184F7544D}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4D353AE4-E111-474C-9AC6-FF40085BF54D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -47,5 +50,9 @@ Global
 		{8DC890F6-94FE-42E1-8F37-0034278FD532}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DC890F6-94FE-42E1-8F37-0034278FD532}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DC890F6-94FE-42E1-8F37-0034278FD532}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CE1E2AF-2E19-4AA4-B60E-E99A56DE7C89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

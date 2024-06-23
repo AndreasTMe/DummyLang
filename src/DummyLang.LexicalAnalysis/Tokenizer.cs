@@ -167,7 +167,7 @@ public sealed partial class Tokenizer
         {
             stringValue = stringValue[..^Environment.NewLine.Length];
         }
-        
+
         var tokenPosition = TokenPosition.At(_line, _column);
 
         _index += stringValue.Length;
@@ -183,14 +183,12 @@ public sealed partial class Tokenizer
         var current = 0;
         var maxIterations = 3;
 
-        while (current < maxIterations && current < source.Length)
+        while (current < maxIterations && current < source.Length && source[current] != '\n')
         {
-            if (source[current] == '\n')
+            if (!(current == maxIterations - 1 && source[current] != '\''))
             {
-                break;
+                sb.Append(source[current]);
             }
-            
-            sb.Append(source[current]);
 
             if (maxIterations == 3 && source[current] == '\\')
             {
@@ -200,7 +198,7 @@ public sealed partial class Tokenizer
             {
                 maxIterations = 8;
             }
-            
+
             current++;
         }
 
@@ -233,7 +231,7 @@ public sealed partial class Tokenizer
 
         _index += identifierValue.Length;
         _column += identifierValue.Length;
-        
+
 
         return new Token(
             Keywords.Tokens.GetValueOrDefault(identifierValue, TokenType.Identifier),
@@ -244,7 +242,7 @@ public sealed partial class Tokenizer
     private Token ReadNumber()
     {
         var source = _source[_index..];
-        
+
         foreach (var (token, patterns) in NumberPatterns)
         {
             foreach (var pattern in patterns)

@@ -16,6 +16,14 @@ do
             .GenerateSyntax();
 
         tree.PrettyPrint();
+
+        if (tree.Diagnostics.Count > 0)
+        {
+            Console.WriteLine();
+            foreach (var diagnostic in tree.Diagnostics)
+                diagnostic.Log();
+        }
+
         Console.WriteLine();
     }
 } while (input != string.Empty);

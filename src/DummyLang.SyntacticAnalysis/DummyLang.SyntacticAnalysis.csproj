@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DummyLang.Diagnostics\DummyLang.Diagnostics.csproj" />
       <ProjectReference Include="..\DummyLang.LexicalAnalysis\DummyLang.LexicalAnalysis.csproj" />
     </ItemGroup>
 

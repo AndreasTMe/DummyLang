@@ -302,13 +302,13 @@ public class TokenizerTests
 
         // Assert
         Assert.Equal(TokenType.Character, token.Type);
-        Assert.Equal("'ab", token.Value);
+        Assert.Equal("'a", token.Value);
         Assert.True(token.Position is { Line: 1, Column: 1 });
         
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
-        Assert.Equal("c", token.Value);
-        Assert.True(token.Position is { Line: 1, Column: 4 });
+        Assert.Equal("bc", token.Value);
+        Assert.True(token.Position is { Line: 1, Column: 3 });
         
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
