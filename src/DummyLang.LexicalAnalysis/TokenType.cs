@@ -52,12 +52,12 @@ public enum TokenType : byte
     Identifier,
 
     // Literals
-    Boolean,
+    True,
+    False,
     Integer,
     Real,
     Character,
     String,
-    Null,
 
     // Keywords
     Var,
@@ -68,7 +68,5 @@ public enum TokenType : byte
     Break,
     While,
     Continue,
-    Return,
-    As,
-    Default
+    Return
 }

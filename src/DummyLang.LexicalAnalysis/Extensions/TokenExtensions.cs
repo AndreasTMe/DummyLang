@@ -1,29 +1,41 @@
-﻿namespace DummyLang.LexicalAnalysis.Extensions;
+﻿using System;
+
+namespace DummyLang.LexicalAnalysis.Extensions;
 
 public static class TokenExtensions
 {
+    private static readonly TokenType[] BinaryOperators;
+
+    static TokenExtensions()
+    {
+        BinaryOperators = new TokenType[Enum.GetValues<TokenType>().Length];
+        Array.Fill(BinaryOperators, TokenType.None);
+
+        BinaryOperators[(int)TokenType.Assign] = TokenType.Assign;
+        BinaryOperators[(int)TokenType.Equal] = TokenType.Equal;
+        BinaryOperators[(int)TokenType.NotEqual] = TokenType.NotEqual;
+        BinaryOperators[(int)TokenType.Plus] = TokenType.Plus;
+        BinaryOperators[(int)TokenType.Minus] = TokenType.Minus;
+        BinaryOperators[(int)TokenType.Star] = TokenType.Star;
+        BinaryOperators[(int)TokenType.Slash] = TokenType.Slash;
+        BinaryOperators[(int)TokenType.Percent] = TokenType.Percent;
+        BinaryOperators[(int)TokenType.LessThan] = TokenType.LessThan;
+        BinaryOperators[(int)TokenType.LessThanOrEqual] = TokenType.LessThanOrEqual;
+        BinaryOperators[(int)TokenType.LeftBitShift] = TokenType.LeftBitShift;
+        BinaryOperators[(int)TokenType.GreaterThan] = TokenType.GreaterThan;
+        BinaryOperators[(int)TokenType.GreaterThanOrEqual] = TokenType.GreaterThanOrEqual;
+        BinaryOperators[(int)TokenType.RightBitShift] = TokenType.RightBitShift;
+        BinaryOperators[(int)TokenType.Pipe] = TokenType.Pipe;
+        BinaryOperators[(int)TokenType.DoublePipe] = TokenType.DoublePipe;
+        BinaryOperators[(int)TokenType.Caret] = TokenType.Caret;
+        BinaryOperators[(int)TokenType.Ampersand] = TokenType.Ampersand;
+        BinaryOperators[(int)TokenType.DoubleAmpersand] = TokenType.DoubleAmpersand;
+        BinaryOperators[(int)TokenType.DoubleDot] = TokenType.DoubleDot;
+    }
+
+    public static bool IsBinaryOperator(this Token token) => BinaryOperators[(int)token.Type] == token.Type;
+
     public static bool IsEof(this Token token) => token.Type == TokenType.Eof;
 
     public static bool IsInvalid(this Token token) => token.Type == TokenType.None;
-
-    public static bool IsBinaryOperator(this Token token) =>
-        token.Type == TokenType.Assign
-        || token.Type == TokenType.Equal
-        || token.Type == TokenType.NotEqual
-        || token.Type == TokenType.Plus
-        || token.Type == TokenType.Minus
-        || token.Type == TokenType.Star
-        || token.Type == TokenType.Slash
-        || token.Type == TokenType.Percent
-        || token.Type == TokenType.LessThan
-        || token.Type == TokenType.LessThanOrEqual
-        || token.Type == TokenType.LeftBitShift
-        || token.Type == TokenType.GreaterThan
-        || token.Type == TokenType.GreaterThanOrEqual
-        || token.Type == TokenType.RightBitShift
-        || token.Type == TokenType.Pipe
-        || token.Type == TokenType.DoublePipe
-        || token.Type == TokenType.Caret
-        || token.Type == TokenType.Ampersand
-        || token.Type == TokenType.DoubleAmpersand;
 }

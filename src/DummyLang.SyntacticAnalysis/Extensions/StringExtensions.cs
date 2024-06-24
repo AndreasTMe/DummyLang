@@ -20,6 +20,8 @@ internal static class StringExtensions
         str.Length >= 5 && Patterns.HexadecimalCharacter().Match(str).Success;
 
     // String parsing
+    internal static bool IsValidLength(this string str) => str.Length >= 2;
+
     internal static bool IsSurroundedByDoubleQuotes(this string str) => str.StartsWith('\"') && str.EndsWith('\"');
 
     internal static bool EscapesLastDoubleQuote(this string str) => str[^2] == '\\';
@@ -27,22 +29,42 @@ internal static class StringExtensions
     internal static bool HasInvalidEscapedCharacters(this string str)
     {
         var span = str.AsSpan();
-        var last = '\0';
+        var expectsEscaped = false;
+        var expectsHex = false;
 
         foreach (var current in span)
         {
-            if (last == '\\')
+            if (expectsHex)
             {
+                if (!char.IsAsciiHexDigit(current))
+                {
+                    return true;
+                }
+
+                expectsEscaped = false;
+                expectsHex = false;
+                continue;
+            }
+
+            if (expectsEscaped)
+            {
+                if (current == 'x')
+                {
+                    expectsEscaped = false;
+                    expectsHex = true;
+                    continue;
+                }
+
                 if (!Constants.EscapedCharacters.Contains(current))
                 {
                     return true;
                 }
 
-                last = '\0';
+                expectsEscaped = false;
                 continue;
             }
 
-            last = current;
+            expectsEscaped = current == '\\';
         }
 
         return false;

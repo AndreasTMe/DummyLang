@@ -1,6 +1,7 @@
 ﻿using DummyLang.SyntacticAnalysis.Expressions;
 using Xunit;
 
+// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 namespace DummyLang.SyntacticAnalysis.Tests;
 
 public class CharacterSyntaxParserTests
@@ -33,21 +34,12 @@ public class CharacterSyntaxParserTests
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-    }
-    
-    [Fact]
-    public void GenerateSyntax_UnescapedSingleQuote_InvalidExpression()
-    {
-        // Arrange
-        // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("'''")
-            .GenerateSyntax();
-
-        // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
+                
+        Assert.Single(syntaxTree.Diagnostics);
+        Assert.All(syntaxTree.Diagnostics, info =>
+        {
+            Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message);
+        });
     }
     
     [Fact]
@@ -63,6 +55,12 @@ public class CharacterSyntaxParserTests
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
+                        
+        Assert.Single(syntaxTree.Diagnostics);
+        Assert.All(syntaxTree.Diagnostics, info =>
+        {
+            Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message);
+        });
     }
     
     [Fact]

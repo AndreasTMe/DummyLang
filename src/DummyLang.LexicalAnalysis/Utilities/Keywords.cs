@@ -15,11 +15,8 @@ internal static class Keywords
         { While, TokenType.While },
         { Continue, TokenType.Continue },
         { Return, TokenType.Return },
-        { As, TokenType.As },
-        { True, TokenType.Boolean },
-        { False, TokenType.Boolean },
-        { Null, TokenType.Null },
-        { Default, TokenType.Default }
+        { True, TokenType.True },
+        { False, TokenType.False }
     };
 
     private const string Var = "var";
@@ -31,9 +28,6 @@ internal static class Keywords
     private const string While = "while";
     private const string Continue = "continue";
     private const string Return = "return";
-    private const string As = "as";
     private const string True = "true";
     private const string False = "false";
-    private const string Null = "null";
-    private const string Default = "default";
 }

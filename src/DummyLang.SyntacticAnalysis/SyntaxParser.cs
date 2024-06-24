@@ -11,10 +11,9 @@ namespace DummyLang.SyntacticAnalysis;
 
 public class SyntaxParser
 {
-    private static readonly SyntaxDiagnosticsHandler DiagnosticsHandler = new();
-
     private readonly Tokenizer _tokenizer = new();
     private readonly SyntaxTree _syntaxTree = new();
+    private readonly SyntaxDiagnosticsHandler _diagnosticsHandler = new();
 
     private string _sourcePath = string.Empty;
     private List<Token> _tokens = [];
@@ -81,10 +80,10 @@ public class SyntaxParser
             }
         }
 
-        _syntaxTree.CaptureDiagnostics(DiagnosticsHandler.Diagnostics);
+        _syntaxTree.CaptureDiagnostics(_diagnosticsHandler.Diagnostics);
 
         _tokens.Clear();
-        DiagnosticsHandler.Clear();
+        _diagnosticsHandler.Clear();
 
         return _syntaxTree;
     }
@@ -144,7 +143,7 @@ public class SyntaxParser
 
                 if (expression is null)
                 {
-                    CaptureDiagnosticsInfo(unaryOperator, "Invalid token next to a unary operator.");
+                    CaptureDiagnosticsInfo(unaryOperator, UnaryExpression.AppliedToInvalidToken);
                 }
 
                 return new UnaryExpression(
@@ -236,7 +235,7 @@ public class SyntaxParser
 
                 var diagnosticsMessage = string.Empty;
 
-                if (!stringValue.IsSurroundedByDoubleQuotes())
+                if (!stringValue.IsValidLength() || !stringValue.IsSurroundedByDoubleQuotes())
                     diagnosticsMessage = StringLiteralExpression.ShouldBeSurroundedByDoubleQuote;
                 else if (stringValue.EscapesLastDoubleQuote())
                     diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
@@ -352,6 +351,6 @@ public class SyntaxParser
         // TODO: Update when actual file path will be used
         const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
 
-        DiagnosticsHandler.Capture(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column);
+        _diagnosticsHandler.Capture(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column);
     }
 }
