@@ -38,7 +38,6 @@ public sealed class Tokenizer
 
         var current = _source[_index];
 
-        // TODO: Check for different assignment types (x+=y, x-=y, x*=y, x/=y, x%=y, x>>=y, x<<=y, x&=y, x^=y, x\|=y, x??=y)
         return current switch
         {
             ',' => GenerateToken(TokenType.Comma),
@@ -47,21 +46,33 @@ public sealed class Tokenizer
             ':' => GenerateToken(TokenType.Colon),
             '=' => GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal),
             '!' => GenerateTokenBasedOnNext(TokenType.Bang, TokenType.NotEqual),
-            '+' => GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus),
-            '-' => GenerateTokenBasedOnNext(TokenType.Minus, TokenType.MinusMinus, TokenType.PointerAccess),
-            '*' => GenerateToken(TokenType.Star),
-            '/' => GenerateToken(TokenType.Slash),
-            '%' => GenerateToken(TokenType.Percent),
-            '&' => GenerateTokenBasedOnNext(TokenType.Ampersand, TokenType.DoubleAmpersand),
-            '|' => GenerateTokenBasedOnNext(TokenType.Pipe, TokenType.DoublePipe),
-            '^' => GenerateToken(TokenType.Caret),
-            '?' => GenerateTokenBasedOnNext(TokenType.QuestionMark, TokenType.DoubleQuestionMark),
-            '<' => GenerateTokenBasedOnNext(TokenType.LessThan, TokenType.LessThanOrEqual, TokenType.LeftBitShift),
+            '+' => GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus, TokenType.PlusAssign),
+            '-' => GenerateTokenBasedOnNext(
+                TokenType.Minus,
+                TokenType.MinusMinus,
+                TokenType.MinusAssign,
+                TokenType.PointerAccess),
+            '*' => GenerateTokenBasedOnNext(TokenType.Star, TokenType.StarAssign),
+            '/' => GenerateTokenBasedOnNext(TokenType.Slash, TokenType.SlashAssign),
+            '%' => GenerateTokenBasedOnNext(TokenType.Percent, TokenType.PercentAssign),
+            '&' => GenerateTokenBasedOnNext(TokenType.Ampersand, TokenType.DoubleAmpersand, TokenType.AmpersandAssign),
+            '|' => GenerateTokenBasedOnNext(TokenType.Pipe, TokenType.DoublePipe, TokenType.PipeAssign),
+            '~' => GenerateToken(TokenType.Tilde),
+            '^' => GenerateTokenBasedOnNext(TokenType.Caret, TokenType.CaretAssign),
+            '<' => GenerateTokenBasedOnNext(
+                TokenType.LessThan,
+                TokenType.LessThanOrEqual,
+                TokenType.LeftBitShift,
+                TokenType.LeftBitShiftAssign),
             '>' => GenerateTokenBasedOnNext(
                 TokenType.GreaterThan,
                 TokenType.GreaterThanOrEqual,
-                TokenType.RightBitShift),
-            '~'  => GenerateToken(TokenType.Tilde),
+                TokenType.RightBitShift,
+                TokenType.RightBitShiftAssign),
+            '?' => GenerateTokenBasedOnNext(
+                TokenType.QuestionMark,
+                TokenType.DoubleQuestionMark,
+                TokenType.DoubleQuestionMarkAssign),
             '('  => GenerateToken(TokenType.LeftParenthesis),
             ')'  => GenerateToken(TokenType.RightParenthesis),
             '{'  => GenerateToken(TokenType.LeftBrace),

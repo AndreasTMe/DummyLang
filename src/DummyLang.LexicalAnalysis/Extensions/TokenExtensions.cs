@@ -11,6 +11,7 @@ public static class TokenExtensions
         BinaryOperators = new TokenType[Enum.GetValues<TokenType>().Length];
         Array.Fill(BinaryOperators, TokenType.None);
 
+        // TODO: Add new binary token types
         BinaryOperators[(int)TokenType.Assign]             = TokenType.Assign;
         BinaryOperators[(int)TokenType.Equal]              = TokenType.Equal;
         BinaryOperators[(int)TokenType.NotEqual]           = TokenType.NotEqual;
