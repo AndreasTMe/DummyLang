@@ -17,16 +17,15 @@ public sealed class Tokenizer
     };
 
     private string _source = string.Empty;
-    private int _index;
-    private int _line;
-    private int _column;
-
+    private int    _index;
+    private int    _line;
+    private int    _column;
 
     public void Use(in string? newSource)
     {
         _source = newSource ?? string.Empty;
-        _index = 0;
-        _line = 1;
+        _index  = 0;
+        _line   = 1;
         _column = 1;
     }
 
@@ -39,78 +38,49 @@ public sealed class Tokenizer
 
         var current = _source[_index];
 
-        switch (current)
+        // TODO: Check for different assignment types (x+=y, x-=y, x*=y, x/=y, x%=y, x>>=y, x<<=y, x&=y, x^=y, x\|=y, x??=y)
+        return current switch
         {
-            case ',':
-                return GenerateToken(TokenType.Comma);
-            case '.':
-                return GenerateTokenBasedOnNext(TokenType.Dot, TokenType.DoubleDot);
-            case ';':
-                return GenerateToken(TokenType.Semicolon);
-            case ':':
-                return GenerateToken(TokenType.Colon);
-            case '=':
-                return GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal);
-            case '!':
-                return GenerateTokenBasedOnNext(TokenType.Bang, TokenType.NotEqual);
-            case '+':
-                return GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus);
-            case '-':
-                return GenerateTokenBasedOnNext(
-                    TokenType.Minus,
-                    TokenType.MinusMinus, TokenType.PointerAccess);
-            case '*':
-                return GenerateToken(TokenType.Star);
-            case '/':
-                return GenerateToken(TokenType.Slash);
-            case '%':
-                return GenerateToken(TokenType.Percent);
-            case '&':
-                return GenerateTokenBasedOnNext(TokenType.Ampersand, TokenType.DoubleAmpersand);
-            case '|':
-                return GenerateTokenBasedOnNext(TokenType.Pipe, TokenType.DoublePipe);
-            case '^':
-                return GenerateToken(TokenType.Caret);
-            case '?':
-                return GenerateTokenBasedOnNext(TokenType.QuestionMark, TokenType.DoubleQuestionMark);
-            case '<':
-                return GenerateTokenBasedOnNext(
-                    TokenType.LessThan,
-                    TokenType.LessThanOrEqual, TokenType.LeftBitShift);
-            case '>':
-                return GenerateTokenBasedOnNext(
-                    TokenType.GreaterThan,
-                    TokenType.GreaterThanOrEqual, TokenType.RightBitShift);
-            case '~':
-                return GenerateToken(TokenType.Tilde);
-            case '(':
-                return GenerateToken(TokenType.LeftParen);
-            case ')':
-                return GenerateToken(TokenType.RightParen);
-            case '{':
-                return GenerateToken(TokenType.LeftBrace);
-            case '}':
-                return GenerateToken(TokenType.RightBrace);
-            case '[':
-                return GenerateToken(TokenType.LeftBracket);
-            case ']':
-                return GenerateToken(TokenType.RightBracket);
-            case '\'':
-                return ReadCharacter();
-            case '\"':
-                return ReadString();
-            default:
-                return char.IsLetter(current) || current == '_'
-                    ? ReadIdentifier()
-                    : char.IsDigit(current)
-                        ? ReadNumber()
-                        : SkipWhiteSpace();
-        }
+            ',' => GenerateToken(TokenType.Comma),
+            '.' => GenerateTokenBasedOnNext(TokenType.Dot, TokenType.DoubleDot),
+            ';' => GenerateToken(TokenType.Semicolon),
+            ':' => GenerateToken(TokenType.Colon),
+            '=' => GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal),
+            '!' => GenerateTokenBasedOnNext(TokenType.Bang, TokenType.NotEqual),
+            '+' => GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus),
+            '-' => GenerateTokenBasedOnNext(TokenType.Minus, TokenType.MinusMinus, TokenType.PointerAccess),
+            '*' => GenerateToken(TokenType.Star),
+            '/' => GenerateToken(TokenType.Slash),
+            '%' => GenerateToken(TokenType.Percent),
+            '&' => GenerateTokenBasedOnNext(TokenType.Ampersand, TokenType.DoubleAmpersand),
+            '|' => GenerateTokenBasedOnNext(TokenType.Pipe, TokenType.DoublePipe),
+            '^' => GenerateToken(TokenType.Caret),
+            '?' => GenerateTokenBasedOnNext(TokenType.QuestionMark, TokenType.DoubleQuestionMark),
+            '<' => GenerateTokenBasedOnNext(TokenType.LessThan, TokenType.LessThanOrEqual, TokenType.LeftBitShift),
+            '>' => GenerateTokenBasedOnNext(
+                TokenType.GreaterThan,
+                TokenType.GreaterThanOrEqual,
+                TokenType.RightBitShift),
+            '~'  => GenerateToken(TokenType.Tilde),
+            '('  => GenerateToken(TokenType.LeftParenthesis),
+            ')'  => GenerateToken(TokenType.RightParenthesis),
+            '{'  => GenerateToken(TokenType.LeftBrace),
+            '}'  => GenerateToken(TokenType.RightBrace),
+            '['  => GenerateToken(TokenType.LeftBracket),
+            ']'  => GenerateToken(TokenType.RightBracket),
+            '\'' => ReadCharacter(),
+            '\"' => ReadString(),
+            _ => char.IsLetter(current) || current == '_'
+                ? ReadIdentifier()
+                : char.IsDigit(current)
+                    ? ReadNumber()
+                    : SkipWhiteSpace()
+        };
     }
 
     private Token GenerateToken(TokenType type)
     {
-        var stringToken = type.GetStringToken();
+        var stringToken       = type.GetStringToken();
         var stringTokenLength = stringToken.Length;
         if (stringTokenLength < 1)
         {
@@ -119,17 +89,15 @@ public sealed class Tokenizer
 
         var tokenPosition = TokenPosition.At(_line, _column);
 
-        _index += stringTokenLength;
+        _index  += stringTokenLength;
         _column += stringTokenLength;
 
         return new Token(type, stringToken, tokenPosition);
     }
 
-    private Token GenerateTokenBasedOnNext(
-        TokenType type,
-        params TokenType[] possibleTypes)
+    private Token GenerateTokenBasedOnNext(TokenType type, params TokenType[] possibleTypes)
     {
-        var sourceFromCurrentPosition = _source[_index..];
+        var sourceFromCurrentPosition = _source.AsSpan(_index);
 
         foreach (var possibleType in possibleTypes)
         {
@@ -148,7 +116,7 @@ public sealed class Tokenizer
     private Token ReadString()
     {
         var source = _source.AsSpan(_index);
-        var sb = new StringBuilder();
+        var sb     = new StringBuilder();
         var escape = true;
 
         foreach (var character in source)
@@ -171,7 +139,7 @@ public sealed class Tokenizer
 
         var tokenPosition = TokenPosition.At(_line, _column);
 
-        _index += stringValue.Length;
+        _index  += stringValue.Length;
         _column += stringValue.Length;
 
         return new Token(TokenType.String, stringValue, tokenPosition);
@@ -179,9 +147,9 @@ public sealed class Tokenizer
 
     private Token ReadCharacter()
     {
-        var source = _source.AsSpan(_index);
-        var sb = new StringBuilder();
-        var current = 0;
+        var source        = _source.AsSpan(_index);
+        var sb            = new StringBuilder();
+        var current       = 0;
         var maxIterations = 3;
 
         while (current < maxIterations && current < source.Length && source[current] != '\n')
@@ -204,9 +172,9 @@ public sealed class Tokenizer
         }
 
         var characterValue = sb.ToString();
-        var tokenPosition = TokenPosition.At(_line, _column);
+        var tokenPosition  = TokenPosition.At(_line, _column);
 
-        _index += characterValue.Length;
+        _index  += characterValue.Length;
         _column += characterValue.Length;
 
         return new Token(TokenType.Character, characterValue, tokenPosition);
@@ -215,7 +183,7 @@ public sealed class Tokenizer
     private Token ReadIdentifier()
     {
         var source = _source.AsSpan(_index);
-        var sb = new StringBuilder();
+        var sb     = new StringBuilder();
 
         foreach (var character in source)
         {
@@ -228,11 +196,10 @@ public sealed class Tokenizer
         }
 
         var identifierValue = sb.ToString();
-        var tokenPosition = TokenPosition.At(_line, _column);
+        var tokenPosition   = TokenPosition.At(_line, _column);
 
-        _index += identifierValue.Length;
+        _index  += identifierValue.Length;
         _column += identifierValue.Length;
-
 
         return new Token(
             Keywords.Tokens.GetValueOrDefault(identifierValue, TokenType.Identifier),
@@ -254,10 +221,10 @@ public sealed class Tokenizer
                     continue;
                 }
 
-                var numberValue = match.Value;
+                var numberValue   = match.Value;
                 var tokenPosition = TokenPosition.At(_line, _column);
 
-                _index += numberValue.Length;
+                _index  += numberValue.Length;
                 _column += numberValue.Length;
 
                 return new Token(token, numberValue, tokenPosition);

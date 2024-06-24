@@ -3,13 +3,12 @@
 public enum TokenType : byte
 {
     None = 0,
-    Eof,
 
     // Delimiters
-    Comma,
-    Dot,
-    Semicolon,
-    Colon,
+    Comma     = 1,
+    Dot       = 2,
+    Semicolon = 3,
+    Colon     = 4,
 
     // Operators
     Assign,
@@ -41,8 +40,8 @@ public enum TokenType : byte
     DoubleQuestionMark,
 
     // Parentheses
-    LeftParen,
-    RightParen,
+    LeftParenthesis,
+    RightParenthesis,
     LeftBrace,
     RightBrace,
     LeftBracket,
@@ -68,5 +67,8 @@ public enum TokenType : byte
     Break,
     While,
     Continue,
-    Return
+    Return,
+
+    // End of File
+    Eof = 255
 }

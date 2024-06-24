@@ -11,9 +11,8 @@ do
     if (!string.IsNullOrEmpty(input))
     {
         var syntaxParser = new SyntaxParser();
-        var tree = syntaxParser
-            .Feed(input)
-            .GenerateSyntax();
+        var tree = syntaxParser.Feed(input)
+                               .GenerateSyntax();
 
         tree.PrettyPrint();
 

@@ -13,14 +13,14 @@ public class CharacterSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("'a'")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<CharacterLiteralExpression>(syntaxTree.Nodes[0]);
     }
-    
+
     [Fact]
     public void GenerateSyntax_Empty_InvalidExpression()
     {
@@ -28,20 +28,19 @@ public class CharacterSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("''")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message); });
     }
-    
+
     [Fact]
     public void GenerateSyntax_NoClosingSingleQuote_InvalidExpression()
     {
@@ -49,20 +48,19 @@ public class CharacterSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("'")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                        
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message); });
     }
-    
+
     [Fact]
     public void GenerateSyntax_EscapedCharacter_ReadSuccessfully()
     {
@@ -70,14 +68,14 @@ public class CharacterSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("'\\n'")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<CharacterLiteralExpression>(syntaxTree.Nodes[0]);
     }
-    
+
     [Fact]
     public void GenerateSyntax_HexCharacter_ReadSuccessfully()
     {
@@ -85,7 +83,7 @@ public class CharacterSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("'\\x123'")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);

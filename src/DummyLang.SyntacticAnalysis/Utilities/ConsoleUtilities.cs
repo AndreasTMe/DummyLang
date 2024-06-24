@@ -23,7 +23,7 @@ internal static class ConsoleUtilities
         {
             return string.Empty;
         }
-        
+
         return new string(' ', (indent - 1) * 5) + "  +--";
     }
 }

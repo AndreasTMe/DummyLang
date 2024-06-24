@@ -14,7 +14,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("0b101")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -32,7 +32,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("0x0123456789abcdef")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -50,7 +50,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123u")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -68,7 +68,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123l")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -86,7 +86,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123ul")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -104,7 +104,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123.123f")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -122,7 +122,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123.123d")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -140,7 +140,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123.123m")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -158,7 +158,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123.12e-10")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -176,7 +176,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("123f")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -187,7 +187,7 @@ public class NumberSyntaxParserTests
 
         // Act again
         syntaxTree = parser.Feed("123e10")
-            .GenerateSyntax();
+                           .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -206,7 +206,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed(source)
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
@@ -228,7 +228,7 @@ public class NumberSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed(source)
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         // addition = 0b1010 + multiplication
@@ -256,8 +256,8 @@ public class NumberSyntaxParserTests
         // parenthesised = ( subtraction )
         Assert.IsType<ParenthesisedExpression>(multiplication.Right);
         var parenthesised = (ParenthesisedExpression)multiplication.Right;
-        Assert.Equal(TokenType.LeftParen, parenthesised.LeftParen.Type);
-        Assert.Equal(TokenType.RightParen, parenthesised.RightParen.Type);
+        Assert.Equal(TokenType.LeftParenthesis, parenthesised.LeftParen.Type);
+        Assert.Equal(TokenType.RightParenthesis, parenthesised.RightParen.Type);
 
         // subtraction = unary - primary
         Assert.IsType<BinaryExpression>(parenthesised.Expression);

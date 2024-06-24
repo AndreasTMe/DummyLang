@@ -13,14 +13,14 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"some string 123\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<StringLiteralExpression>(syntaxTree.Nodes[0]);
     }
-    
+
     [Fact]
     public void GenerateSyntax_Empty_ReadSuccessfully()
     {
@@ -28,14 +28,14 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<StringLiteralExpression>(syntaxTree.Nodes[0]);
     }
-    
+
     [Fact]
     public void GenerateSyntax_NoClosingDoubleQuote_InvalidExpression()
     {
@@ -43,20 +43,19 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                                
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(StringLiteralExpression.ShouldBeSurroundedByDoubleQuote, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(StringLiteralExpression.ShouldBeSurroundedByDoubleQuote, info.Message); });
     }
-    
+
     [Fact]
     public void GenerateSyntax_EscapedClosingDoubleQuote_InvalidExpression()
     {
@@ -64,20 +63,19 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"\\\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                                        
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(StringLiteralExpression.ShouldNotEscapeLastDoubleQuote, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(StringLiteralExpression.ShouldNotEscapeLastDoubleQuote, info.Message); });
     }
-    
+
     [Fact]
     public void GenerateSyntax_EscapedCharacters_ReadSuccessfully()
     {
@@ -85,14 +83,14 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"some\\\" string\\n \\xab12 123\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<StringLiteralExpression>(syntaxTree.Nodes[0]);
     }
-    
+
     [Fact]
     public void GenerateSyntax_InvalidEscapedCharacter_InvalidExpression()
     {
@@ -100,20 +98,19 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"\\w\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                                        
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(StringLiteralExpression.InvalidEscapedCharacter, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(StringLiteralExpression.InvalidEscapedCharacter, info.Message); });
     }
-    
+
     [Fact]
     public void GenerateSyntax_InvalidHexCharacter_InvalidExpression()
     {
@@ -121,17 +118,16 @@ public class StringSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed("\"\\xZ\"")
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);
         Assert.Equal(1, syntaxTree.Nodes.Count);
         Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-                                        
+
         Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(syntaxTree.Diagnostics, info =>
-        {
-            Assert.Contains(StringLiteralExpression.InvalidEscapedCharacter, info.Message);
-        });
+        Assert.All(
+            syntaxTree.Diagnostics,
+            info => { Assert.Contains(StringLiteralExpression.InvalidEscapedCharacter, info.Message); });
     }
 }

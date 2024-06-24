@@ -9,12 +9,12 @@ public sealed class InvalidExpression : Expression
 
     public override bool IsValid => false;
 
-    public Token Token { get; }
+    public Token       Token      { get; }
     public Expression? Expression { get; }
 
     internal InvalidExpression(Token token, Expression? expression = null)
     {
-        Token = token;
+        Token      = token;
         Expression = expression;
     }
 

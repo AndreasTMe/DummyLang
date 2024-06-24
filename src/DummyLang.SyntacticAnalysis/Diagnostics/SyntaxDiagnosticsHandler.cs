@@ -6,7 +6,7 @@ namespace DummyLang.SyntacticAnalysis.Diagnostics;
 
 internal sealed class SyntaxDiagnosticsHandler : IDiagnosticsHandler
 {
-    private readonly ReaderWriterLockSlim _lock = new(LockRecursionPolicy.NoRecursion);
+    private readonly ReaderWriterLockSlim    _lock        = new(LockRecursionPolicy.NoRecursion);
     private readonly HashSet<DiagnosticInfo> _diagnostics = [];
 
     public IReadOnlySet<DiagnosticInfo> Diagnostics
@@ -31,12 +31,13 @@ internal sealed class SyntaxDiagnosticsHandler : IDiagnosticsHandler
         _lock.EnterWriteLock();
         try
         {
-            _diagnostics.Add(new DiagnosticInfo(
-                DiagnosticType.Syntax,
-                message,
-                path,
-                line,
-                column));
+            _diagnostics.Add(
+                new DiagnosticInfo(
+                    DiagnosticType.Syntax,
+                    message,
+                    path,
+                    line,
+                    column));
         }
         finally
         {

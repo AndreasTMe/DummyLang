@@ -14,7 +14,7 @@ public class VariableStatementSyntaxParserTests
         // Act
         var parser = new SyntaxParser();
         var syntaxTree = parser.Feed(source)
-            .GenerateSyntax();
+                               .GenerateSyntax();
 
         // Assert
         Assert.NotNull(syntaxTree);

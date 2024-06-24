@@ -7,19 +7,19 @@ public readonly struct DiagnosticInfo : IEquatable<DiagnosticInfo>
 {
     private static readonly StringBuilder Sb = new();
 
-    public DiagnosticType Type { get; }
-    public string Message { get; }
-    public string Path { get; }
-    public int Line { get; }
-    public int Column { get; }
+    public DiagnosticType Type    { get; }
+    public string         Message { get; }
+    public string         Path    { get; }
+    public int            Line    { get; }
+    public int            Column  { get; }
 
     public DiagnosticInfo(DiagnosticType type, string message, string path, int line, int column)
     {
-        Type = type;
+        Type    = type;
         Message = message;
-        Path = path;
-        Line = line;
-        Column = column;
+        Path    = path;
+        Line    = line;
+        Column  = column;
     }
 
     public void Log()
@@ -30,9 +30,11 @@ public readonly struct DiagnosticInfo : IEquatable<DiagnosticInfo>
         if (!string.IsNullOrWhiteSpace(Path))
         {
             Sb.Append("\tat ").Append(Path);
-            Sb.Append(". (line: ").Append(Line)
-                .Append(", column: ").Append(Column)
-                .Append(')');
+            Sb.Append(". (line: ")
+              .Append(Line)
+              .Append(", column: ")
+              .Append(Column)
+              .Append(')');
         }
 
         Console.WriteLine(Sb.ToString());

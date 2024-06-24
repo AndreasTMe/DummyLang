@@ -6,12 +6,12 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 public sealed class PrimaryExpression : Expression
 {
     public Expression Expression { get; }
-    public Token Token { get; }
+    public Token      Token      { get; }
 
     public PrimaryExpression(Expression expression, Token token)
     {
         Expression = expression;
-        Token = token;
+        Token      = token;
     }
 
     public override void PrettyPrint(int indent)

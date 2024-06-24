@@ -28,9 +28,9 @@ internal static class StringExtensions
 
     internal static bool HasInvalidEscapedCharacters(this string str)
     {
-        var span = str.AsSpan();
+        var span           = str.AsSpan();
         var expectsEscaped = false;
-        var expectsHex = false;
+        var expectsHex     = false;
 
         foreach (var current in span)
         {
@@ -42,7 +42,7 @@ internal static class StringExtensions
                 }
 
                 expectsEscaped = false;
-                expectsHex = false;
+                expectsHex     = false;
                 continue;
             }
 
@@ -51,7 +51,7 @@ internal static class StringExtensions
                 if (current == 'x')
                 {
                     expectsEscaped = false;
-                    expectsHex = true;
+                    expectsHex     = true;
                     continue;
                 }
 

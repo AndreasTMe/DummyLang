@@ -6,8 +6,8 @@ public class Token : IEquatable<Token>
 {
     public static readonly Token None = new();
 
-    public TokenType Type { get; } = TokenType.None;
-    public string Value { get; } = string.Empty;
+    public TokenType     Type     { get; } = TokenType.None;
+    public string        Value    { get; } = string.Empty;
     public TokenPosition Position { get; } = TokenPosition.Zero;
 
     private Token()
@@ -16,8 +16,8 @@ public class Token : IEquatable<Token>
 
     public Token(TokenType type, string value, TokenPosition position)
     {
-        Type = type;
-        Value = value;
+        Type     = type;
+        Value    = value;
         Position = position;
     }
 

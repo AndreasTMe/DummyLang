@@ -11,14 +11,14 @@ namespace DummyLang.SyntacticAnalysis;
 
 public class SyntaxParser
 {
-    private readonly Tokenizer _tokenizer = new();
-    private readonly SyntaxTree _syntaxTree = new();
+    private readonly Tokenizer                _tokenizer          = new();
+    private readonly SyntaxTree               _syntaxTree         = new();
     private readonly SyntaxDiagnosticsHandler _diagnosticsHandler = new();
 
-    private string _sourcePath = string.Empty;
-    private List<Token> _tokens = [];
-    private Token _current = Token.None;
-    private int _index;
+    private string      _sourcePath = string.Empty;
+    private List<Token> _tokens     = [];
+    private Token       _current    = Token.None;
+    private int         _index;
 
     private Token Current
     {
@@ -41,7 +41,7 @@ public class SyntaxParser
         _tokenizer.Use(sourcePath);
 
         var tokens = new List<Token>();
-        var token = _tokenizer.ReadNext();
+        var token  = _tokenizer.ReadNext();
 
         while (!token.IsEof())
         {
@@ -53,7 +53,7 @@ public class SyntaxParser
         _tokens = tokens;
 
         _current = Token.None;
-        _index = 0;
+        _index   = 0;
 
         return this;
     }
@@ -104,7 +104,7 @@ public class SyntaxParser
                 break;
             }
 
-            var op = GetAndMoveToNext();
+            var op    = GetAndMoveToNext();
             var right = ParseExpression(currentPrecedence);
 
             left = new BinaryExpression(left, op, right);
@@ -127,16 +127,16 @@ public class SyntaxParser
             case TokenType.Star:
             case TokenType.Ampersand:
             {
-                var unaryOperator = GetAndMoveToNext();
-                Expression? expression = null;
+                var         unaryOperator = GetAndMoveToNext();
+                Expression? expression    = null;
 
                 if (Current.Type == TokenType.Identifier)
                 {
                     expression = new IdentifierExpression(GetAndMoveToNext());
                 }
 
-                if ((unaryOperator.Type == TokenType.Plus || unaryOperator.Type == TokenType.Minus) &&
-                    (Current.Type == TokenType.Integer || Current.Type == TokenType.Real))
+                if ((unaryOperator.Type == TokenType.Plus || unaryOperator.Type == TokenType.Minus)
+                    && (Current.Type == TokenType.Integer || Current.Type == TokenType.Real))
                 {
                     expression = ParseNumberExpression(Current.Type == TokenType.Integer);
                 }
@@ -150,12 +150,12 @@ public class SyntaxParser
                     unaryOperator,
                     expression ?? new InvalidExpression(GetAndMoveToNext()));
             }
-            case TokenType.LeftParen:
+            case TokenType.LeftParenthesis:
             {
-                var leftParen = GetAndMoveToNext();
+                var leftParen  = GetAndMoveToNext();
                 var expression = ParseExpression();
 
-                if (Current.Type == TokenType.RightParen)
+                if (Current.Type == TokenType.RightParenthesis)
                 {
                     return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
                 }
@@ -166,13 +166,19 @@ public class SyntaxParser
                     Token.ExpectedAt(Current.Position),
                     new ParenthesisedExpression(leftParen, expression));
             }
-            case TokenType.RightParen:
+            case TokenType.RightParenthesis:
             {
                 CaptureDiagnosticsInfo(Current, ParenthesisedExpression.OpeningParenthesisExpected);
                 return new InvalidExpression(GetAndMoveToNext());
             }
             case TokenType.Identifier:
             {
+                // TODO: Check for function
+                // TODO: Check for array access
+                // TODO: Check for pointer access
+                // TODO: Check for member access
+                // TODO: Check for range operator
+
                 var identifierExpression = new IdentifierExpression(GetAndMoveToNext());
 
                 if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
@@ -194,8 +200,8 @@ public class SyntaxParser
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
             case TokenType.Character:
             {
-                var characterToken = GetAndMoveToNext();
-                var characterValue = characterToken.Value;
+                var characterToken             = GetAndMoveToNext();
+                var characterValue             = characterToken.Value;
                 var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
 
                 var diagnosticMessage = string.Empty;
@@ -229,8 +235,8 @@ public class SyntaxParser
             }
             case TokenType.String:
             {
-                var stringToken = GetAndMoveToNext();
-                var stringValue = stringToken.Value;
+                var stringToken             = GetAndMoveToNext();
+                var stringValue             = stringToken.Value;
                 var stringLiteralExpression = new StringLiteralExpression(stringToken);
 
                 var diagnosticsMessage = string.Empty;
@@ -298,6 +304,8 @@ public class SyntaxParser
     {
         switch (Current.Type)
         {
+            case TokenType.Assign:
+                return OperatorPrecedence.Assignment;
             case TokenType.DoubleQuestionMark:
                 return OperatorPrecedence.NullCoalescing;
             case TokenType.DoublePipe:
@@ -310,8 +318,6 @@ public class SyntaxParser
                 return OperatorPrecedence.BitwiseXOr;
             case TokenType.Ampersand:
                 return OperatorPrecedence.BitwiseAnd;
-            case TokenType.Assign:
-                return OperatorPrecedence.Assignment;
             case TokenType.Equal:
             case TokenType.NotEqual:
                 return OperatorPrecedence.Equality;
@@ -340,13 +346,9 @@ public class SyntaxParser
     private void CaptureDiagnosticsInfo(Token token, string message)
     {
         if (token.Type is TokenType.None or TokenType.Eof)
-        {
             message = "Syntax Error: Invalid token. " + message.TrimStart();
-        }
         else
-        {
             message = $"Syntax Error: Invalid token ({token.Value}). " + message.TrimStart();
-        }
 
         // TODO: Update when actual file path will be used
         const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
