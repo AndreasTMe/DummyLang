@@ -109,19 +109,23 @@ public sealed class Tokenizer
     private Token GenerateTokenBasedOnNext(TokenType type, params TokenType[] possibleTypes)
     {
         var sourceFromCurrentPosition = _source.AsSpan(_index);
+        var lastTokenMatch            = string.Empty;
+        var lastTokenTypeMatch        = TokenType.None;
 
-        foreach (var possibleType in possibleTypes)
+        foreach (var typeToCheck in possibleTypes)
         {
-            var stringToken = possibleType.GetStringToken();
+            var stringToken = typeToCheck.GetStringToken();
             if (!sourceFromCurrentPosition.StartsWith(stringToken))
-            {
                 continue;
-            }
 
-            return GenerateToken(possibleType);
+            if (stringToken.Length <= lastTokenMatch.Length)
+                continue;
+
+            lastTokenMatch     = stringToken;
+            lastTokenTypeMatch = typeToCheck;
         }
 
-        return GenerateToken(type);
+        return GenerateToken(lastTokenTypeMatch == TokenType.None ? type : lastTokenTypeMatch);
     }
 
     private Token ReadString()

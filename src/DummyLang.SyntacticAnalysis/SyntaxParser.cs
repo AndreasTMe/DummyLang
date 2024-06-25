@@ -15,19 +15,17 @@ public class SyntaxParser
     private readonly SyntaxTree               _syntaxTree         = new();
     private readonly SyntaxDiagnosticsHandler _diagnosticsHandler = new();
 
-    private string      _sourcePath = string.Empty;
-    private List<Token> _tokens     = [];
-    private Token       _current    = Token.None;
-    private int         _index;
+    private string  _sourcePath = string.Empty;
+    private Token[] _tokens     = [];
+    private Token   _current    = Token.None;
+    private int     _index;
 
     private Token Current
     {
         get
         {
-            if (_index < _tokens.Count)
-            {
+            if (_index < _tokens.Length)
                 _current = _tokens[_index];
-            }
 
             return _current;
         }
@@ -43,14 +41,14 @@ public class SyntaxParser
         var tokens = new List<Token>();
         var token  = _tokenizer.ReadNext();
 
-        while (!token.IsEof())
+        while (!token.IsEndOfFile())
         {
             tokens.Add(token);
             token = _tokenizer.ReadNext();
         }
 
         tokens.Add(token);
-        _tokens = tokens;
+        _tokens = tokens.ToArray();
 
         _current = Token.None;
         _index   = 0;
@@ -62,35 +60,31 @@ public class SyntaxParser
     {
         _syntaxTree.Clear();
 
-        while (_index < _tokens.Count)
+        while (_index < _tokens.Length)
         {
             var lastIndex = _index;
 
-            if (Current.IsEof() || Current.IsInvalid())
-            {
+            if (Current.IsEndOfFile() || Current.IsInvalid())
                 break;
-            }
 
             var node = ParseExpression();
             _syntaxTree.Insert(node);
 
             if (lastIndex == _index)
-            {
                 MoveToNext();
-            }
         }
 
         _syntaxTree.CaptureDiagnostics(_diagnosticsHandler.Diagnostics);
 
-        _tokens.Clear();
-        _diagnosticsHandler.Clear();
+        _current = Token.None;
+        _index   = 0;
 
         return _syntaxTree;
     }
 
     private void MoveToNext() => _index++;
 
-    private Token GetAndMoveToNext() => _index < _tokens.Count ? _tokens[_index++] : Token.None;
+    private Token GetAndMoveToNext() => _index < _tokens.Length ? _tokens[_index++] : Token.None;
 
     private Expression ParseExpression(OperatorPrecedence previousPrecedence = 0)
     {
@@ -98,11 +92,9 @@ public class SyntaxParser
 
         while (Current.IsBinaryOperator())
         {
-            var currentPrecedence = GetOperatorPrecedence();
+            var currentPrecedence = Current.GetOperatorPrecedence();
             if (currentPrecedence == OperatorPrecedence.None || currentPrecedence <= previousPrecedence)
-            {
                 break;
-            }
 
             var op    = GetAndMoveToNext();
             var right = ParseExpression(currentPrecedence);
@@ -126,72 +118,33 @@ public class SyntaxParser
             case TokenType.Tilde:
             case TokenType.Star:
             case TokenType.Ampersand:
-            {
-                var         unaryOperator = GetAndMoveToNext();
-                Expression? expression    = null;
-
-                if (Current.Type == TokenType.Identifier)
-                {
-                    expression = new IdentifierExpression(GetAndMoveToNext());
-                }
-
-                if ((unaryOperator.Type == TokenType.Plus || unaryOperator.Type == TokenType.Minus)
-                    && (Current.Type == TokenType.Integer || Current.Type == TokenType.Real))
-                {
-                    expression = ParseNumberExpression(Current.Type == TokenType.Integer);
-                }
-
-                if (expression is null)
-                {
-                    CaptureDiagnosticsInfo(unaryOperator, UnaryExpression.AppliedToInvalidToken);
-                }
-
-                return new UnaryExpression(
-                    unaryOperator,
-                    expression ?? new InvalidExpression(GetAndMoveToNext()));
-            }
+                return ParseUnaryExpression();
             case TokenType.LeftParenthesis:
-            {
-                var leftParen  = GetAndMoveToNext();
-                var expression = ParseExpression();
-
-                if (Current.Type == TokenType.RightParenthesis)
-                {
-                    return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
-                }
-
-                CaptureDiagnosticsInfo(Current, ParenthesisedExpression.ClosingParenthesisExpected);
-
-                return new InvalidExpression(
-                    Token.ExpectedAt(Current.Position),
-                    new ParenthesisedExpression(leftParen, expression));
-            }
+                return ParseParenthesisedExpression();
             case TokenType.RightParenthesis:
-            {
                 CaptureDiagnosticsInfo(Current, ParenthesisedExpression.OpeningParenthesisExpected);
                 return new InvalidExpression(GetAndMoveToNext());
-            }
             case TokenType.Identifier:
             {
-                // TODO: Check for function
+                var identifierToken = GetAndMoveToNext();
+
+                if (Current.Type == TokenType.LeftParenthesis)
+                    return ParseFunctionCallExpression(identifierToken);
+
                 // TODO: Check for array access
                 // TODO: Check for pointer access
                 // TODO: Check for member access
                 // TODO: Check for range operator
 
-                var identifierExpression = new IdentifierExpression(GetAndMoveToNext());
+                var identifierExpression = new IdentifierExpression(identifierToken);
 
                 if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
-                {
                     return identifierExpression;
-                }
 
                 var expression = new PrimaryExpression(identifierExpression, GetAndMoveToNext());
 
                 while (Current.Type is TokenType.PlusPlus or TokenType.MinusMinus)
-                {
                     expression = new PrimaryExpression(expression, GetAndMoveToNext());
-                }
 
                 return expression;
             }
@@ -199,69 +152,101 @@ public class SyntaxParser
             case TokenType.Real:
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
             case TokenType.Character:
-            {
-                var characterToken             = GetAndMoveToNext();
-                var characterValue             = characterToken.Value;
-                var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
-
-                var diagnosticMessage = string.Empty;
-
-                if (!characterValue.HasValidCharacterLength())
-                    diagnosticMessage = CharacterLiteralExpression.ShouldBeOfCertainLength;
-                else if (!characterValue.IsSurroundedBySingleQuotes())
-                    diagnosticMessage = CharacterLiteralExpression.ShouldStartEndWithSingleQuote;
-                else if (characterValue.IsUnescapedSingleQuoteOrBackslash())
-                    diagnosticMessage = CharacterLiteralExpression.ShouldBeEscaped;
-                else if (characterValue[1] == '\\')
-                {
-                    if (characterValue[2] == 'x')
-                    {
-                        // ReSharper disable once InvertIf
-                        if (!characterValue.IsValidHexadecimalCharacter())
-                            diagnosticMessage = CharacterLiteralExpression.InvalidEscapedCharacter;
-                    }
-                    else if (!characterValue.IsValidEscapedCharacter())
-                        diagnosticMessage = CharacterLiteralExpression.InvalidHexadecimalCharacter;
-                }
-
-                switch (string.IsNullOrWhiteSpace(diagnosticMessage))
-                {
-                    case false:
-                        CaptureDiagnosticsInfo(characterToken, CharacterLiteralExpression.ShouldBeOfCertainLength);
-                        return new InvalidExpression(characterToken, characterLiteralExpression);
-                    default:
-                        return characterLiteralExpression;
-                }
-            }
+                return ParseCharacterExpression();
             case TokenType.String:
-            {
-                var stringToken             = GetAndMoveToNext();
-                var stringValue             = stringToken.Value;
-                var stringLiteralExpression = new StringLiteralExpression(stringToken);
-
-                var diagnosticsMessage = string.Empty;
-
-                if (!stringValue.IsValidLength() || !stringValue.IsSurroundedByDoubleQuotes())
-                    diagnosticsMessage = StringLiteralExpression.ShouldBeSurroundedByDoubleQuote;
-                else if (stringValue.EscapesLastDoubleQuote())
-                    diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
-                else if (stringValue.HasInvalidEscapedCharacters())
-                    diagnosticsMessage = StringLiteralExpression.InvalidEscapedCharacter;
-
-                if (string.IsNullOrWhiteSpace(diagnosticsMessage))
-                {
-                    return stringLiteralExpression;
-                }
-
-                CaptureDiagnosticsInfo(stringToken, diagnosticsMessage);
-                return new InvalidExpression(stringToken, stringLiteralExpression);
-            }
+                return ParseStringExpression();
             default:
-            {
                 CaptureDiagnosticsInfo(Current, InvalidExpression.UnsupportedOrUnimplemented);
                 return new InvalidExpression(GetAndMoveToNext());
-            }
         }
+    }
+
+    private UnaryExpression ParseUnaryExpression()
+    {
+        var         unaryOperator = GetAndMoveToNext();
+        Expression? expression    = null;
+
+        if (Current.Type == TokenType.Identifier)
+            expression = new IdentifierExpression(GetAndMoveToNext());
+
+        if (unaryOperator.IsAdditiveOperator() && Current.IsNumber())
+            expression = ParseNumberExpression(Current.Type == TokenType.Integer);
+
+        if (expression is null)
+            CaptureDiagnosticsInfo(unaryOperator, UnaryExpression.AppliedToInvalidToken);
+
+        return new UnaryExpression(
+            unaryOperator,
+            expression ?? new InvalidExpression(GetAndMoveToNext()));
+    }
+
+    private Expression ParseParenthesisedExpression()
+    {
+        var leftParen  = GetAndMoveToNext();
+        var expression = ParseExpression();
+
+        if (Current.Type == TokenType.RightParenthesis)
+            return new ParenthesisedExpression(leftParen, expression, GetAndMoveToNext());
+
+        CaptureDiagnosticsInfo(Current, ParenthesisedExpression.ClosingParenthesisExpected);
+
+        return new InvalidExpression(
+            Token.ExpectedAt(Current.Position),
+            new ParenthesisedExpression(leftParen, expression));
+    }
+
+    // TODO: Implement function call parsing
+    private Expression ParseFunctionCallExpression(in Token identifier)
+    {
+        // TODO: This is the balanced brackets leetcode, move to utility
+        var currentIndex = _index + 1;
+        var stack        = new Stack<Token>();
+        stack.Push(Current);
+
+        var reachedInvalidToken = false;
+        while (currentIndex < _tokens.Length)
+        {
+            var currentToken = _tokens[currentIndex];
+
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+            switch (currentToken.Type)
+            {
+                case TokenType.LeftParenthesis:
+                case TokenType.LeftBrace:
+                case TokenType.LeftBracket:
+                {
+                    stack.Push(currentToken);
+                    currentIndex++;
+                    continue;
+                }
+                case TokenType.RightParenthesis:
+                case TokenType.RightBrace:
+                case TokenType.RightBracket:
+                {
+                    if (stack.TryPeek(out var top)
+                        && (top.IsParenthesisMatch(currentToken)
+                            || top.IsBracketMatch(currentToken)
+                            || top.IsBraceMatch(currentToken)))
+                        stack.Pop();
+                    else
+                        reachedInvalidToken = true;
+
+                    break;
+                }
+            }
+
+            if (reachedInvalidToken)
+                break;
+
+            currentIndex++;
+
+            if (stack.Count == 0)
+                break;
+        }
+
+        return reachedInvalidToken
+            ? new InvalidExpression(Token.None)
+            : new PrimaryExpression(new FunctionCallExpression(identifier, Token.None, Token.None, [], []));
     }
 
     private NumberLiteralExpression ParseNumberExpression(bool isInteger)
@@ -300,47 +285,62 @@ public class SyntaxParser
         return new NumberLiteralExpression(GetAndMoveToNext(), realType);
     }
 
-    private OperatorPrecedence GetOperatorPrecedence()
+    private Expression ParseCharacterExpression()
     {
-        switch (Current.Type)
+        var characterToken             = GetAndMoveToNext();
+        var characterValue             = characterToken.Value;
+        var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
+
+        var diagnosticMessage = string.Empty;
+
+        if (!characterValue.HasValidCharacterLength())
+            diagnosticMessage = CharacterLiteralExpression.ShouldBeOfCertainLength;
+        else if (!characterValue.IsSurroundedBySingleQuotes())
+            diagnosticMessage = CharacterLiteralExpression.ShouldStartEndWithSingleQuote;
+        else if (characterValue.IsUnescapedSingleQuoteOrBackslash())
+            diagnosticMessage = CharacterLiteralExpression.ShouldBeEscaped;
+        else if (characterValue[1] == '\\')
         {
-            case TokenType.Assign:
-                return OperatorPrecedence.Assignment;
-            case TokenType.DoubleQuestionMark:
-                return OperatorPrecedence.NullCoalescing;
-            case TokenType.DoublePipe:
-                return OperatorPrecedence.ConditionalOr;
-            case TokenType.DoubleAmpersand:
-                return OperatorPrecedence.ConditionalAnd;
-            case TokenType.Pipe:
-                return OperatorPrecedence.BitwiseOr;
-            case TokenType.Caret:
-                return OperatorPrecedence.BitwiseXOr;
-            case TokenType.Ampersand:
-                return OperatorPrecedence.BitwiseAnd;
-            case TokenType.Equal:
-            case TokenType.NotEqual:
-                return OperatorPrecedence.Equality;
-            case TokenType.LessThan:
-            case TokenType.LessThanOrEqual:
-            case TokenType.GreaterThan:
-            case TokenType.GreaterThanOrEqual:
-                return OperatorPrecedence.Relational;
-            case TokenType.LeftBitShift:
-            case TokenType.RightBitShift:
-                return OperatorPrecedence.Bitshift;
-            case TokenType.Plus:
-            case TokenType.Minus:
-                return OperatorPrecedence.Additive;
-            case TokenType.Star:
-            case TokenType.Slash:
-            case TokenType.Percent:
-                return OperatorPrecedence.Multiplicative;
-            case TokenType.DoubleDot:
-                return OperatorPrecedence.Range;
-            default:
-                return OperatorPrecedence.None;
+            if (characterValue[2] == 'x')
+            {
+                // ReSharper disable once InvertIf
+                if (!characterValue.IsValidHexadecimalCharacter())
+                    diagnosticMessage = CharacterLiteralExpression.InvalidEscapedCharacter;
+            }
+            else if (!characterValue.IsValidEscapedCharacter())
+                diagnosticMessage = CharacterLiteralExpression.InvalidHexadecimalCharacter;
         }
+
+        switch (string.IsNullOrWhiteSpace(diagnosticMessage))
+        {
+            case false:
+                CaptureDiagnosticsInfo(characterToken, CharacterLiteralExpression.ShouldBeOfCertainLength);
+                return new InvalidExpression(characterToken, characterLiteralExpression);
+            default:
+                return characterLiteralExpression;
+        }
+    }
+
+    private Expression ParseStringExpression()
+    {
+        var stringToken             = GetAndMoveToNext();
+        var stringValue             = stringToken.Value;
+        var stringLiteralExpression = new StringLiteralExpression(stringToken);
+
+        var diagnosticsMessage = string.Empty;
+
+        if (!stringValue.IsValidLength() || !stringValue.IsSurroundedByDoubleQuotes())
+            diagnosticsMessage = StringLiteralExpression.ShouldBeSurroundedByDoubleQuote;
+        else if (stringValue.EscapesLastDoubleQuote())
+            diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
+        else if (stringValue.HasInvalidEscapedCharacters())
+            diagnosticsMessage = StringLiteralExpression.InvalidEscapedCharacter;
+
+        if (string.IsNullOrWhiteSpace(diagnosticsMessage))
+            return stringLiteralExpression;
+
+        CaptureDiagnosticsInfo(stringToken, diagnosticsMessage);
+        return new InvalidExpression(stringToken, stringLiteralExpression);
     }
 
     private void CaptureDiagnosticsInfo(Token token, string message)
