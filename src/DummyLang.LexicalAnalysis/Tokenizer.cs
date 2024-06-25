@@ -44,7 +44,7 @@ public sealed class Tokenizer
             '.' => GenerateTokenBasedOnNext(TokenType.Dot, TokenType.DoubleDot),
             ';' => GenerateToken(TokenType.Semicolon),
             ':' => GenerateToken(TokenType.Colon),
-            '=' => GenerateTokenBasedOnNext(TokenType.Assign, TokenType.Equal),
+            '=' => GenerateTokenBasedOnNext(TokenType.Assign, TokenType.AssignLambda, TokenType.Equal),
             '!' => GenerateTokenBasedOnNext(TokenType.Bang, TokenType.NotEqual),
             '+' => GenerateTokenBasedOnNext(TokenType.Plus, TokenType.PlusPlus, TokenType.PlusAssign),
             '-' => GenerateTokenBasedOnNext(

@@ -12,6 +12,7 @@ internal static class TokenTypeExtensions
             TokenType.Semicolon                => ";",
             TokenType.Colon                    => ":",
             TokenType.Assign                   => "=",
+            TokenType.AssignLambda             => "=>",
             TokenType.Bang                     => "!",
             TokenType.Equal                    => "==",
             TokenType.NotEqual                 => "!=",

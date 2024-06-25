@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace DummyLang.SyntacticAnalysis.Tests;
+namespace DummyLang.SyntacticAnalysis.Tests.Statements;
 
 public class VariableStatementSyntaxParserTests
 {

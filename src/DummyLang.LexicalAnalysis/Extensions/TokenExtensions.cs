@@ -12,6 +12,7 @@ public static class TokenExtensions
         Array.Fill(BinaryOperators, TokenType.None);
 
         BinaryOperators[(int)TokenType.Assign]                   = TokenType.Assign;
+        BinaryOperators[(int)TokenType.AssignLambda]             = TokenType.AssignLambda;
         BinaryOperators[(int)TokenType.Equal]                    = TokenType.Equal;
         BinaryOperators[(int)TokenType.NotEqual]                 = TokenType.NotEqual;
         BinaryOperators[(int)TokenType.Plus]                     = TokenType.Plus;
@@ -48,6 +49,8 @@ public static class TokenExtensions
     public static bool IsBinaryOperator(this Token token) => BinaryOperators[(int)token.Type] == token.Type;
 
     public static bool IsNumber(this Token token) => token.Type == TokenType.Integer || token.Type == TokenType.Real;
+    
+    public static bool IsReservedKeyword(this Token token) => token.Type >= TokenType.Var;
 
     public static bool IsParenthesisMatch(this Token token, Token other) =>
         token.Type == TokenType.LeftParenthesis && other.Type == TokenType.RightParenthesis;
@@ -58,6 +61,8 @@ public static class TokenExtensions
     public static bool IsBraceMatch(this Token token, Token other) =>
         token.Type == TokenType.LeftBrace && other.Type == TokenType.RightBrace;
 
+    public static bool IsEndOfStatement(this Token token) => token.Type == TokenType.Semicolon;
+    
     public static bool IsEndOfFile(this Token token) => token.Type == TokenType.Eof;
 
     public static bool IsInvalid(this Token token) => token.Type == TokenType.None;

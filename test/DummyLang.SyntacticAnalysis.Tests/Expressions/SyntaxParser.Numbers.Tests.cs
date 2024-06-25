@@ -3,7 +3,7 @@ using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using Xunit;
 
-namespace DummyLang.SyntacticAnalysis.Tests;
+namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 
 public class NumberSyntaxParserTests
 {

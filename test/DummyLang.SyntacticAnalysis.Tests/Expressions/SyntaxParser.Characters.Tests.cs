@@ -2,7 +2,7 @@
 using Xunit;
 
 // ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
-namespace DummyLang.SyntacticAnalysis.Tests;
+namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 
 public class CharacterSyntaxParserTests
 {

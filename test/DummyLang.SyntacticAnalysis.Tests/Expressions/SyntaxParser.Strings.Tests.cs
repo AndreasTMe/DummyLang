@@ -1,7 +1,7 @@
 ﻿using DummyLang.SyntacticAnalysis.Expressions;
 using Xunit;
 
-namespace DummyLang.SyntacticAnalysis.Tests;
+namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 
 // ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 public class StringSyntaxParserTests

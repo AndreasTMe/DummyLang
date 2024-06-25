@@ -195,58 +195,58 @@ public class SyntaxParser
             new ParenthesisedExpression(leftParen, expression));
     }
 
-    // TODO: Implement function call parsing
     private Expression ParseFunctionCallExpression(in Token identifier)
     {
-        // TODO: This is the balanced brackets leetcode, move to utility
-        var currentIndex = _index + 1;
-        var stack        = new Stack<Token>();
-        stack.Push(Current);
+        Token leftParenthesis;
+        var   rightParenthesis = Token.None;
+        var   expressions      = new List<Expression>();
+        var   commas           = new List<Token>();
 
-        var reachedInvalidToken = false;
-        while (currentIndex < _tokens.Length)
+        if (ParsingUtilities.TryGetBalancedBrackets(in _tokens, _index, out var endIndex))
         {
-            var currentToken = _tokens[currentIndex];
+            leftParenthesis  = GetAndMoveToNext();
+            rightParenthesis = _tokens[endIndex];
 
-            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
-            switch (currentToken.Type)
+            while (_index < endIndex)
             {
-                case TokenType.LeftParenthesis:
-                case TokenType.LeftBrace:
-                case TokenType.LeftBracket:
-                {
-                    stack.Push(currentToken);
-                    currentIndex++;
-                    continue;
-                }
-                case TokenType.RightParenthesis:
-                case TokenType.RightBrace:
-                case TokenType.RightBracket:
-                {
-                    if (stack.TryPeek(out var top)
-                        && (top.IsParenthesisMatch(currentToken)
-                            || top.IsBracketMatch(currentToken)
-                            || top.IsBraceMatch(currentToken)))
-                        stack.Pop();
-                    else
-                        reachedInvalidToken = true;
+                expressions.Add(ParseExpression());
 
-                    break;
-                }
+                if (Current.Type == TokenType.Comma)
+                    commas.Add(GetAndMoveToNext());
             }
 
-            if (reachedInvalidToken)
-                break;
+            // Ensuring correct indexing
+            _index = endIndex + 1;
 
-            currentIndex++;
-
-            if (stack.Count == 0)
-                break;
+            return new PrimaryExpression(
+                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
         }
 
-        return reachedInvalidToken
-            ? new InvalidExpression(Token.None)
-            : new PrimaryExpression(new FunctionCallExpression(identifier, Token.None, Token.None, [], []));
+        if (_index == endIndex - 1 && Current.Type == TokenType.LeftParenthesis)
+        {
+            leftParenthesis = GetAndMoveToNext();
+            return new InvalidExpression(
+                leftParenthesis,
+                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
+        }
+
+        leftParenthesis  = GetAndMoveToNext();
+        rightParenthesis = _tokens[endIndex];
+
+        while (_index < endIndex)
+        {
+            expressions.Add(ParseExpression());
+
+            if (Current.Type == TokenType.Comma)
+                commas.Add(GetAndMoveToNext());
+        }
+
+        // Ensuring correct indexing
+        _index = endIndex + 1;
+
+        return new InvalidExpression(
+            leftParenthesis,
+            new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
     }
 
     private NumberLiteralExpression ParseNumberExpression(bool isInteger)

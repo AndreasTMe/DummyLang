@@ -9,7 +9,8 @@ public enum TokenType : byte
     Semicolon = 3,
     Colon     = 4,
 
-    Assign = 10,
+    Assign       = 10,
+    AssignLambda = 11,
 
     Bang = 15,
 

@@ -29,10 +29,12 @@ public sealed class FunctionCallExpression : Expression
 
     public override void PrettyPrint(int indent)
     {
-        ConsoleUtilities.WriteLineFormatted($"{nameof(FunctionCallExpression)}({Identifier.Value})", indent);
+        ConsoleUtilities.WriteLineFormatted(nameof(FunctionCallExpression), indent);
 
-        ConsoleUtilities.WriteLineFormatted(Identifier.Type.ToString(), indent + 1);
-        ConsoleUtilities.WriteLineFormatted(LeftParenthesis.Type.ToString(), indent + 1);
+        ConsoleUtilities.WriteLineFormatted($"{Identifier.Type}({Identifier.Value})", indent + 1);
+
+        if (LeftParenthesis.Type != TokenType.None)
+            ConsoleUtilities.WriteLineFormatted(LeftParenthesis.Type.ToString(), indent + 1);
 
         for (var i = 0; i < Math.Max(Parameters.Count, Commas.Count); i++)
         {
@@ -43,6 +45,7 @@ public sealed class FunctionCallExpression : Expression
                 ConsoleUtilities.WriteLineFormatted(Commas[i].Type.ToString(), indent + 1);
         }
 
-        ConsoleUtilities.WriteLineFormatted(RightParenthesis.Type.ToString(), indent + 1);
+        if (RightParenthesis.Type != TokenType.None)
+            ConsoleUtilities.WriteLineFormatted(RightParenthesis.Type.ToString(), indent + 1);
     }
 }
