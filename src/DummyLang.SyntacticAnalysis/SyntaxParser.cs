@@ -231,7 +231,9 @@ public class SyntaxParser
         }
 
         leftParenthesis  = GetAndMoveToNext();
-        rightParenthesis = _tokens[endIndex];
+        rightParenthesis = _tokens[endIndex].Type == TokenType.RightParenthesis
+            ? _tokens[endIndex]
+            : Token.None;
 
         while (_index < endIndex)
         {
