@@ -131,7 +131,9 @@ public class SyntaxParser
                 if (Current.Type == TokenType.LeftParenthesis)
                     return ParseFunctionCallExpression(identifierToken);
 
-                // TODO: Check for array access
+                if (Current.Type == TokenType.LeftBracket)
+                    return ParseIndexerExpression(identifierToken);
+
                 // TODO: Check for pointer access
                 // TODO: Check for member access
                 // TODO: Check for range operator
@@ -230,7 +232,7 @@ public class SyntaxParser
                 new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
         }
 
-        leftParenthesis  = GetAndMoveToNext();
+        leftParenthesis = GetAndMoveToNext();
         rightParenthesis = _tokens[endIndex].Type == TokenType.RightParenthesis
             ? _tokens[endIndex]
             : Token.None;
@@ -249,6 +251,46 @@ public class SyntaxParser
         return new InvalidExpression(
             leftParenthesis,
             new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
+    }
+
+    private Expression ParseIndexerExpression(in Token identifier)
+    {
+        Token       leftBracket;
+        var         rightBracket = Token.None;
+        Expression? expression   = null;
+
+        if (ParsingUtilities.TryGetBalancedBrackets(in _tokens, _index, out var endIndex))
+        {
+            leftBracket  = GetAndMoveToNext();
+            expression   = ParseExpression();
+            rightBracket = _tokens[endIndex];
+
+            // Ensuring correct indexing
+            _index = endIndex + 1;
+
+            return new PrimaryExpression(new IndexerExpression(identifier, leftBracket, rightBracket, expression));
+        }
+
+        if (_index == endIndex - 1 && Current.Type == TokenType.LeftBracket)
+        {
+            leftBracket = GetAndMoveToNext();
+            return new InvalidExpression(
+                leftBracket,
+                new IndexerExpression(identifier, leftBracket, rightBracket, expression));
+        }
+
+        leftBracket = GetAndMoveToNext();
+        expression  = ParseExpression();
+        rightBracket = _tokens[endIndex].Type == TokenType.RightBracket
+            ? _tokens[endIndex]
+            : Token.None;
+
+        // Ensuring correct indexing
+        _index = endIndex + 1;
+
+        return new InvalidExpression(
+            leftBracket,
+            new IndexerExpression(identifier, leftBracket, rightBracket, expression));
     }
 
     private NumberLiteralExpression ParseNumberExpression(bool isInteger)
