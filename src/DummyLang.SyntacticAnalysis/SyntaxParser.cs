@@ -125,31 +125,7 @@ public class SyntaxParser
                 CaptureDiagnosticsInfo(Current, ParenthesisedExpression.OpeningParenthesisExpected);
                 return new InvalidExpression(GetAndMoveToNext());
             case TokenType.Identifier:
-            {
-                var identifierToken = GetAndMoveToNext();
-
-                if (Current.Type == TokenType.LeftParenthesis)
-                    return ParseFunctionCallExpression(identifierToken);
-
-                if (Current.Type == TokenType.LeftBracket)
-                    return ParseIndexerExpression(identifierToken);
-
-                // TODO: Check for pointer access
-                // TODO: Check for member access
-                // TODO: Check for range operator
-
-                var identifierExpression = new IdentifierExpression(identifierToken);
-
-                if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
-                    return identifierExpression;
-
-                var expression = new PrimaryExpression(identifierExpression, GetAndMoveToNext());
-
-                while (Current.Type is TokenType.PlusPlus or TokenType.MinusMinus)
-                    expression = new PrimaryExpression(expression, GetAndMoveToNext());
-
-                return expression;
-            }
+                return ParseIdentifierRelatedExpressions();
             case TokenType.Integer:
             case TokenType.Real:
                 return ParseNumberExpression(Current.Type == TokenType.Integer);
@@ -195,6 +171,54 @@ public class SyntaxParser
         return new InvalidExpression(
             Token.ExpectedAt(Current.Position),
             new ParenthesisedExpression(leftParen, expression));
+    }
+
+    private Expression ParseIdentifierRelatedExpressions()
+    {
+        var identifierToken = GetAndMoveToNext();
+
+        Expression expression;
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+        switch (Current.Type)
+        {
+            case TokenType.LeftParenthesis:
+            {
+                expression = ParseFunctionCallExpression(identifierToken);
+                break;
+            }
+            case TokenType.LeftBracket:
+            {
+                expression = ParseIndexerExpression(identifierToken);
+                break;
+            }
+            default:
+            {
+                expression = new IdentifierExpression(identifierToken);
+
+                if (Current.Type != TokenType.PlusPlus && Current.Type != TokenType.MinusMinus)
+                    break;
+
+                expression = new PrimaryExpression(expression, GetAndMoveToNext());
+
+                while (Current.Type is TokenType.PlusPlus or TokenType.MinusMinus)
+                    expression = new PrimaryExpression(expression, GetAndMoveToNext());
+
+                break;
+            }
+        }
+
+        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+        switch (Current.Type)
+        {
+            case TokenType.PointerAccess:
+            case TokenType.Dot:
+                return new MemberAccessExpression(expression, GetAndMoveToNext(), ParseExpression());
+            case TokenType.DoubleDot:
+                return new RangeExpression(expression, GetAndMoveToNext(), ParseExpression());
+            default:
+                return expression;
+        }
     }
 
     private Expression ParseFunctionCallExpression(in Token identifier)
