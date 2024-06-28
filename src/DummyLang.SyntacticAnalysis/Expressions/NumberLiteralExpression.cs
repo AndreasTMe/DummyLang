@@ -13,9 +13,4 @@ public sealed class NumberLiteralExpression : Expression
         NumberToken = numberToken;
         Type        = type;
     }
-
-    public override void PrettyPrint(int indent)
-    {
-        ConsoleUtilities.WriteLineFormatted($"{nameof(NumberLiteralExpression)}({NumberToken.Value} : {Type})", indent);
-    }
 }

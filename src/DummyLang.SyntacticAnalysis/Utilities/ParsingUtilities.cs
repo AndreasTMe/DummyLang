@@ -6,6 +6,25 @@ namespace DummyLang.SyntacticAnalysis.Utilities;
 
 internal static class ParsingUtilities
 {
+    public static Token[] ReadAllTokens(in string source)
+    {
+        var tokenizer = new Tokenizer();
+        tokenizer.Use(source);
+
+        var tokens = new List<Token>();
+        var token  = tokenizer.ReadNext();
+
+        while (!token.IsEndOfFile())
+        {
+            tokens.Add(token);
+            token = tokenizer.ReadNext();
+        }
+
+        tokens.Add(token);
+
+        return tokens.ToArray();
+    }
+
     public static bool TryGetBalancedBrackets(in Token[] tokens, int startIndex, out int endIndex)
     {
         endIndex = startIndex;

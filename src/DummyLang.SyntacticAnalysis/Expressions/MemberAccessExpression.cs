@@ -1,5 +1,4 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Utilities;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
@@ -14,17 +13,5 @@ public sealed class MemberAccessExpression : Expression
         Identifier = identifier;
         Access     = access;
         Member     = member;
-    }
-
-    public override void PrettyPrint(int indent)
-    {
-        ConsoleUtilities.WriteLineFormatted(nameof(MemberAccessExpression), indent);
-
-        Identifier.PrettyPrint(indent + 1);
-
-        if (Access.Type != TokenType.None)
-            ConsoleUtilities.WriteLineFormatted(Access.Type.ToString(), indent + 1);
-
-        Member.PrettyPrint(indent + 1);
     }
 }

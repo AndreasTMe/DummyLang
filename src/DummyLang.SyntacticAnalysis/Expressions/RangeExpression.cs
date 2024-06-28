@@ -1,5 +1,4 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Utilities;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
@@ -14,17 +13,5 @@ public sealed class RangeExpression : Expression
         Start = start;
         Operator     = @operator;
         End     = end;
-    }
-
-    public override void PrettyPrint(int indent)
-    {
-        ConsoleUtilities.WriteLineFormatted(nameof(RangeExpression), indent);
-
-        Start.PrettyPrint(indent + 1);
-
-        if (Operator.Type != TokenType.None)
-            ConsoleUtilities.WriteLineFormatted(Operator.Type.ToString(), indent + 1);
-
-        End.PrettyPrint(indent + 1);
     }
 }

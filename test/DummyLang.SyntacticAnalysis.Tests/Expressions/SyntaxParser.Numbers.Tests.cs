@@ -1,5 +1,6 @@
 using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Parsers;
 using DummyLang.SyntacticAnalysis.Utilities;
 using Xunit;
 
@@ -8,244 +9,258 @@ namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 public class NumberSyntaxParserTests
 {
     [Fact]
-    public void GenerateSyntax_Numbers_Binary()
+    public void ParseExpression_Numbers_Binary()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("0b101")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("0b101");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Binary, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Binary, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Hexadecimal()
+    public void ParseExpression_Numbers_Hexadecimal()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("0x0123456789abcdef")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("0x0123456789abcdef");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Hexadecimal, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Hexadecimal, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Unsigned()
+    public void ParseExpression_Numbers_Unsigned()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123u")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123u");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.UnsignedInteger, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.UnsignedInteger, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Long()
+    public void ParseExpression_Numbers_Long()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123l")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123l");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Long, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Long, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_UnsignedLong()
+    public void ParseExpression_Numbers_UnsignedLong()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123ul")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123ul");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.UnsignedLong, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.UnsignedLong, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Float()
+    public void ParseExpression_Numbers_Float()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123.123f")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123.123f");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Float, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Float, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Double()
+    public void ParseExpression_Numbers_Double()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123.123d")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123.123d");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Double, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Double, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_Decimal()
+    public void ParseExpression_Numbers_Decimal()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123.123m")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123.123m");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.Decimal, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Decimal, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_WithExponent()
+    public void ParseExpression_Numbers_WithExponent()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123.12e-10")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123.12e-10");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
-        var expression = (NumberLiteralExpression)syntaxTree.Nodes[0];
-        Assert.Equal(NumberType.WithExponent, expression.Type);
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.WithExponent, numberLiteralExpression.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Numbers_RealShouldHaveDot()
+    public void ParseExpression_Numbers_RealShouldHaveDot()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("123f")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("123f");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(2, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
-        Assert.Equal(NumberType.Integer, ((NumberLiteralExpression)syntaxTree.Nodes[0]).Type);
-        Assert.IsType<IdentifierExpression>(syntaxTree.Nodes[1]);
+        Assert.NotNull(expression);
+        Assert.Equal(3, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
 
+        var numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Integer, numberLiteralExpression.Type);
+        Assert.Equal("123", numberLiteralExpression.NumberToken.Value);
+        
         // Act again
-        syntaxTree = parser.Feed("123e10")
-                           .GenerateSyntax();
-
+        tokens     = ParsingUtilities.ReadAllTokens("123e10");
+        index      = 0;
+        expression = ExpressionParser.Parse(ref index, in tokens);
+        
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(2, syntaxTree.Nodes.Count);
-        Assert.IsType<NumberLiteralExpression>(syntaxTree.Nodes[0]);
-        Assert.Equal(NumberType.Integer, ((NumberLiteralExpression)syntaxTree.Nodes[0]).Type);
-        Assert.IsType<IdentifierExpression>(syntaxTree.Nodes[1]);
+        Assert.NotNull(expression);
+        Assert.Equal(3, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<NumberLiteralExpression>(expression);
+
+        numberLiteralExpression = (NumberLiteralExpression)expression;
+        Assert.Equal(NumberType.Integer, numberLiteralExpression.Type);
+        Assert.Equal("123", numberLiteralExpression.NumberToken.Value);
     }
 
     [Fact]
-    public void GenerateSyntax_Expressions_SimpleBinaryExpression()
+    public void ParseExpression_Expressions_SimpleBinaryExpression()
     {
         // Arrange
-        const string source = "1 + 2";
-
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("1 + 2");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<BinaryExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(4, tokens.Length);
+        Assert.Equal(3, index);
+        Assert.IsType<BinaryExpression>(expression);
 
-        var expression = (BinaryExpression)syntaxTree.Nodes[0];
-        Assert.IsType<NumberLiteralExpression>(expression.Left);
-        Assert.IsType<NumberLiteralExpression>(expression.Right);
-        Assert.Equal(TokenType.Plus, expression.Operator.Type);
+        var binaryExpression = (BinaryExpression)expression;
+        Assert.IsType<NumberLiteralExpression>(binaryExpression.Left);
+        Assert.IsType<NumberLiteralExpression>(binaryExpression.Right);
+        Assert.Equal(TokenType.Plus, binaryExpression.Operator.Type);
     }
 
     [Fact]
-    public void GenerateSyntax_Expressions_MoreComplexMathTree()
+    public void ParseExpression_Expressions_MoreComplexMathTree()
     {
         // Arrange
-        const string source = "0b1010 + 2.0e-10f * (-3L - foo++)";
-
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("0b1010 + 2.0e-10f * (-3L - foo++)");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
         // addition = 0b1010 + multiplication
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<BinaryExpression>(syntaxTree.Nodes[0]);
-        var expression = (BinaryExpression)syntaxTree.Nodes[0];
-        Assert.Equal(TokenType.Plus, expression.Operator.Type);
-
-        Assert.IsType<NumberLiteralExpression>(expression.Left);
-        var binary = (NumberLiteralExpression)expression.Left;
+        Assert.NotNull(expression);
+        Assert.Equal(12, tokens.Length);
+        Assert.Equal(11, index);
+        Assert.IsType<BinaryExpression>(expression);
+        
+        var binaryExpression = (BinaryExpression)expression;
+        Assert.Equal(TokenType.Plus, binaryExpression.Operator.Type);
+        Assert.IsType<NumberLiteralExpression>(binaryExpression.Left);
+        var binary = (NumberLiteralExpression)binaryExpression.Left;
         Assert.Equal(NumberType.Binary, binary.Type);
         Assert.Equal("0b1010", binary.NumberToken.Value);
 
         // multiplication = 2.0e-10f * parenthesised
-        Assert.IsType<BinaryExpression>(expression.Right);
-        var multiplication = (BinaryExpression)expression.Right;
+        Assert.IsType<BinaryExpression>(binaryExpression.Right);
+        var multiplication = (BinaryExpression)binaryExpression.Right;
         Assert.Equal(TokenType.Star, multiplication.Operator.Type);
 
         Assert.IsType<NumberLiteralExpression>(multiplication.Left);

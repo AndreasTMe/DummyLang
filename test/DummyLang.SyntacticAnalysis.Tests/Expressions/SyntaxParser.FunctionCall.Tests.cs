@@ -1,5 +1,7 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Parsers;
+using DummyLang.SyntacticAnalysis.Utilities;
 using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
@@ -7,22 +9,23 @@ namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 public class FunctionCallSyntaxParserTests
 {
     [Fact]
-    public void GenerateSyntax_FunctionCallNoParams_ReadSuccessfully()
+    public void ParseExpression_FunctionCallNoParams_ReadSuccessfully()
     {
         // Arrange
         const string source = "test()";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<PrimaryExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(4, tokens.Length);
+        Assert.Equal(3, index);
+        Assert.IsType<PrimaryExpression>(expression);
 
-        var primary = (PrimaryExpression)syntaxTree.Nodes[0];
+        var primary = (PrimaryExpression)expression;
         Assert.Equal(Token.None, primary.Token);
         Assert.IsType<FunctionCallExpression>(primary.Expression);
 
@@ -41,22 +44,23 @@ public class FunctionCallSyntaxParserTests
     }
 
     [Fact]
-    public void GenerateSyntax_FunctionCallWithParams_ReadSuccessfully()
+    public void ParseExpression_FunctionCallWithParams_ReadSuccessfully()
     {
         // Arrange
         const string source = "test(1, (2 + 3), b => DoSomething())";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<PrimaryExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(17, tokens.Length);
+        Assert.Equal(16, index);
+        Assert.IsType<PrimaryExpression>(expression);
 
-        var primary = (PrimaryExpression)syntaxTree.Nodes[0];
+        var primary = (PrimaryExpression)expression;
         Assert.Equal(Token.None, primary.Token);
         Assert.IsType<FunctionCallExpression>(primary.Expression);
 
@@ -69,11 +73,14 @@ public class FunctionCallSyntaxParserTests
 
         Assert.Equal(TokenType.RightParenthesis, functionCall.RightParenthesis.Type);
         Assert.Equal(")", functionCall.RightParenthesis.Value);
-
-        Assert.Equal(3, functionCall.Parameters.Count);
+        
+        // TODO: Update the following 6 lines when lambdas are added
+        Assert.Equal(5, functionCall.Parameters.Count); 
         Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
         Assert.IsType<ParenthesisedExpression>(functionCall.Parameters[1]);
-        Assert.IsType<BinaryExpression>(functionCall.Parameters[2]); // TODO: Update when lambdas are here
+        Assert.IsType<IdentifierExpression>(functionCall.Parameters[2]);
+        Assert.IsType<InvalidExpression>(functionCall.Parameters[3]);
+        Assert.IsType<PrimaryExpression>(functionCall.Parameters[4]);
 
         Assert.Equal(2, functionCall.Commas.Count);
         Assert.Equal(TokenType.Comma, functionCall.Commas[0].Type);
@@ -83,22 +90,23 @@ public class FunctionCallSyntaxParserTests
     }
     
     [Fact]
-    public void GenerateSyntax_FunctionCall_NoClosingParenthesis()
+    public void ParseExpression_FunctionCall_NoClosingParenthesis()
     {
         // Arrange
         const string source = "test(";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(3, tokens.Length);
+        Assert.Equal(2, index);
+        Assert.IsType<InvalidExpression>(expression);
+        
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
         Assert.Equal("(", invalid.Token.Value);
         Assert.IsType<FunctionCallExpression>(invalid.Expression);
@@ -118,22 +126,23 @@ public class FunctionCallSyntaxParserTests
     }
 
     [Fact]
-    public void GenerateSyntax_FunctionCall_NoClosingParenthesisWithParameter()
+    public void ParseExpression_FunctionCall_NoClosingParenthesisWithParameter()
     {
         // Arrange
         const string source = "test(1";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(4, tokens.Length);
+        Assert.Equal(3, index);
+        Assert.IsType<InvalidExpression>(expression);
+        
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
         Assert.Equal("(", invalid.Token.Value);
         Assert.IsType<FunctionCallExpression>(invalid.Expression);
@@ -155,7 +164,7 @@ public class FunctionCallSyntaxParserTests
     }
 
     [Fact]
-    public void GenerateSyntax_FunctionCall_ReservedKeywordFound()
+    public void ParseExpression_FunctionCall_ReservedKeywordFound()
     {
         // Arrange
         const string source = """
@@ -164,16 +173,17 @@ public class FunctionCallSyntaxParserTests
                               """;
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(3, syntaxTree.Nodes.Count); // TODO: Revisit this when declarations are implemented
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(11, tokens.Length);
+        Assert.Equal(5, index);
+        Assert.IsType<InvalidExpression>(expression);
+        
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
         Assert.Equal("(", invalid.Token.Value);
         Assert.IsType<FunctionCallExpression>(invalid.Expression);

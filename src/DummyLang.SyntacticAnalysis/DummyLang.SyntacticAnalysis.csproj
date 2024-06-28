@@ -9,7 +9,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DummyLang.Diagnostics\DummyLang.Diagnostics.csproj" />
       <ProjectReference Include="..\DummyLang.LexicalAnalysis\DummyLang.LexicalAnalysis.csproj" />
     </ItemGroup>
 
@@ -17,10 +16,6 @@
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
             <_Parameter1>$(AssemblyName).Tests</_Parameter1>
         </AssemblyAttribute>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Statements\" />
     </ItemGroup>
 
 </Project>

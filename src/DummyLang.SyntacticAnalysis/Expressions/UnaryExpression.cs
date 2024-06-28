@@ -1,5 +1,4 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Utilities;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
@@ -14,13 +13,5 @@ public sealed class UnaryExpression : Expression
     {
         Token      = token;
         Expression = expression;
-    }
-
-    public override void PrettyPrint(int indent)
-    {
-        ConsoleUtilities.WriteLineFormatted(nameof(UnaryExpression), indent);
-
-        ConsoleUtilities.WriteLineFormatted(Token.Type.ToString(), indent + 1);
-        Expression.PrettyPrint(indent + 1);
     }
 }

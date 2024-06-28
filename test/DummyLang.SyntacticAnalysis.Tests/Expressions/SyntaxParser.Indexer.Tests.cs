@@ -1,5 +1,7 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Parsers;
+using DummyLang.SyntacticAnalysis.Utilities;
 using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
@@ -7,22 +9,23 @@ namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 public class IndexerSyntaxParserTests
 {
     [Fact]
-    public void GenerateSyntax_Indexer_ReadSuccessfully()
+    public void ParseExpression_Indexer_ReadSuccessfully()
     {
         // Arrange
         const string source = "test[1]";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<PrimaryExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(5, tokens.Length);
+        Assert.Equal(4, index);
+        Assert.IsType<PrimaryExpression>(expression);
 
-        var primary = (PrimaryExpression)syntaxTree.Nodes[0];
+        var primary = (PrimaryExpression)expression;
         Assert.Equal(Token.None, primary.Token);
         Assert.IsType<IndexerExpression>(primary.Expression);
 
@@ -41,22 +44,23 @@ public class IndexerSyntaxParserTests
     }
     
     [Fact]
-    public void GenerateSyntax_Indexer_NoIndex()
+    public void ParseExpression_Indexer_NoIndex()
     {
         // Arrange
         const string source = "test[]";
 
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<PrimaryExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(4, tokens.Length);
+        Assert.Equal(3, index);
+        Assert.IsType<PrimaryExpression>(expression);
 
-        var primary = (PrimaryExpression)syntaxTree.Nodes[0];
+        var primary = (PrimaryExpression)expression;
         Assert.Equal(Token.None, primary.Token);
         Assert.IsType<IndexerExpression>(primary.Expression);
 
@@ -75,22 +79,23 @@ public class IndexerSyntaxParserTests
     }
 
     [Fact]
-    public void GenerateSyntax_Indexer_NoClosingBracket()
+    public void ParseExpression_Indexer_NoClosingBracket()
     {
         // Arrange
         const string source = "test[";
     
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
-    
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
+
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-    
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(3, tokens.Length);
+        Assert.Equal(2, index);
+        Assert.IsType<InvalidExpression>(expression);
+
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
         Assert.Equal("[", invalid.Token.Value);
         Assert.IsType<IndexerExpression>(invalid.Expression);
@@ -109,22 +114,23 @@ public class IndexerSyntaxParserTests
     }
     
     [Fact]
-    public void GenerateSyntax_Indexer_NoClosingBracketWithIndex()
+    public void ParseExpression_Indexer_NoClosingBracketWithIndex()
     {
         // Arrange
         const string source = "test[1";
     
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
-    
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
+
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-    
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(4, tokens.Length);
+        Assert.Equal(3, index);
+        Assert.IsType<InvalidExpression>(expression);
+
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
         Assert.Equal("[", invalid.Token.Value);
         Assert.IsType<IndexerExpression>(invalid.Expression);
@@ -144,7 +150,7 @@ public class IndexerSyntaxParserTests
     }
     
     [Fact]
-    public void GenerateSyntax_Indexer_ReservedKeywordFound()
+    public void ParseExpression_Indexer_ReservedKeywordFound()
     {
         // Arrange
         const string source = """
@@ -153,16 +159,17 @@ public class IndexerSyntaxParserTests
                               """;
     
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed(source)
-                               .GenerateSyntax();
-    
+        var tokens     = ParsingUtilities.ReadAllTokens(source);
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
+
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(3, syntaxTree.Nodes.Count); // TODO: Revisit this when declarations are implemented
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-    
-        var invalid = (InvalidExpression)syntaxTree.Nodes[0];
+        Assert.NotNull(expression);
+        Assert.Equal(11, tokens.Length);
+        Assert.Equal(5, index);
+        Assert.IsType<InvalidExpression>(expression);
+
+        var invalid = (InvalidExpression)expression;
         Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
         Assert.Equal("[", invalid.Token.Value);
         Assert.IsType<IndexerExpression>(invalid.Expression);

@@ -10,19 +10,8 @@ do
 
     if (!string.IsNullOrEmpty(input))
     {
-        var syntaxParser = new SyntaxParser();
+        var syntaxParser = new SyntaxTreeBuilder();
         var tree = syntaxParser.Feed(input)
-                               .GenerateSyntax();
-
-        tree.PrettyPrint();
-
-        if (tree.Diagnostics.Count > 0)
-        {
-            Console.WriteLine();
-            foreach (var diagnostic in tree.Diagnostics)
-                diagnostic.Log();
-        }
-
-        Console.WriteLine();
+                               .Build();
     }
 } while (input != string.Empty);

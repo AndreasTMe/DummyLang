@@ -1,93 +1,89 @@
 ﻿using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Parsers;
+using DummyLang.SyntacticAnalysis.Utilities;
 using Xunit;
 
-// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Local
 namespace DummyLang.SyntacticAnalysis.Tests.Expressions;
 
 public class CharacterSyntaxParserTests
 {
     [Fact]
-    public void GenerateSyntax_Character_ReadSuccessfully()
+    public void ParseExpression_Character_ReadSuccessfully()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("'a'")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("'a'");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<CharacterLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<CharacterLiteralExpression>(expression);
     }
 
     [Fact]
-    public void GenerateSyntax_Empty_InvalidExpression()
+    public void ParseExpression_Empty_InvalidExpression()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("''")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("''");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-
-        Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(
-            syntaxTree.Diagnostics,
-            info => { Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message); });
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<InvalidExpression>(expression);
     }
 
     [Fact]
-    public void GenerateSyntax_NoClosingSingleQuote_InvalidExpression()
+    public void ParseExpression_NoClosingSingleQuote_InvalidExpression()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("'")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("'");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<InvalidExpression>(syntaxTree.Nodes[0]);
-
-        Assert.Single(syntaxTree.Diagnostics);
-        Assert.All(
-            syntaxTree.Diagnostics,
-            info => { Assert.Contains(CharacterLiteralExpression.ShouldBeOfCertainLength, info.Message); });
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<InvalidExpression>(expression);
     }
 
     [Fact]
-    public void GenerateSyntax_EscapedCharacter_ReadSuccessfully()
+    public void ParseExpression_EscapedCharacter_ReadSuccessfully()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("'\\n'")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("'\\n'");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<CharacterLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<CharacterLiteralExpression>(expression);
     }
 
     [Fact]
-    public void GenerateSyntax_HexCharacter_ReadSuccessfully()
+    public void ParseExpression_HexCharacter_ReadSuccessfully()
     {
         // Arrange
         // Act
-        var parser = new SyntaxParser();
-        var syntaxTree = parser.Feed("'\\x123'")
-                               .GenerateSyntax();
+        var tokens     = ParsingUtilities.ReadAllTokens("'\\x123'");
+        var index      = 0;
+        var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.NotNull(syntaxTree);
-        Assert.Equal(1, syntaxTree.Nodes.Count);
-        Assert.IsType<CharacterLiteralExpression>(syntaxTree.Nodes[0]);
+        Assert.NotNull(expression);
+        Assert.Equal(2, tokens.Length);
+        Assert.Equal(1, index);
+        Assert.IsType<CharacterLiteralExpression>(expression);
     }
 }
