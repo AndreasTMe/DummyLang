@@ -12,11 +12,11 @@ public sealed class FunctionCallExpression : Expression
     public IReadOnlyList<Expression> Parameters { get; }
     public IReadOnlyList<Token>      Commas     { get; }
 
-    public FunctionCallExpression(Token identifier,
-                                  Token leftParenthesis,
-                                  Token rightParenthesis,
-                                  List<Expression> parameters,
-                                  List<Token> commas)
+    internal FunctionCallExpression(Token identifier,
+                                    Token leftParenthesis,
+                                    Token rightParenthesis,
+                                    List<Expression> parameters,
+                                    List<Token> commas)
     {
         Identifier       = identifier;
         LeftParenthesis  = leftParenthesis;

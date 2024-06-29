@@ -73,9 +73,9 @@ public class FunctionCallSyntaxParserTests
 
         Assert.Equal(TokenType.RightParenthesis, functionCall.RightParenthesis.Type);
         Assert.Equal(")", functionCall.RightParenthesis.Value);
-        
+
         // TODO: Update the following 6 lines when lambdas are added
-        Assert.Equal(5, functionCall.Parameters.Count); 
+        Assert.Equal(5, functionCall.Parameters.Count);
         Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
         Assert.IsType<ParenthesisedExpression>(functionCall.Parameters[1]);
         Assert.IsType<IdentifierExpression>(functionCall.Parameters[2]);
@@ -88,7 +88,7 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.Comma, functionCall.Commas[1].Type);
         Assert.Equal(",", functionCall.Commas[1].Value);
     }
-    
+
     [Fact]
     public void ParseExpression_FunctionCall_NoClosingParenthesis()
     {
@@ -103,26 +103,14 @@ public class FunctionCallSyntaxParserTests
         // Assert
         Assert.NotNull(expression);
         Assert.Equal(3, tokens.Length);
-        Assert.Equal(2, index);
+        Assert.Equal(1, index);
         Assert.IsType<InvalidExpression>(expression);
-        
+
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
-        Assert.Equal("(", invalid.Token.Value);
-        Assert.IsType<FunctionCallExpression>(invalid.Expression);
-
-        var functionCall = (FunctionCallExpression)invalid.Expression;
-        Assert.Equal(TokenType.Identifier, functionCall.Identifier.Type);
-        Assert.Equal("test", functionCall.Identifier.Value);
-
-        Assert.Equal(TokenType.LeftParenthesis, functionCall.LeftParenthesis.Type);
-        Assert.Equal("(", functionCall.LeftParenthesis.Value);
-
-        Assert.Equal(TokenType.None, functionCall.RightParenthesis.Type);
-        Assert.Equal("", functionCall.RightParenthesis.Value);
-
-        Assert.Empty(functionCall.Parameters);
-        Assert.Empty(functionCall.Commas);
+        Assert.Single(invalid.Tokens);
+        Assert.Equal(TokenType.RightParenthesis, invalid.Tokens[0].Type);
+        Assert.Null(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
     }
 
     [Fact]
@@ -141,11 +129,13 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(4, tokens.Length);
         Assert.Equal(3, index);
         Assert.IsType<InvalidExpression>(expression);
-        
+
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
-        Assert.Equal("(", invalid.Token.Value);
+        Assert.Empty(invalid.Tokens);
+        Assert.NotNull(invalid.Expression);
         Assert.IsType<FunctionCallExpression>(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
+        Assert.Equal(typeof(FunctionCallExpression), invalid.ExpressionType);
 
         var functionCall = (FunctionCallExpression)invalid.Expression;
         Assert.Equal(TokenType.Identifier, functionCall.Identifier.Type);
@@ -182,11 +172,13 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(11, tokens.Length);
         Assert.Equal(5, index);
         Assert.IsType<InvalidExpression>(expression);
-        
+
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftParenthesis, invalid.Token.Type);
-        Assert.Equal("(", invalid.Token.Value);
+        Assert.Empty(invalid.Tokens);
+        Assert.NotNull(invalid.Expression);
         Assert.IsType<FunctionCallExpression>(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
+        Assert.Equal(typeof(FunctionCallExpression), invalid.ExpressionType);
 
         var functionCall = (FunctionCallExpression)invalid.Expression;
         Assert.Equal(TokenType.Identifier, functionCall.Identifier.Type);

@@ -57,6 +57,9 @@ public static class TokenExtensions
 
     public static bool IsNumber(this Token token) => token.Type == TokenType.Integer || token.Type == TokenType.Real;
 
+    public static bool IsIdentifierOrLiteral(this Token token) =>
+        token.Type >= TokenType.Identifier && token.Type < TokenType.Var;
+
     public static bool IsReservedKeyword(this Token token) => token.Type >= TokenType.Var;
 
     public static bool IsParenthesisMatch(this Token token, Token other) =>

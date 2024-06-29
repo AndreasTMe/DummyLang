@@ -71,7 +71,7 @@ internal static class ExpressionParser
     private static UnaryExpression ParseUnaryExpression(ref int index, in Token[] tokens)
     {
         var         unaryOperator = GetAndMoveToNext(ref index, in tokens);
-        Expression? expression    = null;
+        Expression? expression    = default;
 
         if (tokens[index].Type == TokenType.Identifier)
             expression = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
@@ -97,8 +97,8 @@ internal static class ExpressionParser
                 GetAndMoveToNext(ref index, in tokens));
 
         return new InvalidExpression(
-            Token.ExpectedAt(tokens[index].Position),
-            new ParenthesisedExpression(leftParen, expression));
+            typeof(ParenthesisedExpression),
+            Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
     }
 
     private static Expression ParseIdentifierRelatedExpressions(ref int index, in Token[] tokens)
@@ -162,9 +162,9 @@ internal static class ExpressionParser
     private static Expression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)
     {
         Token leftParenthesis;
-        var   rightParenthesis = Token.None;
-        var   expressions      = new List<Expression>();
-        var   commas           = new List<Token>();
+        Token rightParenthesis;
+        var   expressions = new List<Expression>();
+        var   commas      = new List<Token>();
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
@@ -187,12 +187,9 @@ internal static class ExpressionParser
         }
 
         if (index == endIndex - 1 && tokens[index].Type == TokenType.LeftParenthesis)
-        {
-            leftParenthesis = GetAndMoveToNext(ref index, in tokens);
             return new InvalidExpression(
-                leftParenthesis,
-                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
-        }
+                typeof(FunctionCallExpression),
+                Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
 
         leftParenthesis = GetAndMoveToNext(ref index, in tokens);
         rightParenthesis = tokens[endIndex].Type == TokenType.RightParenthesis
@@ -210,16 +207,19 @@ internal static class ExpressionParser
         // Ensuring correct indexing
         index = endIndex;
 
-        return new InvalidExpression(
-            leftParenthesis,
-            new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
+        return rightParenthesis == Token.None
+            ? new InvalidExpression(
+                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas))
+            : new InvalidExpression(
+                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas),
+                Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
     }
 
     private static Expression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
     {
         Token       leftBracket;
-        var         rightBracket = Token.None;
-        Expression? expression   = null;
+        Token       rightBracket;
+        Expression? expression;
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
@@ -234,12 +234,9 @@ internal static class ExpressionParser
         }
 
         if (index == endIndex - 1 && tokens[index].Type == TokenType.LeftBracket)
-        {
-            leftBracket = GetAndMoveToNext(ref index, in tokens);
             return new InvalidExpression(
-                leftBracket,
-                new IndexerExpression(identifier, leftBracket, rightBracket, expression));
-        }
+                typeof(IndexerExpression),
+                Token.ExpectedAt(tokens[index].Position, TokenType.RightBracket));
 
         leftBracket = GetAndMoveToNext(ref index, in tokens);
         expression  = Parse(ref index, in tokens);
@@ -250,9 +247,12 @@ internal static class ExpressionParser
         // Ensuring correct indexing
         index = endIndex;
 
-        return new InvalidExpression(
-            leftBracket,
-            new IndexerExpression(identifier, leftBracket, rightBracket, expression));
+        return rightBracket == Token.None
+            ? new InvalidExpression(
+                new IndexerExpression(identifier, leftBracket, rightBracket, expression))
+            : new InvalidExpression(
+                new IndexerExpression(identifier, leftBracket, rightBracket, expression),
+                Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
     }
 
     private static NumberLiteralExpression ParseNumberExpression(ref int index, in Token[] tokens)
@@ -320,7 +320,7 @@ internal static class ExpressionParser
 
         return string.IsNullOrWhiteSpace(diagnosticMessage) switch
         {
-            false => new InvalidExpression(characterToken, characterLiteralExpression),
+            false => new InvalidExpression(characterLiteralExpression, characterToken),
             _     => characterLiteralExpression
         };
     }
@@ -343,6 +343,6 @@ internal static class ExpressionParser
         if (string.IsNullOrWhiteSpace(diagnosticsMessage))
             return stringLiteralExpression;
 
-        return new InvalidExpression(stringToken, stringLiteralExpression);
+        return new InvalidExpression(stringLiteralExpression, stringToken);
     }
 }

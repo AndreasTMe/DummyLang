@@ -8,7 +8,7 @@ public sealed class MemberAccessExpression : Expression
     public Token      Access     { get; }
     public Expression Member     { get; }
 
-    public MemberAccessExpression(Expression identifier, Token access, Expression member)
+    internal MemberAccessExpression(Expression identifier, Token access, Expression member)
     {
         Identifier = identifier;
         Access     = access;

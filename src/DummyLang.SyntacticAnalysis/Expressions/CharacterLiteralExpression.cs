@@ -21,8 +21,5 @@ public sealed class CharacterLiteralExpression : Expression
 
     public Token CharacterToken { get; }
 
-    public CharacterLiteralExpression(Token characterToken)
-    {
-        CharacterToken = characterToken;
-    }
+    internal CharacterLiteralExpression(Token characterToken) => CharacterToken = characterToken;
 }

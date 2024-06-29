@@ -15,5 +15,5 @@ public sealed class StringLiteralExpression : Expression
 
     public Token StringToken { get; }
 
-    public StringLiteralExpression(Token stringToken) => StringToken = stringToken;
+    internal StringLiteralExpression(Token stringToken) => StringToken = stringToken;
 }

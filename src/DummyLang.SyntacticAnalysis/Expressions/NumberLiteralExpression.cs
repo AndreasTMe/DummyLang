@@ -8,7 +8,7 @@ public sealed class NumberLiteralExpression : Expression
     public Token      NumberToken { get; }
     public NumberType Type        { get; }
 
-    public NumberLiteralExpression(Token numberToken, NumberType type)
+    internal NumberLiteralExpression(Token numberToken, NumberType type)
     {
         NumberToken = numberToken;
         Type        = type;

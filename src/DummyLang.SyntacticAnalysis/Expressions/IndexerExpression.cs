@@ -9,7 +9,7 @@ public sealed class IndexerExpression : Expression
     public Expression? Index        { get; }
     public Token       RightBracket { get; }
 
-    public IndexerExpression(Token identifier, Token leftBracket, Token rightBracket, Expression? index)
+    internal IndexerExpression(Token identifier, Token leftBracket, Token rightBracket, Expression? index)
     {
         Identifier   = identifier;
         LeftBracket  = leftBracket;

@@ -8,7 +8,7 @@ public sealed class RangeExpression : Expression
     public Token      Operator     { get; }
     public Expression End     { get; }
 
-    public RangeExpression(Expression start, Token @operator, Expression end)
+    internal RangeExpression(Expression start, Token @operator, Expression end)
     {
         Start = start;
         Operator     = @operator;

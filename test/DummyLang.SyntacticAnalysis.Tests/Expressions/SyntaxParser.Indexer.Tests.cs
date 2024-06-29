@@ -92,25 +92,15 @@ public class IndexerSyntaxParserTests
         // Assert
         Assert.NotNull(expression);
         Assert.Equal(3, tokens.Length);
-        Assert.Equal(2, index);
+        Assert.Equal(1, index);
         Assert.IsType<InvalidExpression>(expression);
 
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
-        Assert.Equal("[", invalid.Token.Value);
-        Assert.IsType<IndexerExpression>(invalid.Expression);
-    
-        var indexer = (IndexerExpression)invalid.Expression;
-        Assert.Equal(TokenType.Identifier, indexer.Identifier.Type);
-        Assert.Equal("test", indexer.Identifier.Value);
-    
-        Assert.Equal(TokenType.LeftBracket, indexer.LeftBracket.Type);
-        Assert.Equal("[", indexer.LeftBracket.Value);
-    
-        Assert.Equal(TokenType.None, indexer.RightBracket.Type);
-        Assert.Equal("", indexer.RightBracket.Value);
-    
-        Assert.Null(indexer.Index);
+        Assert.Single(invalid.Tokens);
+        Assert.Equal(TokenType.RightBracket, invalid.Tokens[0].Type);
+        Assert.Null(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
+        Assert.Equal(typeof(IndexerExpression), invalid.ExpressionType);
     }
     
     [Fact]
@@ -131,9 +121,11 @@ public class IndexerSyntaxParserTests
         Assert.IsType<InvalidExpression>(expression);
 
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
-        Assert.Equal("[", invalid.Token.Value);
+        Assert.Empty(invalid.Tokens);
+        Assert.NotNull(invalid.Expression);
         Assert.IsType<IndexerExpression>(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
+        Assert.Equal(typeof(IndexerExpression), invalid.ExpressionType);
     
         var indexer = (IndexerExpression)invalid.Expression;
         Assert.Equal(TokenType.Identifier, indexer.Identifier.Type);
@@ -168,11 +160,13 @@ public class IndexerSyntaxParserTests
         Assert.Equal(11, tokens.Length);
         Assert.Equal(5, index);
         Assert.IsType<InvalidExpression>(expression);
-
+        
         var invalid = (InvalidExpression)expression;
-        Assert.Equal(TokenType.LeftBracket, invalid.Token.Type);
-        Assert.Equal("[", invalid.Token.Value);
+        Assert.Empty(invalid.Tokens);
+        Assert.NotNull(invalid.Expression);
         Assert.IsType<IndexerExpression>(invalid.Expression);
+        Assert.NotNull(invalid.ExpressionType);
+        Assert.Equal(typeof(IndexerExpression), invalid.ExpressionType);
     
         var indexer = (IndexerExpression)invalid.Expression;
         Assert.Equal(TokenType.Identifier, indexer.Identifier.Type);

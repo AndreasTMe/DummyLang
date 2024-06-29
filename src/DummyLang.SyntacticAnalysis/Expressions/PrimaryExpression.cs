@@ -7,7 +7,7 @@ public sealed class PrimaryExpression : Expression
     public Expression Expression { get; }
     public Token      Token      { get; }
 
-    public PrimaryExpression(Expression expression, Token? token = null)
+    internal PrimaryExpression(Expression expression, Token? token = null)
     {
         Expression = expression;
         Token      = token ?? Token.None;

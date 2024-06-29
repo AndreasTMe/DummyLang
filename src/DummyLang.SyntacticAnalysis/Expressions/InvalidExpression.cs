@@ -1,19 +1,31 @@
 ﻿using DummyLang.LexicalAnalysis;
+using System;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class InvalidExpression : Expression
 {
-    internal const string UnsupportedOrUnimplemented = "Unsupported or unimplemented token.";
+    public Token[]     Tokens         { get; }
+    public Expression? Expression     { get; }
+    public Type?       ExpressionType { get; }
 
-    public override bool IsValid => false;
-
-    public Token       Token      { get; }
-    public Expression? Expression { get; }
-
-    internal InvalidExpression(Token token, Expression? expression = null)
+    internal InvalidExpression(params Token[] tokens)
     {
-        Token      = token;
-        Expression = expression;
+        Tokens         = tokens;
+        ExpressionType = default;
+    }
+
+    internal InvalidExpression(Type expressionType, params Token[] tokens)
+    {
+        Tokens         = tokens;
+        Expression     = default;
+        ExpressionType = expressionType;
+    }
+
+    internal InvalidExpression(Expression expression, params Token[] tokens)
+    {
+        Tokens         = tokens;
+        Expression     = expression;
+        ExpressionType = expression.GetType();
     }
 }

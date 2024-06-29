@@ -8,7 +8,7 @@ public sealed class BinaryExpression : Expression
     public Token           Operator { get; }
     public SyntaxTree.Node Right    { get; }
 
-    public BinaryExpression(SyntaxTree.Node left, Token @operator, SyntaxTree.Node right)
+    internal BinaryExpression(SyntaxTree.Node left, Token @operator, SyntaxTree.Node right)
     {
         Operator = @operator;
         Left     = left;

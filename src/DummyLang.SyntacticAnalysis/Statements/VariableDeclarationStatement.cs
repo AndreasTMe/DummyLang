@@ -26,13 +26,13 @@ public sealed class VariableDeclarationStatement : Statement
     public Expression? Value           { get; }
     public Token       Terminator      { get; }
 
-    public VariableDeclarationStatement(Token declaration,
-                                        Expression? identifier,
-                                        Token typeAssignment,
-                                        Expression? type,
-                                        Token valueAssignment,
-                                        Expression? value,
-                                        Token terminator)
+    internal VariableDeclarationStatement(Token declaration,
+                                          Expression? identifier,
+                                          Token typeAssignment,
+                                          Expression? type,
+                                          Token valueAssignment,
+                                          Expression? value,
+                                          Token terminator)
     {
         Declaration     = declaration;
         Identifier      = identifier;
