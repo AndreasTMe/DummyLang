@@ -403,11 +403,11 @@ public class TokenizerTests
                               var five = 5;
                               var ten: Number = 10;
 
-                              const add = fun(a: Number, b: Number): Number {
+                              func Add: (a: Number, b: Number) => Number {
                                   return a + b;
                               };
 
-                              var result = add(five, ten);
+                              var result = Add(five, ten);
                               """;
 
         // Act
@@ -480,84 +480,79 @@ public class TokenizerTests
         // Line 3
         // Line 4
         token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Const, token.Type);
-        Assert.Equal("const", token.Value);
+        Assert.Equal(TokenType.Func, token.Type);
+        Assert.Equal("func", token.Value);
         Assert.True(token.Position is { Line: 4, Column: 1 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
-        Assert.Equal("add", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 7 });
-
+        Assert.Equal("Add", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 6 });
+        
         token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Assign, token.Type);
-        Assert.Equal("=", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 11 });
-
-        token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Fun, token.Type);
-        Assert.Equal("fun", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 13 });
+        Assert.Equal(TokenType.Colon, token.Type);
+        Assert.Equal(":", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 9 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.LeftParenthesis, token.Type);
         Assert.Equal("(", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 16 });
+        Assert.True(token.Position is { Line: 4, Column: 11 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("a", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 17 });
+        Assert.True(token.Position is { Line: 4, Column: 12 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Colon, token.Type);
         Assert.Equal(":", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 18 });
+        Assert.True(token.Position is { Line: 4, Column: 13 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("Number", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 20 });
+        Assert.True(token.Position is { Line: 4, Column: 15 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Comma, token.Type);
         Assert.Equal(",", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 26 });
+        Assert.True(token.Position is { Line: 4, Column: 21 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("b", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 28 });
+        Assert.True(token.Position is { Line: 4, Column: 23 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Colon, token.Type);
         Assert.Equal(":", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 29 });
+        Assert.True(token.Position is { Line: 4, Column: 24 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("Number", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 31 });
+        Assert.True(token.Position is { Line: 4, Column: 26 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.RightParenthesis, token.Type);
         Assert.Equal(")", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 37 });
+        Assert.True(token.Position is { Line: 4, Column: 32 });
 
         token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.Colon, token.Type);
-        Assert.Equal(":", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 38 });
+        Assert.Equal(TokenType.AssignLambda, token.Type);
+        Assert.Equal("=>", token.Value);
+        Assert.True(token.Position is { Line: 4, Column: 34 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
         Assert.Equal("Number", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 40 });
+        Assert.True(token.Position is { Line: 4, Column: 37 });
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.LeftBrace, token.Type);
         Assert.Equal("{", token.Value);
-        Assert.True(token.Position is { Line: 4, Column: 47 });
+        Assert.True(token.Position is { Line: 4, Column: 44 });
 
         // Line 5
         token = tokenizer.ReadNext();
@@ -615,7 +610,7 @@ public class TokenizerTests
 
         token = tokenizer.ReadNext();
         Assert.Equal(TokenType.Identifier, token.Type);
-        Assert.Equal("add", token.Value);
+        Assert.Equal("Add", token.Value);
         Assert.True(token.Position is { Line: 8, Column: 14 });
 
         token = tokenizer.ReadNext();

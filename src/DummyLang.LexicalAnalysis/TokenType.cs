@@ -75,7 +75,7 @@ public enum TokenType : byte
 
     Var      = 100,
     Const    = 101,
-    Fun      = 102,
+    Func     = 102,
     If       = 103,
     Else     = 104,
     Break    = 105,

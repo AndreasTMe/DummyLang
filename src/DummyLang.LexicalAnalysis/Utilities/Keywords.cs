@@ -8,7 +8,7 @@ internal static class Keywords
     {
         { Var, TokenType.Var },
         { Const, TokenType.Const },
-        { Fun, TokenType.Fun },
+        { Func, TokenType.Func },
         { If, TokenType.If },
         { Else, TokenType.Else },
         { Break, TokenType.Break },
@@ -21,7 +21,7 @@ internal static class Keywords
 
     private const string Var      = "var";
     private const string Const    = "const";
-    private const string Fun      = "fun";
+    private const string Func     = "func";
     private const string If       = "if";
     private const string Else     = "else";
     private const string Break    = "break";
