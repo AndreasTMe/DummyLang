@@ -3,19 +3,6 @@ using DummyLang.SyntacticAnalysis.Expressions;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
 
-/*
- * With type info:
- *
- * var param: int;
- * var param: int = 1 + 2;
- * const param: int;
- * const param: int = 1 + 2;
- *
- * Without type info:
- *
- * var param := 1 + 2;
- * const param := 1 + 2;
- */
 public sealed class VariableDeclarationStatement : Statement
 {
     public Token       Declaration     { get; }

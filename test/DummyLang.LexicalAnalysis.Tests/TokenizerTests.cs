@@ -540,7 +540,7 @@ public class TokenizerTests
         Assert.True(token.Position is { Line: 4, Column: 32 });
 
         token = tokenizer.ReadNext();
-        Assert.Equal(TokenType.AssignLambda, token.Type);
+        Assert.Equal(TokenType.LambdaAssign, token.Type);
         Assert.Equal("=>", token.Value);
         Assert.True(token.Position is { Line: 4, Column: 34 });
 

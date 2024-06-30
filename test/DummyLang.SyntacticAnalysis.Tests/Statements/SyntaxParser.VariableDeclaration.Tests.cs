@@ -36,10 +36,11 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Type);
-        var identifier = (IdentifierExpression)variableDeclaration.Type;
-        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
-        Assert.Equal("i32", identifier.Token.Value);
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+        var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
+        Assert.Single(identifier.Tokens);
+        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
+        Assert.Equal("i32", identifier.Tokens[0].Value);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -77,10 +78,11 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Type);
-        var identifier = (IdentifierExpression)variableDeclaration.Type;
-        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
-        Assert.Equal("i32", identifier.Token.Value);
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+        var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
+        Assert.Single(identifier.Tokens);
+        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
+        Assert.Equal("i32", identifier.Tokens[0].Value);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -156,10 +158,11 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Type);
-        var identifier = (IdentifierExpression)variableDeclaration.Type;
-        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
-        Assert.Equal("i32", identifier.Token.Value);
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+        var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
+        Assert.Single(identifier.Tokens);
+        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
+        Assert.Equal("i32", identifier.Tokens[0].Value);
 
         Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("", variableDeclaration.ValueAssignment.Value);
@@ -169,9 +172,25 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
     }
+    
+    [Fact]
+    public void ParseStatement_VarDeclarationNoIdentifier_ShouldThrowLanguageSyntaxException()
+    {
+        // Arrange
+        const string source = "var := 1 + 2;";
+
+        // Act
+        var tokens = ParsingUtilities.ReadAllTokens(source);
+        var index  = 0;
+
+        // Assert
+        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(TokenType.Identifier, exception.Expected);
+        Assert.Equal(TokenType.Colon, exception.Found.Type);
+    }
 
     [Fact]
-    public void ParseStatement_VarDeclarationSwapColonAndAssignment_ShouldBeReadCorrectly()
+    public void ParseStatement_VarDeclarationSwapColonAndAssignment_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = "var foo =: 1 + 2;";
@@ -187,7 +206,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoColon_ShouldBeReadCorrectly()
+    public void ParseStatement_VarDeclarationNoColon_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = "var foo = 1 + 2;";
@@ -203,7 +222,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoColonNoAssignment_ShouldBeReadCorrectly()
+    public void ParseStatement_VarDeclarationNoColonNoAssignment_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = "var foo i32 1 + 2;";
@@ -220,7 +239,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoSemicolon_ShouldUseNextVariableDeclarationStatementAsStop()
+    public void ParseStatement_VarDeclarationNoSemicolon1_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = """
@@ -239,7 +258,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoSemicolon_ShouldUseNextVariableAssignmentStatementAsStop()
+    public void ParseStatement_VarDeclarationNoSemicolon2_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = """
@@ -259,7 +278,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon_ShouldUseNextVariableDeclarationStatementAsStop()
+    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon1_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = """
@@ -278,7 +297,7 @@ public class VariableDeclarationSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon_ShouldUseNextVariableAssignmentStatementAsStop()
+    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon2_ShouldThrowLanguageSyntaxException()
     {
         // Arrange
         const string source = """

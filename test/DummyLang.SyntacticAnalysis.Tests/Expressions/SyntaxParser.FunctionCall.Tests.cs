@@ -74,13 +74,11 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.RightParenthesis, functionCall.RightParenthesis.Type);
         Assert.Equal(")", functionCall.RightParenthesis.Value);
 
-        // TODO: Update the following 6 lines when lambdas are added
-        Assert.Equal(5, functionCall.Parameters.Count);
+        // TODO: Update the following 3 lines when lambdas are added
+        Assert.Equal(3, functionCall.Parameters.Count);
         Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
         Assert.IsType<ParenthesisedExpression>(functionCall.Parameters[1]);
-        Assert.IsType<IdentifierExpression>(functionCall.Parameters[2]);
-        Assert.IsType<InvalidExpression>(functionCall.Parameters[3]);
-        Assert.IsType<PrimaryExpression>(functionCall.Parameters[4]);
+        Assert.IsType<BinaryExpression>(functionCall.Parameters[2]);
 
         Assert.Equal(2, functionCall.Commas.Count);
         Assert.Equal(TokenType.Comma, functionCall.Commas[0].Type);

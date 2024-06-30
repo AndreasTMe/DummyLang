@@ -2,7 +2,6 @@
 using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
-using System.ComponentModel;
 using System.Diagnostics;
 
 namespace DummyLang.SyntacticAnalysis.Parsers;
@@ -19,8 +18,10 @@ internal static class StatementParser
             case TokenType.Var:
             case TokenType.Const:
                 return ParseVariableDeclaration(ref index, in tokens);
+            case TokenType.Semicolon:
+                return new NoOpStatement(GetAndMoveToNext(ref index, in tokens));
             default:
-                throw new InvalidEnumArgumentException(nameof(tokenType));
+                return ParseExpression(ref index, in tokens);
         }
     }
 
@@ -53,7 +54,7 @@ internal static class StatementParser
 
         //  TODO: Handle type with more than one token, e.g. generic, discriminated union, etc.
         if (TypeAt(index, in tokens) != TokenType.Assign)
-            typeValue = ExpressionParser.Parse(ref index, in tokens);
+            typeValue = new TypeIdentifierExpression(GetAndMoveToNext(ref index, in tokens));
 
         var         valueAssignmentOperator = Token.None;
         Expression? valueAssignment         = default;
@@ -80,5 +81,20 @@ internal static class StatementParser
             valueAssignmentOperator,
             valueAssignment,
             terminator);
+    }
+
+    private static ExpressionStatement ParseExpression(ref int index, in Token[] tokens)
+    {
+        var expression = ExpressionParser.Parse(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+            LanguageSyntax.Expects(
+                TokenType.Semicolon,
+                tokens[index],
+                "Semicolon expected at the end of a variable assignment statement.");
+
+        var terminator = GetAndMoveToNext(ref index, in tokens);
+
+        return new ExpressionStatement(expression, terminator);
     }
 }

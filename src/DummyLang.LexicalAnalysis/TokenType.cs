@@ -10,7 +10,7 @@ public enum TokenType : byte
     Colon     = 4,
 
     Assign       = 10,
-    AssignLambda = 11,
+    LambdaAssign = 11,
 
     Bang = 15,
 

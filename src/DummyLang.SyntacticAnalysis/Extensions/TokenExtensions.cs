@@ -13,7 +13,7 @@ internal static class TokenExtensions
         switch (token.Type)
         {
             case TokenType.Assign:
-            case TokenType.AssignLambda:
+            case TokenType.LambdaAssign:
             case TokenType.PlusAssign:
             case TokenType.MinusAssign:
             case TokenType.StarAssign:
