@@ -1,7 +1,9 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace DummyLang.SyntacticAnalysis.Parsers;
@@ -15,11 +17,21 @@ internal static class StatementParser
         var tokenType = tokens[index].Type;
         switch (tokenType)
         {
+            case TokenType.Semicolon:
+                return new NoOpStatement(GetAndMoveToNext(ref index, in tokens));
+            case TokenType.LeftBrace:
+                return ParseBlock(ref index, in tokens);
             case TokenType.Var:
             case TokenType.Const:
                 return ParseVariableDeclaration(ref index, in tokens);
-            case TokenType.Semicolon:
-                return new NoOpStatement(GetAndMoveToNext(ref index, in tokens));
+            // TODO: case TokenType.Func:
+            // TODO: case TokenType.If:
+            // TODO: case TokenType.Else:
+            // TODO: case TokenType.Break:
+            // TODO: case TokenType.While:
+            // TODO: case TokenType.Continue:
+            case TokenType.Return:
+                return ParseReturn(ref index, in tokens);
             default:
                 return ParseExpression(ref index, in tokens);
         }
@@ -30,6 +42,36 @@ internal static class StatementParser
 
     private static TokenType TypeAt(int index, in Token[] tokens) =>
         index >= 0 && index < tokens.Length ? tokens[index].Type : TokenType.None;
+
+    private static Token TokenAt(int index, in Token[] tokens) =>
+        index >= 0 && index < tokens.Length ? tokens[index] : Token.None;
+
+    private static CompoundStatement ParseBlock(ref int index, in Token[] tokens)
+    {
+        var leftBrace = GetAndMoveToNext(ref index, in tokens);
+
+        var statements  = new List<Statement>();
+        var next        = TokenAt(index, in tokens);
+        var shouldThrow = next.IsInvalid() || next.IsEndOfFile();
+        while (next.Type != TokenType.RightBrace && !shouldThrow)
+        {
+            statements.Add(Parse(ref index, in tokens));
+
+            next = TokenAt(index, in tokens);
+            if (!next.IsInvalid() && !next.IsEndOfFile())
+                continue;
+
+            shouldThrow = true;
+            break;
+        }
+
+        if (shouldThrow)
+            LanguageSyntax.Found(next, "Could not find closing brace for block.");
+
+        var rightBrace = GetAndMoveToNext(ref index, in tokens);
+
+        return new CompoundStatement(leftBrace, statements.ToArray(), rightBrace);
+    }
 
     private static VariableDeclarationStatement ParseVariableDeclaration(ref int index, in Token[] tokens)
     {
@@ -81,6 +123,45 @@ internal static class StatementParser
             valueAssignmentOperator,
             valueAssignment,
             terminator);
+    }
+
+    private static ReturnStatement ParseReturn(ref int index, in Token[] tokens)
+    {
+        var returnKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        var expressions = new List<Expression>();
+        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        {
+            expressions.Add(ExpressionParser.Parse(ref index, in tokens));
+
+            if (TokenAt(index, in tokens).IsIdentifierOrLiteral())
+                LanguageSyntax.Expects(
+                    TokenType.Comma,
+                    tokens[index],
+                    "Comma expected between multiple return arguments.");
+
+            while (TypeAt(index, in tokens) == TokenType.Comma)
+            {
+                index++;
+                expressions.Add(ExpressionParser.Parse(ref index, in tokens));
+
+                if (TokenAt(index, in tokens).IsIdentifierOrLiteral())
+                    LanguageSyntax.Expects(
+                        TokenType.Comma,
+                        tokens[index],
+                        "Comma expected between multiple return arguments.");
+            }
+        }
+
+        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+            LanguageSyntax.Expects(
+                TokenType.Semicolon,
+                tokens[index],
+                "Semicolon expected at the end of a return statement.");
+
+        var terminator = GetAndMoveToNext(ref index, in tokens);
+
+        return new ReturnStatement(returnKeyword, expressions.ToArray(), terminator);
     }
 
     private static ExpressionStatement ParseExpression(ref int index, in Token[] tokens)
