@@ -27,9 +27,11 @@ internal static class StatementParser
             // TODO: case TokenType.Func:
             // TODO: case TokenType.If:
             // TODO: case TokenType.Else:
-            // TODO: case TokenType.Break:
+            case TokenType.Break:
+                return ParseBreak(ref index, in tokens);
             // TODO: case TokenType.While:
-            // TODO: case TokenType.Continue:
+            case TokenType.Continue:
+                return ParseContinue(ref index, in tokens);
             case TokenType.Return:
                 return ParseReturn(ref index, in tokens);
             default:
@@ -125,6 +127,44 @@ internal static class StatementParser
             terminator);
     }
 
+    private static BreakStatement ParseBreak(ref int index, in Token[] tokens)
+    {
+        var breakKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        var label = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
+            label = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+            LanguageSyntax.Expects(
+                TokenType.Semicolon,
+                tokens[index],
+                "Semicolon expected at the end of a 'break' statement.");
+
+        var terminator = GetAndMoveToNext(ref index, in tokens);
+
+        return new BreakStatement(breakKeyword, label, terminator);
+    }
+        
+    private static ContinueStatement ParseContinue(ref int index, in Token[] tokens)
+    {
+        var continueKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        var label = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
+            label = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+            LanguageSyntax.Expects(
+                TokenType.Semicolon,
+                tokens[index],
+                "Semicolon expected at the end of a 'continue' statement.");
+
+        var terminator = GetAndMoveToNext(ref index, in tokens);
+
+        return new ContinueStatement(continueKeyword, label, terminator);
+    }
+
     private static ReturnStatement ParseReturn(ref int index, in Token[] tokens)
     {
         var returnKeyword = GetAndMoveToNext(ref index, in tokens);
@@ -138,7 +178,7 @@ internal static class StatementParser
                 LanguageSyntax.Expects(
                     TokenType.Comma,
                     tokens[index],
-                    "Comma expected between multiple return arguments.");
+                    "Comma expected between multiple 'return' arguments.");
 
             while (TypeAt(index, in tokens) == TokenType.Comma)
             {
@@ -149,7 +189,7 @@ internal static class StatementParser
                     LanguageSyntax.Expects(
                         TokenType.Comma,
                         tokens[index],
-                        "Comma expected between multiple return arguments.");
+                        "Comma expected between multiple 'return' arguments.");
             }
         }
 
@@ -157,7 +197,7 @@ internal static class StatementParser
             LanguageSyntax.Expects(
                 TokenType.Semicolon,
                 tokens[index],
-                "Semicolon expected at the end of a return statement.");
+                "Semicolon expected at the end of a 'return' statement.");
 
         var terminator = GetAndMoveToNext(ref index, in tokens);
 
@@ -172,7 +212,7 @@ internal static class StatementParser
             LanguageSyntax.Expects(
                 TokenType.Semicolon,
                 tokens[index],
-                "Semicolon expected at the end of a variable assignment statement.");
+                "Semicolon expected at the end of an expression statement.");
 
         var terminator = GetAndMoveToNext(ref index, in tokens);
 
