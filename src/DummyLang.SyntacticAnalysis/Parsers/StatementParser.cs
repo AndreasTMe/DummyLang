@@ -32,7 +32,8 @@ internal static class StatementParser
                 break;
             case TokenType.Break:
                 return ParseBreak(ref index, in tokens);
-            // TODO: case TokenType.While:
+            case TokenType.While:
+                return ParseWhile(ref index, in tokens);
             case TokenType.Continue:
                 return ParseContinue(ref index, in tokens);
             case TokenType.Return:
@@ -153,12 +154,12 @@ internal static class StatementParser
                 tokens[index],
                 "Left parenthesis token expected after 'if' keyword.");
 
-        var ifLeftParenthesis = GetAndMoveToNext(ref index, in tokens);
+        var leftParenthesis = GetAndMoveToNext(ref index, in tokens);
 
         if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
             LanguageSyntax.Found(tokens[index], "Condition expected for 'if' statement.");
 
-        var ifCondition = ExpressionParser.Parse(ref index, in tokens);
+        var condition = ExpressionParser.Parse(ref index, in tokens);
 
         if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
             LanguageSyntax.Expects(
@@ -166,14 +167,14 @@ internal static class StatementParser
                 tokens[index],
                 "Right parenthesis expected after the end of the condition.");
 
-        var ifRightParenthesis = GetAndMoveToNext(ref index, in tokens);
+        var rightParenthesis = GetAndMoveToNext(ref index, in tokens);
 
         if (TypeAt(index, in tokens) != TokenType.LeftBrace)
             LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open an 'if' block.");
 
         var ifBlock = ParseBlock(ref index, in tokens);
 
-        return new IfElseStatement.IfBlock(ifKeyword, ifLeftParenthesis, ifCondition, ifRightParenthesis, ifBlock);
+        return new IfElseStatement.IfBlock(ifKeyword, leftParenthesis, condition, rightParenthesis, ifBlock);
     }
 
     private static IfElseStatement.ElseIfBlock ParseElseIfPart(ref int index, in Token[] tokens)
@@ -213,6 +214,43 @@ internal static class StatementParser
         var terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new BreakStatement(breakKeyword, label, terminator);
+    }
+
+    private static WhileStatement ParseWhile(ref int index, in Token[] tokens)
+    {
+        var whileKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        var label = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
+            label = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LeftParenthesis)
+            LanguageSyntax.Expects(
+                TokenType.LeftParenthesis,
+                tokens[index],
+                "Left parenthesis token expected after 'while' keyword or its label.");
+
+        var leftParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+            LanguageSyntax.Found(tokens[index], "Condition expected for 'while' statement.");
+
+        var condition = ExpressionParser.Parse(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
+            LanguageSyntax.Expects(
+                TokenType.RightParenthesis,
+                tokens[index],
+                "Right parenthesis expected after the end of the condition.");
+
+        var rightParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
+            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open a 'while' block.");
+
+        var whileBlock = ParseBlock(ref index, in tokens);
+
+        return new WhileStatement(whileKeyword, label, leftParenthesis, condition, rightParenthesis, whileBlock);
     }
 
     private static ContinueStatement ParseContinue(ref int index, in Token[] tokens)
