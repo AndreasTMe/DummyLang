@@ -4,14 +4,14 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class ContinueStatement : Statement
 {
-    public Token Continue   { get; }
-    public Token Label      { get; }
-    public Token Terminator { get; }
+    public Token ContinueKeyword { get; }
+    public Token Label           { get; }
+    public Token Terminator      { get; }
 
-    internal ContinueStatement(Token @continue, Token label, Token terminator)
+    internal ContinueStatement(Token continueKeyword, Token label, Token terminator)
     {
-        Continue   = @continue;
-        Label      = label;
-        Terminator = terminator;
+        ContinueKeyword = continueKeyword;
+        Label           = label;
+        Terminator      = terminator;
     }
 }

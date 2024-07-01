@@ -25,8 +25,11 @@ internal static class StatementParser
             case TokenType.Const:
                 return ParseVariableDeclaration(ref index, in tokens);
             // TODO: case TokenType.Func:
-            // TODO: case TokenType.If:
-            // TODO: case TokenType.Else:
+            case TokenType.If:
+                return ParseIfElse(ref index, in tokens);
+            case TokenType.Else:
+                LanguageSyntax.Found(tokens[index], "The 'else' keyword can only come after an 'if'/'else if' block.");
+                break;
             case TokenType.Break:
                 return ParseBreak(ref index, in tokens);
             // TODO: case TokenType.While:
@@ -34,9 +37,9 @@ internal static class StatementParser
                 return ParseContinue(ref index, in tokens);
             case TokenType.Return:
                 return ParseReturn(ref index, in tokens);
-            default:
-                return ParseExpression(ref index, in tokens);
         }
+
+        return ParseExpression(ref index, in tokens);
     }
 
     private static Token GetAndMoveToNext(ref int index, in Token[] tokens) =>
@@ -127,6 +130,72 @@ internal static class StatementParser
             terminator);
     }
 
+    private static IfElseStatement ParseIfElse(ref int index, in Token[] tokens)
+    {
+        var ifPart      = ParseIfPart(ref index, in tokens);
+        var elseIfParts = new List<IfElseStatement.ElseIfBlock>();
+
+        while (TypeAt(index, in tokens) == TokenType.Else && TypeAt(index + 1, in tokens) == TokenType.If)
+            elseIfParts.Add(ParseElseIfPart(ref index, in tokens));
+
+        return TypeAt(index, in tokens) == TokenType.Else
+            ? new IfElseStatement(ifPart, elseIfParts, ParseElsePart(ref index, in tokens))
+            : new IfElseStatement(ifPart, elseIfParts, null);
+    }
+
+    private static IfElseStatement.IfBlock ParseIfPart(ref int index, in Token[] tokens)
+    {
+        var ifKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LeftParenthesis)
+            LanguageSyntax.Expects(
+                TokenType.LeftParenthesis,
+                tokens[index],
+                "Left parenthesis token expected after 'if' keyword.");
+
+        var ifLeftParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+            LanguageSyntax.Found(tokens[index], "Condition expected for 'if' statement.");
+
+        var ifCondition = ExpressionParser.Parse(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
+            LanguageSyntax.Expects(
+                TokenType.RightParenthesis,
+                tokens[index],
+                "Right parenthesis expected after the end of the condition.");
+
+        var ifRightParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
+            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open an 'if' block.");
+
+        var ifBlock = ParseBlock(ref index, in tokens);
+
+        return new IfElseStatement.IfBlock(ifKeyword, ifLeftParenthesis, ifCondition, ifRightParenthesis, ifBlock);
+    }
+
+    private static IfElseStatement.ElseIfBlock ParseElseIfPart(ref int index, in Token[] tokens)
+    {
+        var elseKeyword = GetAndMoveToNext(ref index, in tokens);
+        var ifPart      = ParseIfPart(ref index, in tokens);
+
+        return new IfElseStatement.ElseIfBlock(elseKeyword, ifPart);
+    }
+
+    private static IfElseStatement.ElseBlock ParseElsePart(ref int index, in Token[] tokens)
+    {
+        var elseKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
+            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open an 'else' block.");
+
+        var elseBlock = ParseBlock(ref index, in tokens);
+
+        return new IfElseStatement.ElseBlock(elseKeyword, elseBlock);
+    }
+
     private static BreakStatement ParseBreak(ref int index, in Token[] tokens)
     {
         var breakKeyword = GetAndMoveToNext(ref index, in tokens);
@@ -145,7 +214,7 @@ internal static class StatementParser
 
         return new BreakStatement(breakKeyword, label, terminator);
     }
-        
+
     private static ContinueStatement ParseContinue(ref int index, in Token[] tokens)
     {
         var continueKeyword = GetAndMoveToNext(ref index, in tokens);

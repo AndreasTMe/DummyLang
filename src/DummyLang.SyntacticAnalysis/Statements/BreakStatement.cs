@@ -4,14 +4,14 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class BreakStatement : Statement
 {
-    public Token Break      { get; }
-    public Token Label      { get; }
-    public Token Terminator { get; }
+    public Token BreakKeyword { get; }
+    public Token Label        { get; }
+    public Token Terminator   { get; }
 
-    internal BreakStatement(Token @break, Token label, Token terminator)
+    internal BreakStatement(Token breakKeyword, Token label, Token terminator)
     {
-        Break      = @break;
-        Label      = label;
-        Terminator = terminator;
+        BreakKeyword = breakKeyword;
+        Label        = label;
+        Terminator   = terminator;
     }
 }

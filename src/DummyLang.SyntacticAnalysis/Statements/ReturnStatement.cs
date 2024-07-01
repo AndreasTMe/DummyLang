@@ -5,14 +5,14 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class ReturnStatement : Statement
 {
-    public Token        Return      { get; }
-    public Expression[] Expressions { get; }
-    public Token        Terminator  { get; }
+    public Token        ReturnKeyword { get; }
+    public Expression[] Expressions   { get; }
+    public Token        Terminator    { get; }
 
-    internal ReturnStatement(Token @return, Expression[] expressions, Token terminator)
+    internal ReturnStatement(Token returnKeyword, Expression[] expressions, Token terminator)
     {
-        Return      = @return;
-        Expressions = expressions;
-        Terminator  = terminator;
+        ReturnKeyword = returnKeyword;
+        Expressions   = expressions;
+        Terminator    = terminator;
     }
 }

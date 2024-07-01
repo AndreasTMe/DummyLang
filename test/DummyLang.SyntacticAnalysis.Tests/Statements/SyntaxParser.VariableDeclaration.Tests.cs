@@ -28,8 +28,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.IsType<VariableDeclarationStatement>(statement);
         var variableDeclaration = (VariableDeclarationStatement)statement;
 
-        Assert.Equal(TokenType.Var, variableDeclaration.Declaration.Type);
-        Assert.Equal("var", variableDeclaration.Declaration.Value);
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
         Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
 
@@ -70,8 +70,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.IsType<VariableDeclarationStatement>(statement);
         var variableDeclaration = (VariableDeclarationStatement)statement;
 
-        Assert.Equal(TokenType.Const, variableDeclaration.Declaration.Type);
-        Assert.Equal("const", variableDeclaration.Declaration.Value);
+        Assert.Equal(TokenType.Const, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("const", variableDeclaration.DeclarationKeyword.Value);
 
         Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
 
@@ -112,8 +112,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.IsType<VariableDeclarationStatement>(statement);
         var variableDeclaration = (VariableDeclarationStatement)statement;
 
-        Assert.Equal(TokenType.Var, variableDeclaration.Declaration.Type);
-        Assert.Equal("var", variableDeclaration.Declaration.Value);
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
         Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
 
@@ -150,8 +150,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.IsType<VariableDeclarationStatement>(statement);
         var variableDeclaration = (VariableDeclarationStatement)statement;
 
-        Assert.Equal(TokenType.Var, variableDeclaration.Declaration.Type);
-        Assert.Equal("var", variableDeclaration.Declaration.Value);
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
         Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
 

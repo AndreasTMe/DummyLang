@@ -5,15 +5,15 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class VariableDeclarationStatement : Statement
 {
-    public Token       Declaration     { get; }
-    public Expression? Identifier      { get; }
-    public Token       TypeAssignment  { get; }
-    public Expression? Type            { get; }
-    public Token       ValueAssignment { get; }
-    public Expression? Value           { get; }
-    public Token       Terminator      { get; }
+    public Token       DeclarationKeyword { get; }
+    public Expression? Identifier         { get; }
+    public Token       TypeAssignment     { get; }
+    public Expression? Type               { get; }
+    public Token       ValueAssignment    { get; }
+    public Expression? Value              { get; }
+    public Token       Terminator         { get; }
 
-    internal VariableDeclarationStatement(Token declaration,
+    internal VariableDeclarationStatement(Token declarationKeyword,
                                           Expression? identifier,
                                           Token typeAssignment,
                                           Expression? type,
@@ -21,12 +21,12 @@ public sealed class VariableDeclarationStatement : Statement
                                           Expression? value,
                                           Token terminator)
     {
-        Declaration     = declaration;
-        Identifier      = identifier;
-        TypeAssignment  = typeAssignment;
-        Type            = type;
-        ValueAssignment = valueAssignment;
-        Value           = value;
-        Terminator      = terminator;
+        DeclarationKeyword = declarationKeyword;
+        Identifier         = identifier;
+        TypeAssignment     = typeAssignment;
+        Type               = type;
+        ValueAssignment    = valueAssignment;
+        Value              = value;
+        Terminator         = terminator;
     }
 }

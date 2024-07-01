@@ -27,8 +27,8 @@ public class ContinueSyntaxParserTests
         Assert.IsType<ContinueStatement>(statement);
         var continueStatement = (ContinueStatement)statement;
 
-        Assert.Equal(TokenType.Continue, continueStatement.Continue.Type);
-        Assert.Equal("continue", continueStatement.Continue.Value);
+        Assert.Equal(TokenType.Continue, continueStatement.ContinueKeyword.Type);
+        Assert.Equal("continue", continueStatement.ContinueKeyword.Value);
 
         Assert.Equal(TokenType.None, continueStatement.Label.Type);
         Assert.Equal("", continueStatement.Label.Value);
@@ -56,8 +56,8 @@ public class ContinueSyntaxParserTests
         Assert.IsType<ContinueStatement>(statement);
         var continueStatement = (ContinueStatement)statement;
 
-        Assert.Equal(TokenType.Continue, continueStatement.Continue.Type);
-        Assert.Equal("continue", continueStatement.Continue.Value);
+        Assert.Equal(TokenType.Continue, continueStatement.ContinueKeyword.Type);
+        Assert.Equal("continue", continueStatement.ContinueKeyword.Value);
 
         Assert.Equal(TokenType.Identifier, continueStatement.Label.Type);
         Assert.Equal("someLabel", continueStatement.Label.Value);

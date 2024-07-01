@@ -28,8 +28,8 @@ public class ReturnSyntaxParserTests
         Assert.IsType<ReturnStatement>(statement);
         var returnStatement = (ReturnStatement)statement;
 
-        Assert.Equal(TokenType.Return, returnStatement.Return.Type);
-        Assert.Equal("return", returnStatement.Return.Value);
+        Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
+        Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
         Assert.Single(returnStatement.Expressions);
         Assert.IsType<NumberLiteralExpression>(returnStatement.Expressions[0]);
@@ -57,8 +57,8 @@ public class ReturnSyntaxParserTests
         Assert.IsType<ReturnStatement>(statement);
         var returnStatement = (ReturnStatement)statement;
 
-        Assert.Equal(TokenType.Return, returnStatement.Return.Type);
-        Assert.Equal("return", returnStatement.Return.Value);
+        Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
+        Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
         Assert.Single(returnStatement.Expressions);
         Assert.IsType<BinaryExpression>(returnStatement.Expressions[0]);
@@ -86,8 +86,8 @@ public class ReturnSyntaxParserTests
         Assert.IsType<ReturnStatement>(statement);
         var returnStatement = (ReturnStatement)statement;
 
-        Assert.Equal(TokenType.Return, returnStatement.Return.Type);
-        Assert.Equal("return", returnStatement.Return.Value);
+        Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
+        Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
         Assert.Equal(3, returnStatement.Expressions.Length);
         Assert.IsType<NumberLiteralExpression>(returnStatement.Expressions[0]);

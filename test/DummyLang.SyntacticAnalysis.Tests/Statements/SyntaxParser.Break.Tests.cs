@@ -27,8 +27,8 @@ public class BreakSyntaxParserTests
         Assert.IsType<BreakStatement>(statement);
         var breakStatement = (BreakStatement)statement;
 
-        Assert.Equal(TokenType.Break, breakStatement.Break.Type);
-        Assert.Equal("break", breakStatement.Break.Value);
+        Assert.Equal(TokenType.Break, breakStatement.BreakKeyword.Type);
+        Assert.Equal("break", breakStatement.BreakKeyword.Value);
 
         Assert.Equal(TokenType.None, breakStatement.Label.Type);
         Assert.Equal("", breakStatement.Label.Value);
@@ -56,8 +56,8 @@ public class BreakSyntaxParserTests
         Assert.IsType<BreakStatement>(statement);
         var breakStatement = (BreakStatement)statement;
 
-        Assert.Equal(TokenType.Break, breakStatement.Break.Type);
-        Assert.Equal("break", breakStatement.Break.Value);
+        Assert.Equal(TokenType.Break, breakStatement.BreakKeyword.Type);
+        Assert.Equal("break", breakStatement.BreakKeyword.Value);
 
         Assert.Equal(TokenType.Identifier, breakStatement.Label.Type);
         Assert.Equal("someLabel", breakStatement.Label.Value);
