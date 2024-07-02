@@ -85,4 +85,58 @@ internal static class ParsingUtilities
 
         return !reachedInvalidToken;
     }
+
+    public static bool TryGetBalancedTypeBrackets(in Token[] tokens, int startIndex, out int endIndex)
+    {
+        endIndex = startIndex;
+
+        if (endIndex >= tokens.Length)
+            return false;
+
+        var stack = new Stack<Token>();
+        stack.Push(tokens[endIndex]);
+        endIndex++;
+
+        var reachedInvalidToken = false;
+        while (endIndex < tokens.Length)
+        {
+            var currentToken = tokens[endIndex];
+
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (currentToken.Type)
+            {
+                case TokenType.LessThan:
+                case TokenType.LeftParenthesis:
+                {
+                    stack.Push(currentToken);
+                    endIndex++;
+                    continue;
+                }
+                case TokenType.GreaterThan:
+                case TokenType.RightParenthesis:
+                {
+                    if (stack.TryPeek(out var top)
+                        && (top.IsParenthesisMatch(currentToken) || top.IsGenericMatch(currentToken)))
+                        stack.Pop();
+                    else
+                        reachedInvalidToken = true;
+
+                    break;
+                }
+                default:
+                    reachedInvalidToken = currentToken.IsReservedKeyword()
+                                          || currentToken.IsEndOfStatement()
+                                          || currentToken.IsEndOfFile()
+                                          || currentToken.IsInvalid();
+                    break;
+            }
+
+            if (reachedInvalidToken || stack.Count == 0)
+                break;
+
+            endIndex++;
+        }
+
+        return !reachedInvalidToken;
+    }
 }

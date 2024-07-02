@@ -1,24 +1,25 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
+using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class VariableDeclarationStatement : Statement
 {
-    public Token       DeclarationKeyword { get; }
-    public Expression? Identifier         { get; }
-    public Token       TypeAssignment     { get; }
-    public Expression? Type               { get; }
-    public Token       ValueAssignment    { get; }
-    public Expression? Value              { get; }
-    public Token       Terminator         { get; }
+    public Token            DeclarationKeyword { get; }
+    public IExpression?     Identifier         { get; }
+    public Token            TypeAssignment     { get; }
+    public ITypeExpression? Type               { get; }
+    public Token            ValueAssignment    { get; }
+    public IExpression?     Value              { get; }
+    public Token            Terminator         { get; }
 
     internal VariableDeclarationStatement(Token declarationKeyword,
-                                          Expression? identifier,
+                                          IExpression? identifier,
                                           Token typeAssignment,
-                                          Expression? type,
+                                          ITypeExpression? type,
                                           Token valueAssignment,
-                                          Expression? value,
+                                          IExpression? value,
                                           Token terminator)
     {
         DeclarationKeyword = declarationKeyword;

@@ -1,15 +1,16 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class IndexerExpression : Expression
+public sealed class IndexerExpression : IExpression
 {
     public Token       Identifier   { get; }
     public Token       LeftBracket  { get; }
-    public Expression? Index        { get; }
+    public IExpression? Index        { get; }
     public Token       RightBracket { get; }
 
-    internal IndexerExpression(Token identifier, Token leftBracket, Token rightBracket, Expression? index)
+    internal IndexerExpression(Token identifier, Token leftBracket, Token rightBracket, IExpression? index)
     {
         Identifier   = identifier;
         LeftBracket  = leftBracket;

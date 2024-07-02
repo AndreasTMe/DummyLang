@@ -1,9 +1,9 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -11,7 +11,7 @@ namespace DummyLang.SyntacticAnalysis.Parsers;
 
 internal static class ExpressionParser
 {
-    public static Expression Parse(ref int index, in Token[] tokens, OperatorPrecedence previousPrecedence = 0)
+    public static IExpression Parse(ref int index, in Token[] tokens, OperatorPrecedence previousPrecedence = 0)
     {
         var left = ParseExpressionBasedOnCurrentToken(ref index, in tokens);
 
@@ -30,10 +30,32 @@ internal static class ExpressionParser
         return left;
     }
 
+    public static ITypeExpression ParseType(ref int index, in Token[] tokens, OperatorPrecedence previousPrecedence = 0)
+    {
+        var left = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
+
+        while (index < tokens.Length && tokens[index].IsBitwiseOperator())
+        {
+            var currentPrecedence = tokens[index].GetOperatorPrecedence();
+            if (currentPrecedence == OperatorPrecedence.None || currentPrecedence <= previousPrecedence)
+                break;
+
+            var op    = GetAndMoveToNext(ref index, in tokens);
+            var right = ParseType(ref index, in tokens, currentPrecedence);
+
+            left = new TypeBinaryExpression(left, op, right);
+        }
+
+        return left;
+    }
+
     private static Token GetAndMoveToNext(ref int index, in Token[] tokens) =>
         index >= 0 && index < tokens.Length ? tokens[index++] : Token.None;
 
-    private static Expression ParseExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
+    private static TokenType TypeAt(int index, in Token[] tokens) =>
+        index >= 0 && index < tokens.Length ? tokens[index].Type : TokenType.None;
+
+    private static IExpression ParseExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
     {
         Debug.Assert(index < tokens.Length);
 
@@ -51,7 +73,20 @@ internal static class ExpressionParser
             case TokenType.Ampersand:
                 return ParseUnaryExpression(ref index, in tokens);
             case TokenType.LeftParenthesis:
-                return ParseParenthesisedExpression(ref index, in tokens);
+            {
+                var leftParen  = GetAndMoveToNext(ref index, in tokens);
+                var expression = Parse(ref index, in tokens);
+
+                Debug.Assert(index < tokens.Length);
+                return TypeAt(index, in tokens) == TokenType.RightParenthesis
+                    ? new ParenthesisedExpression(
+                        leftParen,
+                        expression,
+                        GetAndMoveToNext(ref index, in tokens))
+                    : new InvalidExpression(
+                        typeof(ParenthesisedExpression),
+                        Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
+            }
             case TokenType.RightParenthesis:
                 return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
             case TokenType.Identifier:
@@ -68,12 +103,51 @@ internal static class ExpressionParser
         }
     }
 
+    private static ITypeExpression ParseTypeExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
+    {
+        Debug.Assert(index < tokens.Length);
+
+        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+        switch (tokens[index].Type)
+        {
+            case TokenType.LeftParenthesis:
+            {
+                var leftParen  = GetAndMoveToNext(ref index, in tokens);
+                var expression = ParseType(ref index, in tokens);
+
+                Debug.Assert(index < tokens.Length);
+                return TypeAt(index, in tokens) == TokenType.RightParenthesis
+                    ? new ParenthesisedExpression(
+                        leftParen,
+                        expression,
+                        GetAndMoveToNext(ref index, in tokens))
+                    : new InvalidExpression(
+                        typeof(ParenthesisedExpression),
+                        Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
+            }
+            case TokenType.RightParenthesis:
+                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+            case TokenType.Identifier:
+                return ParseTypeIdentifierExpression(ref index, in tokens);
+            case TokenType.Integer:
+            case TokenType.Real:
+                return ParseNumberExpression(ref index, in tokens);
+            case TokenType.Character:
+                return ParseCharacterExpression(ref index, in tokens);
+            case TokenType.String:
+                return ParseStringExpression(ref index, in tokens);
+            default:
+                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+        }
+    }
+
     private static UnaryExpression ParseUnaryExpression(ref int index, in Token[] tokens)
     {
-        var         unaryOperator = GetAndMoveToNext(ref index, in tokens);
-        Expression? expression    = default;
+        var          unaryOperator = GetAndMoveToNext(ref index, in tokens);
+        IExpression? expression    = default;
 
-        if (tokens[index].Type == TokenType.Identifier)
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
             expression = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
 
         if (unaryOperator.IsAdditiveOperator() && tokens[index].IsNumber())
@@ -84,27 +158,10 @@ internal static class ExpressionParser
             expression ?? new InvalidExpression(GetAndMoveToNext(ref index, in tokens)));
     }
 
-    private static Expression ParseParenthesisedExpression(ref int index, in Token[] tokens)
+    private static IExpression ParseIdentifierRelatedExpressions(ref int index, in Token[] tokens)
     {
-        var leftParen  = GetAndMoveToNext(ref index, in tokens);
-        var expression = Parse(ref index, in tokens);
-
-        Debug.Assert(index < tokens.Length);
-        if (tokens[index].Type == TokenType.RightParenthesis)
-            return new ParenthesisedExpression(
-                leftParen,
-                expression,
-                GetAndMoveToNext(ref index, in tokens));
-
-        return new InvalidExpression(
-            typeof(ParenthesisedExpression),
-            Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
-    }
-
-    private static Expression ParseIdentifierRelatedExpressions(ref int index, in Token[] tokens)
-    {
-        var        identifierToken = GetAndMoveToNext(ref index, in tokens);
-        Expression expression;
+        var         identifierToken = GetAndMoveToNext(ref index, in tokens);
+        IExpression expression;
 
         Debug.Assert(index < tokens.Length);
         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
@@ -159,11 +216,71 @@ internal static class ExpressionParser
         }
     }
 
-    private static Expression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)
+    private static ITypeExpression ParseTypeIdentifierExpression(ref int index, in Token[] tokens)
+    {
+        var identifierToken = GetAndMoveToNext(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) != TokenType.LessThan)
+            return new TypeIdentifierExpression(identifierToken);
+
+        Token leftGeneric;
+        Token rightGeneric;
+        var   expressions = new List<ITypeExpression>();
+        var   commas      = new List<Token>();
+
+        if (ParsingUtilities.TryGetBalancedTypeBrackets(in tokens, index, out var endIndex))
+        {
+            leftGeneric  = GetAndMoveToNext(ref index, in tokens);
+            rightGeneric = tokens[endIndex];
+
+            while (index < endIndex)
+            {
+                expressions.Add(ParseType(ref index, in tokens));
+
+                if (TypeAt(index, in tokens) == TokenType.Comma)
+                    commas.Add(GetAndMoveToNext(ref index, in tokens));
+            }
+
+            // Ensuring correct indexing
+            index = endIndex + 1;
+
+            return new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas);
+        }
+
+        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LessThan)
+            return new InvalidExpression(
+                typeof(TypeGenericExpression),
+                Token.ExpectedAt(tokens[index].Position, TokenType.GreaterThan));
+
+        leftGeneric = GetAndMoveToNext(ref index, in tokens);
+        rightGeneric = tokens[endIndex].Type == TokenType.GreaterThan
+            ? tokens[endIndex]
+            : Token.None;
+
+        while (index < endIndex)
+        {
+            expressions.Add(ParseType(ref index, in tokens));
+
+            if (TypeAt(index, in tokens) == TokenType.Comma)
+                commas.Add(GetAndMoveToNext(ref index, in tokens));
+        }
+
+        // Ensuring correct indexing
+        index = endIndex;
+
+        return rightGeneric == Token.None
+            ? new InvalidExpression(
+                new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas))
+            : new InvalidExpression(
+                new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas),
+                Token.ExpectedAt(tokens[endIndex].Position, TokenType.GreaterThan));
+    }
+
+    private static IExpression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)
     {
         Token leftParenthesis;
         Token rightParenthesis;
-        var   expressions = new List<Expression>();
+        var   expressions = new List<IExpression>();
         var   commas      = new List<Token>();
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
@@ -175,7 +292,7 @@ internal static class ExpressionParser
             {
                 expressions.Add(Parse(ref index, in tokens));
 
-                if (tokens[index].Type == TokenType.Comma)
+                if (TypeAt(index, in tokens) == TokenType.Comma)
                     commas.Add(GetAndMoveToNext(ref index, in tokens));
             }
 
@@ -186,7 +303,7 @@ internal static class ExpressionParser
                 new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
         }
 
-        if (index == endIndex - 1 && tokens[index].Type == TokenType.LeftParenthesis)
+        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftParenthesis)
             return new InvalidExpression(
                 typeof(FunctionCallExpression),
                 Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
@@ -200,7 +317,7 @@ internal static class ExpressionParser
         {
             expressions.Add(Parse(ref index, in tokens));
 
-            if (tokens[index].Type == TokenType.Comma)
+            if (TypeAt(index, in tokens) == TokenType.Comma)
                 commas.Add(GetAndMoveToNext(ref index, in tokens));
         }
 
@@ -215,11 +332,11 @@ internal static class ExpressionParser
                 Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
     }
 
-    private static Expression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
+    private static IExpression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
     {
-        Token       leftBracket;
-        Token       rightBracket;
-        Expression? expression;
+        Token        leftBracket;
+        Token        rightBracket;
+        IExpression? expression;
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
@@ -233,7 +350,7 @@ internal static class ExpressionParser
             return new PrimaryExpression(new IndexerExpression(identifier, leftBracket, rightBracket, expression));
         }
 
-        if (index == endIndex - 1 && tokens[index].Type == TokenType.LeftBracket)
+        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftBracket)
             return new InvalidExpression(
                 typeof(IndexerExpression),
                 Token.ExpectedAt(tokens[index].Position, TokenType.RightBracket));
@@ -255,94 +372,12 @@ internal static class ExpressionParser
                 Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
     }
 
-    private static NumberLiteralExpression ParseNumberExpression(ref int index, in Token[] tokens)
-    {
-        Debug.Assert(index < tokens.Length);
-        var number = tokens[index].Value;
+    private static NumberLiteralExpression ParseNumberExpression(ref int index, in Token[] tokens) =>
+        new(GetAndMoveToNext(ref index, in tokens));
 
-        if (tokens[index].Type == TokenType.Integer)
-        {
-            var integerType = NumberType.Integer;
+    private static CharacterLiteralExpression ParseCharacterExpression(ref int index, in Token[] tokens) =>
+        new(GetAndMoveToNext(ref index, in tokens));
 
-            if (number.StartsWith("0x"))
-                integerType = NumberType.Hexadecimal;
-            else if (number.StartsWith("0b"))
-                integerType = NumberType.Binary;
-            else if (number.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
-                integerType = NumberType.UnsignedLong;
-            else if (number.EndsWith("u", StringComparison.OrdinalIgnoreCase))
-                integerType = NumberType.UnsignedInteger;
-            else if (number.EndsWith("l", StringComparison.OrdinalIgnoreCase))
-                integerType = NumberType.Long;
-
-            return new NumberLiteralExpression(GetAndMoveToNext(ref index, in tokens), integerType);
-        }
-
-        var realType = NumberType.Double;
-
-        if (number.EndsWith("f", StringComparison.OrdinalIgnoreCase))
-            realType = NumberType.Float;
-        else if (number.EndsWith("d", StringComparison.OrdinalIgnoreCase))
-            realType = NumberType.Double;
-        else if (number.EndsWith("m", StringComparison.OrdinalIgnoreCase))
-            realType = NumberType.Decimal;
-        else if (number.Contains('e', StringComparison.OrdinalIgnoreCase))
-            realType = NumberType.WithExponent;
-
-        return new NumberLiteralExpression(GetAndMoveToNext(ref index, in tokens), realType);
-    }
-
-    private static Expression ParseCharacterExpression(ref int index, in Token[] tokens)
-    {
-        var characterToken             = GetAndMoveToNext(ref index, in tokens);
-        var characterValue             = characterToken.Value;
-        var characterLiteralExpression = new CharacterLiteralExpression(characterToken);
-
-        var diagnosticMessage = string.Empty;
-
-        if (!characterValue.HasValidCharacterLength())
-            diagnosticMessage = CharacterLiteralExpression.ShouldBeOfCertainLength;
-        else if (!characterValue.IsSurroundedBySingleQuotes())
-            diagnosticMessage = CharacterLiteralExpression.ShouldStartEndWithSingleQuote;
-        else if (characterValue.IsUnescapedSingleQuoteOrBackslash())
-            diagnosticMessage = CharacterLiteralExpression.ShouldBeEscaped;
-        else if (characterValue[1] == '\\')
-        {
-            if (characterValue[2] == 'x')
-            {
-                // ReSharper disable once InvertIf
-                if (!characterValue.IsValidHexadecimalCharacter())
-                    diagnosticMessage = CharacterLiteralExpression.InvalidEscapedCharacter;
-            }
-            else if (!characterValue.IsValidEscapedCharacter())
-                diagnosticMessage = CharacterLiteralExpression.InvalidHexadecimalCharacter;
-        }
-
-        return string.IsNullOrWhiteSpace(diagnosticMessage) switch
-        {
-            false => new InvalidExpression(characterLiteralExpression, characterToken),
-            _     => characterLiteralExpression
-        };
-    }
-
-    private static Expression ParseStringExpression(ref int index, in Token[] tokens)
-    {
-        var stringToken             = GetAndMoveToNext(ref index, in tokens);
-        var stringValue             = stringToken.Value;
-        var stringLiteralExpression = new StringLiteralExpression(stringToken);
-
-        var diagnosticsMessage = string.Empty;
-
-        if (!stringValue.IsValidLength() || !stringValue.IsSurroundedByDoubleQuotes())
-            diagnosticsMessage = StringLiteralExpression.ShouldBeSurroundedByDoubleQuote;
-        else if (stringValue.EscapesLastDoubleQuote())
-            diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
-        else if (stringValue.HasInvalidEscapedCharacters())
-            diagnosticsMessage = StringLiteralExpression.InvalidEscapedCharacter;
-
-        if (string.IsNullOrWhiteSpace(diagnosticsMessage))
-            return stringLiteralExpression;
-
-        return new InvalidExpression(stringLiteralExpression, stringToken);
-    }
+    private static StringLiteralExpression ParseStringExpression(ref int index, in Token[] tokens) =>
+        new(GetAndMoveToNext(ref index, in tokens));
 }

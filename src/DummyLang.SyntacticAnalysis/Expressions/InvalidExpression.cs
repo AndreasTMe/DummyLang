@@ -1,13 +1,15 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System;
+using System.Diagnostics;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class InvalidExpression : Expression
+public sealed class InvalidExpression : IExpression, ITypeExpression
 {
-    public Token[]     Tokens         { get; }
-    public Expression? Expression     { get; }
-    public Type?       ExpressionType { get; }
+    public Token[]      Tokens         { get; }
+    public ISyntaxNode? Expression     { get; }
+    public Type?        ExpressionType { get; }
 
     internal InvalidExpression(params Token[] tokens)
     {
@@ -22,8 +24,10 @@ public sealed class InvalidExpression : Expression
         ExpressionType = expressionType;
     }
 
-    internal InvalidExpression(Expression expression, params Token[] tokens)
+    internal InvalidExpression(ISyntaxNode expression, params Token[] tokens)
     {
+        Debug.Assert(expression is IExpression or ITypeExpression);
+
         Tokens         = tokens;
         Expression     = expression;
         ExpressionType = expression.GetType();

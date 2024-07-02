@@ -1,5 +1,7 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
+using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
@@ -21,13 +23,13 @@ public sealed class IfElseStatement : Statement
     {
         public Token             IfKeyword        { get; }
         public Token             LeftParenthesis  { get; }
-        public Expression        Condition        { get; }
+        public IExpression        Condition        { get; }
         public Token             RightParenthesis { get; }
         public CompoundStatement Block            { get; }
 
         internal IfBlock(Token ifKeyword,
                          Token leftParenthesis,
-                         Expression condition,
+                         IExpression condition,
                          Token rightParenthesis,
                          CompoundStatement block)
         {
@@ -44,7 +46,7 @@ public sealed class IfElseStatement : Statement
         public Token             ElseKeyword      { get; }
         public Token             IfKeyword        { get; }
         public Token             LeftParenthesis  { get; }
-        public Expression        Condition        { get; }
+        public IExpression        Condition        { get; }
         public Token             RightParenthesis { get; }
         public CompoundStatement Block            { get; }
 

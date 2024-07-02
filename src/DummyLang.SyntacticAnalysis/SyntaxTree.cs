@@ -4,15 +4,13 @@ namespace DummyLang.SyntacticAnalysis;
 
 public sealed class SyntaxTree
 {
-    public abstract class Node;
+    private readonly List<ISyntaxNode> _nodes = [];
 
-    private readonly List<Node> _nodes = [];
+    public IReadOnlyList<ISyntaxNode> Nodes => _nodes;
 
-    public IReadOnlyList<Node> Nodes => _nodes;
-
-    internal void Insert(in Node node)
+    internal void Insert(in ISyntaxNode syntaxNode)
     {
-        _nodes.Add(node);
+        _nodes.Add(syntaxNode);
     }
 
     public void Clear()

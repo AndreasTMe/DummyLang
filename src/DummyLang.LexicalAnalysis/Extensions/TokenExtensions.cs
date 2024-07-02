@@ -47,6 +47,9 @@ public static class TokenExtensions
 
     public static bool IsBinaryOperator(this Token token) => BinaryOperators.Contains(token.Type);
 
+    public static bool IsBitwiseOperator(this Token token) =>
+        token.Type == TokenType.Ampersand || token.Type == TokenType.Pipe || token.Type == TokenType.Caret;
+
     public static bool IsNumber(this Token token) => token.Type == TokenType.Integer || token.Type == TokenType.Real;
 
     public static bool IsIdentifierOrLiteral(this Token token) =>
@@ -62,6 +65,9 @@ public static class TokenExtensions
 
     public static bool IsBraceMatch(this Token token, Token other) =>
         token.Type == TokenType.LeftBrace && other.Type == TokenType.RightBrace;
+
+    public static bool IsGenericMatch(this Token token, Token other) =>
+        token.Type == TokenType.LessThan && other.Type == TokenType.GreaterThan;
 
     public static bool IsEndOfStatement(this Token token) => token.Type == TokenType.Semicolon;
 

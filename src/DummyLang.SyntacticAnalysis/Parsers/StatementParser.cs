@@ -1,7 +1,9 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Statements;
+using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -97,15 +99,14 @@ internal static class StatementParser
                 tokens[index],
                 "Colon expected after identifier in a variable declaration statement.");
 
-        var         typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
-        Expression? typeValue              = default;
+        var              typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
+        ITypeExpression? typeValue              = default;
 
-        //  TODO: Handle type with more than one token, e.g. generic, discriminated union, etc.
         if (TypeAt(index, in tokens) != TokenType.Assign)
-            typeValue = new TypeIdentifierExpression(GetAndMoveToNext(ref index, in tokens));
+            typeValue = ExpressionParser.ParseType(ref index, in tokens);
 
-        var         valueAssignmentOperator = Token.None;
-        Expression? valueAssignment         = default;
+        var          valueAssignmentOperator = Token.None;
+        IExpression? valueAssignment         = default;
 
         if (TypeAt(index, in tokens) == TokenType.Assign)
         {
@@ -276,7 +277,7 @@ internal static class StatementParser
     {
         var returnKeyword = GetAndMoveToNext(ref index, in tokens);
 
-        var expressions = new List<Expression>();
+        var expressions = new List<IExpression>();
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
         {
             expressions.Add(ExpressionParser.Parse(ref index, in tokens));

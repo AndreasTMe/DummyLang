@@ -38,9 +38,8 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
         var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
-        Assert.Single(identifier.Tokens);
-        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
-        Assert.Equal("i32", identifier.Tokens[0].Value);
+        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
+        Assert.Equal("i32", identifier.Token.Value);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -80,9 +79,8 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
         var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
-        Assert.Single(identifier.Tokens);
-        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
-        Assert.Equal("i32", identifier.Tokens[0].Value);
+        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
+        Assert.Equal("i32", identifier.Token.Value);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -160,9 +158,60 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
         var identifier = (TypeIdentifierExpression)variableDeclaration.Type;
-        Assert.Single(identifier.Tokens);
-        Assert.Equal(TokenType.Identifier, identifier.Tokens[0].Type);
-        Assert.Equal("i32", identifier.Tokens[0].Value);
+        Assert.Equal(TokenType.Identifier, identifier.Token.Type);
+        Assert.Equal("i32", identifier.Token.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
+        Assert.Equal(";", variableDeclaration.Terminator.Value);
+    }
+    
+    [Fact]
+    public void ParseStatement_DeclarationGenericNoAssignment_ShouldBeReadCorrectly()
+    {
+        // Arrange
+        const string source = "var foo: SomeType<Type1, Type2>;";
+
+        // Act
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
+
+        // Assert
+        Assert.Equal(10, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeGenericExpression>(variableDeclaration.Type);
+        var generic = (TypeGenericExpression)variableDeclaration.Type;
+        Assert.Equal(TokenType.Identifier, generic.Identifier.Type);
+        Assert.Equal("SomeType", generic.Identifier.Value);
+        Assert.Equal(TokenType.LessThan, generic.LessThan.Type);
+        Assert.Equal("<", generic.LessThan.Value);
+        Assert.Equal(TokenType.GreaterThan, generic.GreaterThan.Type);
+        Assert.Equal(">", generic.GreaterThan.Value);
+        Assert.NotNull(generic.TypeParameters);
+        Assert.Equal(2, generic.TypeParameters.Count);
+        Assert.IsType<TypeIdentifierExpression>(generic.TypeParameters[0]);
+        Assert.IsType<TypeIdentifierExpression>(generic.TypeParameters[1]);
+        Assert.Single(generic.Commas);
+        Assert.Equal(TokenType.Comma, generic.Commas[0].Type);
+        Assert.Equal(",", generic.Commas[0].Value);
 
         Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("", variableDeclaration.ValueAssignment.Value);

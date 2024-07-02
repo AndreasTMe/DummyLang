@@ -1,21 +1,22 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class FunctionCallExpression : Expression
+public sealed class FunctionCallExpression : IExpression
 {
     public Token Identifier       { get; }
     public Token LeftParenthesis  { get; }
     public Token RightParenthesis { get; }
 
-    public IReadOnlyList<Expression> Parameters { get; }
+    public IReadOnlyList<IExpression> Parameters { get; }
     public IReadOnlyList<Token>      Commas     { get; }
 
     internal FunctionCallExpression(Token identifier,
                                     Token leftParenthesis,
                                     Token rightParenthesis,
-                                    List<Expression> parameters,
+                                    List<IExpression> parameters,
                                     List<Token> commas)
     {
         Identifier       = identifier;

@@ -1,10 +1,11 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class TypeIdentifierExpression : Expression
+public sealed class TypeIdentifierExpression : IExpression, ITypeExpression
 {
-    public Token[] Tokens { get; }
+    public Token Token { get; }
 
-    public TypeIdentifierExpression(params Token[] tokens) => Tokens = tokens;
+    internal TypeIdentifierExpression(Token token) => Token = token;
 }

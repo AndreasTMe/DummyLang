@@ -1,17 +1,18 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class BinaryExpression : Expression
+public sealed class BinaryExpression : IExpression
 {
-    public SyntaxTree.Node Left     { get; }
-    public Token           Operator { get; }
-    public SyntaxTree.Node Right    { get; }
+    public IExpression Left     { get; }
+    public Token       Operator { get; }
+    public IExpression Right    { get; }
 
-    internal BinaryExpression(SyntaxTree.Node left, Token @operator, SyntaxTree.Node right)
+    internal BinaryExpression(IExpression left, Token @operator, IExpression right)
     {
-        Operator = @operator;
         Left     = left;
+        Operator = @operator;
         Right    = right;
     }
 }

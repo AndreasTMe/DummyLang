@@ -1,14 +1,15 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class RangeExpression : Expression
+public sealed class RangeExpression : IExpression
 {
-    public Expression Start { get; }
+    public IExpression Start { get; }
     public Token      Operator     { get; }
-    public Expression End     { get; }
+    public IExpression End     { get; }
 
-    internal RangeExpression(Expression start, Token @operator, Expression end)
+    internal RangeExpression(IExpression start, Token @operator, IExpression end)
     {
         Start = start;
         Operator     = @operator;
