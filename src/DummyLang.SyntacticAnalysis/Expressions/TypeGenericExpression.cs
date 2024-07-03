@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System.Collections.Generic;
 
@@ -23,5 +24,13 @@ public sealed class TypeGenericExpression : IExpression, ITypeExpression
         GreaterThan    = greaterThan;
         TypeParameters = typeParameters;
         Commas         = commas;
+    }
+
+    public void Accept(ISyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        foreach (var parameter in TypeParameters)
+            parameter.Accept(visitor);
     }
 }

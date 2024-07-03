@@ -1,3 +1,5 @@
-﻿namespace DummyLang.SyntacticAnalysis.Expressions.Abstractions;
+﻿using DummyLang.SyntacticAnalysis.Abstractions;
+
+namespace DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 public interface IExpression : ISyntaxNode;

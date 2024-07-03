@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
@@ -23,7 +24,7 @@ public sealed class CharacterLiteralExpression : IExpression, ITypeExpression
     public Token CharacterToken { get; }
 
     internal CharacterLiteralExpression(Token characterToken) => CharacterToken = characterToken;
-    
+
     // Inside "Evaluate" method:
     // var characterValue = characterToken.Value;
     // var diagnosticMessage = string.Empty;
@@ -45,4 +46,5 @@ public sealed class CharacterLiteralExpression : IExpression, ITypeExpression
     //     else if (!characterValue.IsValidEscapedCharacter())
     //         diagnosticMessage = CharacterLiteralExpression.InvalidHexadecimalCharacter;
     // }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

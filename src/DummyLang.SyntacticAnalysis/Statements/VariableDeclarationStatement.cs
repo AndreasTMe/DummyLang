@@ -1,10 +1,11 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
 
-public sealed class VariableDeclarationStatement : Statement
+public sealed class VariableDeclarationStatement : IStatement
 {
     public Token            DeclarationKeyword { get; }
     public IExpression?     Identifier         { get; }
@@ -29,5 +30,14 @@ public sealed class VariableDeclarationStatement : Statement
         ValueAssignment    = valueAssignment;
         Value              = value;
         Terminator         = terminator;
+    }
+
+    public void Accept(ISyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        Identifier?.Accept(visitor);
+        Type?.Accept(visitor);
+        Value?.Accept(visitor);
     }
 }

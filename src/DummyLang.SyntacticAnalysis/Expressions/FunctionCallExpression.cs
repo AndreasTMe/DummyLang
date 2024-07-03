@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ public sealed class FunctionCallExpression : IExpression
     public Token RightParenthesis { get; }
 
     public IReadOnlyList<IExpression> Parameters { get; }
-    public IReadOnlyList<Token>      Commas     { get; }
+    public IReadOnlyList<Token>       Commas     { get; }
 
     internal FunctionCallExpression(Token identifier,
                                     Token leftParenthesis,
@@ -24,5 +25,13 @@ public sealed class FunctionCallExpression : IExpression
         RightParenthesis = rightParenthesis;
         Parameters       = parameters;
         Commas           = commas;
+    }
+
+    public void Accept(ISyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        foreach (var parameter in Parameters)
+            parameter.Accept(visitor);
     }
 }

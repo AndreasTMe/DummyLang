@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DummyLang.SyntacticAnalysis.Abstractions;
+using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis;
 

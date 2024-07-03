@@ -15,7 +15,7 @@ internal static class ExpressionParser
     {
         var left = ParseExpressionBasedOnCurrentToken(ref index, in tokens);
 
-        while (index < tokens.Length && tokens[index].IsBinaryOperator())
+        while (index < tokens.Length && TokenAt(index, in tokens).IsBinaryOperator())
         {
             var currentPrecedence = tokens[index].GetOperatorPrecedence();
             if (currentPrecedence == OperatorPrecedence.None || currentPrecedence <= previousPrecedence)
@@ -34,7 +34,7 @@ internal static class ExpressionParser
     {
         var left = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
 
-        while (index < tokens.Length && tokens[index].IsBitwiseOperator())
+        while (index < tokens.Length && TokenAt(index, in tokens).IsBitwiseOperator())
         {
             var currentPrecedence = tokens[index].GetOperatorPrecedence();
             if (currentPrecedence == OperatorPrecedence.None || currentPrecedence <= previousPrecedence)
@@ -54,6 +54,9 @@ internal static class ExpressionParser
 
     private static TokenType TypeAt(int index, in Token[] tokens) =>
         index >= 0 && index < tokens.Length ? tokens[index].Type : TokenType.None;
+
+    private static Token TokenAt(int index, in Token[] tokens) =>
+        index >= 0 && index < tokens.Length ? tokens[index] : Token.None;
 
     private static IExpression ParseExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
     {

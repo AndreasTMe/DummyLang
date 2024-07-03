@@ -12,12 +12,12 @@ namespace DummyLang.SyntacticAnalysis.Parsers;
 
 internal static class StatementParser
 {
-    public static Statement Parse(ref int index, in Token[] tokens)
+    public static IStatement Parse(ref int index, in Token[] tokens)
     {
         Debug.Assert(index < tokens.Length);
 
-        var tokenType = tokens[index].Type;
-        switch (tokenType)
+        var token = TokenAt(index, in tokens);
+        switch (token.Type)
         {
             case TokenType.Semicolon:
                 return new NoOpStatement(GetAndMoveToNext(ref index, in tokens));
@@ -30,7 +30,7 @@ internal static class StatementParser
             case TokenType.If:
                 return ParseIfElse(ref index, in tokens);
             case TokenType.Else:
-                LanguageSyntax.Found(tokens[index], "The 'else' keyword can only come after an 'if'/'else if' block.");
+                LanguageSyntax.Found(token, "The 'else' keyword can only come after an 'if'/'else if' block.");
                 break;
             case TokenType.Break:
                 return ParseBreak(ref index, in tokens);
@@ -58,7 +58,7 @@ internal static class StatementParser
     {
         var leftBrace = GetAndMoveToNext(ref index, in tokens);
 
-        var statements  = new List<Statement>();
+        var statements  = new List<IStatement>();
         var next        = TokenAt(index, in tokens);
         var shouldThrow = next.IsInvalid() || next.IsEndOfFile();
         while (next.Type != TokenType.RightBrace && !shouldThrow)

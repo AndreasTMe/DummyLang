@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
@@ -15,11 +16,18 @@ public sealed class ParenthesisedExpression : IExpression, ITypeExpression
         Expression = expression;
         RightParen = rightParen ?? Token.None;
     }
-    
+
     internal ParenthesisedExpression(Token leftParen, ITypeExpression expression, Token? rightParen = null)
     {
         LeftParen  = leftParen;
         Expression = expression;
         RightParen = rightParen ?? Token.None;
+    }
+
+    public void Accept(ISyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        Expression.Accept(visitor);
     }
 }

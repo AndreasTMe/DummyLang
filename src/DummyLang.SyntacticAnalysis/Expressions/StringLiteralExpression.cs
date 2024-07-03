@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
@@ -28,4 +29,5 @@ public sealed class StringLiteralExpression : IExpression, ITypeExpression
     //     diagnosticsMessage = StringLiteralExpression.ShouldNotEscapeLastDoubleQuote;
     // else if (stringValue.HasInvalidEscapedCharacters())
     //     diagnosticsMessage = StringLiteralExpression.InvalidEscapedCharacter;
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

@@ -1,12 +1,12 @@
 ﻿using DummyLang.LexicalAnalysis;
-using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
 
-public sealed class IfElseStatement : Statement
+public sealed class IfElseStatement : IStatement
 {
     public IfBlock            If      { get; }
     public List<ElseIfBlock>? ElseIfs { get; }
@@ -23,7 +23,7 @@ public sealed class IfElseStatement : Statement
     {
         public Token             IfKeyword        { get; }
         public Token             LeftParenthesis  { get; }
-        public IExpression        Condition        { get; }
+        public IExpression       Condition        { get; }
         public Token             RightParenthesis { get; }
         public CompoundStatement Block            { get; }
 
@@ -46,7 +46,7 @@ public sealed class IfElseStatement : Statement
         public Token             ElseKeyword      { get; }
         public Token             IfKeyword        { get; }
         public Token             LeftParenthesis  { get; }
-        public IExpression        Condition        { get; }
+        public IExpression       Condition        { get; }
         public Token             RightParenthesis { get; }
         public CompoundStatement Block            { get; }
 
@@ -71,5 +71,24 @@ public sealed class IfElseStatement : Statement
             ElseKeyword = elseKeyword;
             Block       = block;
         }
+    }
+
+    public void Accept(ISyntaxNodeVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        If.Condition.Accept(visitor);
+        If.Block.Accept(visitor);
+
+        if (ElseIfs != null)
+        {
+            foreach (var elseIf in ElseIfs)
+            {
+                elseIf.Condition.Accept(visitor);
+                elseIf.Block.Accept(visitor);
+            }
+        }
+
+        Else?.Block.Accept(visitor);
     }
 }

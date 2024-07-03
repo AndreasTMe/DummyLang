@@ -1,4 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System;
 using System.Diagnostics;
@@ -32,4 +33,7 @@ public sealed class InvalidExpression : IExpression, ITypeExpression
         Expression     = expression;
         ExpressionType = expression.GetType();
     }
+
+    // TODO: Update
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }
