@@ -1,8 +1,67 @@
-﻿namespace DummyLang.SyntacticAnalysis.Abstractions;
+﻿using DummyLang.SyntacticAnalysis.Expressions;
+using DummyLang.SyntacticAnalysis.Statements;
+
+namespace DummyLang.SyntacticAnalysis.Abstractions;
 
 public interface ISyntaxNodeVisitor
 {
-    // TODO: For now, just to cover errors. One "Visit" method per syntax node type.
-    void Visit<TNode>(TNode syntaxNode)
-        where TNode : class, ISyntaxNode;
+    /*************
+     * Expressions
+     *************/
+
+    void Visit(ArgumentExpression expression);
+
+    void Visit(BinaryExpression expression);
+
+    void Visit(CharacterLiteralExpression expression);
+
+    void Visit(FunctionCallExpression expression);
+
+    void Visit(IdentifierExpression expression);
+
+    void Visit(IndexerExpression expression);
+
+    void Visit(InvalidExpression expression); // TODO: Remove
+
+    void Visit(MemberAccessExpression expression);
+
+    void Visit(NumberLiteralExpression expression);
+
+    void Visit(ParenthesisedExpression expression);
+
+    void Visit(PrimaryExpression expression);
+
+    void Visit(RangeExpression expression);
+
+    void Visit(StringLiteralExpression expression);
+
+    void Visit(TypeBinaryExpression expression);
+
+    void Visit(TypeGenericExpression expression);
+
+    void Visit(TypeIdentifierExpression expression);
+
+    void Visit(UnaryExpression expression);
+
+    /*************
+     * Statements
+     *************/
+
+    void Visit(BreakStatement statement);
+
+    void Visit(CompoundStatement statement);
+
+    void Visit(ContinueStatement statement);
+
+    void Visit(ExpressionStatement statement);
+
+    void Visit(IfElseStatement statement);
+
+    void Visit(NoOpStatement statement);
+
+    void Visit(ReturnStatement statement);
+
+    void Visit(VariableDeclarationStatement statement);
+
+    void Visit(WhileStatement statement);
 }

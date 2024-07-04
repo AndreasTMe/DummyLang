@@ -7,6 +7,9 @@ namespace DummyLang.SyntacticAnalysis.Utilities;
 internal static class LanguageSyntax
 {
     [DoesNotReturn]
+    internal static void Throw(string message) => throw new LanguageSyntaxException(message);
+
+    [DoesNotReturn]
     internal static void Found(Token token, string message) => throw new LanguageSyntaxException(token, message);
 
     [DoesNotReturn]
@@ -16,8 +19,12 @@ internal static class LanguageSyntax
 
 internal sealed class LanguageSyntaxException : Exception
 {
-    public TokenType Expected { get; }
-    public Token     Found    { get; }
+    public TokenType Expected { get; } = TokenType.None;
+    public Token     Found    { get; } = Token.None;
+
+    public LanguageSyntaxException(string message) : base(message)
+    {
+    }
 
     public LanguageSyntaxException(Token found, string message) : base(message)
     {

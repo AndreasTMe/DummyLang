@@ -73,5 +73,5 @@ public static class TokenExtensions
 
     public static bool IsEndOfFile(this Token token) => token.Type == TokenType.Eof;
 
-    public static bool IsInvalid(this Token token) => token.Type == TokenType.None;
+    public static bool IsNone(this Token token) => token.Type == TokenType.None;
 }

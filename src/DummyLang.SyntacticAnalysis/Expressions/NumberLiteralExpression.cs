@@ -1,6 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System;
 
@@ -16,33 +15,42 @@ public sealed class NumberLiteralExpression : IExpression, ITypeExpression
         NumberToken = numberToken;
 
         var number = numberToken.Value;
-        if (numberToken.Type == TokenType.Integer)
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+        switch (numberToken.Type)
         {
-            Type = NumberType.Integer;
+            case TokenType.Integer:
+            {
+                Type = NumberType.Integer;
 
-            if (number.StartsWith("0x"))
-                Type = NumberType.Hexadecimal;
-            else if (number.StartsWith("0b"))
-                Type = NumberType.Binary;
-            else if (number.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.UnsignedLong;
-            else if (number.EndsWith("u", StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.UnsignedInteger;
-            else if (number.EndsWith("l", StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.Long;
-        }
-        else
-        {
-            Type = NumberType.Double;
-
-            if (number.EndsWith("f", StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.Float;
-            else if (number.EndsWith("d", StringComparison.OrdinalIgnoreCase))
+                if (number.StartsWith("0x"))
+                    Type = NumberType.Hexadecimal;
+                else if (number.StartsWith("0b"))
+                    Type = NumberType.Binary;
+                else if (number.EndsWith("ul", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.UnsignedLong;
+                else if (number.EndsWith("u", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.UnsignedInteger;
+                else if (number.EndsWith("l", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.Long;
+                break;
+            }
+            case TokenType.Real:
+            {
                 Type = NumberType.Double;
-            else if (number.EndsWith("m", StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.Decimal;
-            else if (number.Contains('e', StringComparison.OrdinalIgnoreCase))
-                Type = NumberType.WithExponent;
+
+                if (number.EndsWith("f", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.Float;
+                else if (number.EndsWith("d", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.Double;
+                else if (number.EndsWith("m", StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.Decimal;
+                else if (number.Contains('e', StringComparison.OrdinalIgnoreCase))
+                    Type = NumberType.WithExponent;
+                break;
+            }
+            default:
+                Type = NumberType.None;
+                break;
         }
     }
 

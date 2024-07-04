@@ -1,6 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
@@ -26,11 +25,5 @@ public sealed class TypeGenericExpression : IExpression, ITypeExpression
         Commas         = commas;
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor)
-    {
-        visitor.Visit(this);
-
-        foreach (var parameter in TypeParameters)
-            parameter.Accept(visitor);
-    }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

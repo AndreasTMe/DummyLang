@@ -74,8 +74,7 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.RightBracket, indexer.RightBracket.Type);
         Assert.Equal("]", indexer.RightBracket.Value);
         
-        Assert.NotNull(indexer.Index);
-        Assert.IsType<InvalidExpression>(indexer.Index);
+        Assert.Null(indexer.Index);
     }
 
     [Fact]
@@ -92,7 +91,7 @@ public class IndexerSyntaxParserTests
         // Assert
         Assert.NotNull(expression);
         Assert.Equal(3, tokens.Length);
-        Assert.Equal(1, index);
+        Assert.Equal(2, index);
         Assert.IsType<InvalidExpression>(expression);
 
         var invalid = (InvalidExpression)expression;

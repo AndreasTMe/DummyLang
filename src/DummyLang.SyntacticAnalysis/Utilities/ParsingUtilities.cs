@@ -73,7 +73,7 @@ internal static class ParsingUtilities
                     reachedInvalidToken = currentToken.IsReservedKeyword()
                                           || currentToken.IsEndOfStatement()
                                           || currentToken.IsEndOfFile()
-                                          || currentToken.IsInvalid();
+                                          || currentToken.IsNone();
                     break;
             }
 
@@ -127,7 +127,7 @@ internal static class ParsingUtilities
                     reachedInvalidToken = currentToken.IsReservedKeyword()
                                           || currentToken.IsEndOfStatement()
                                           || currentToken.IsEndOfFile()
-                                          || currentToken.IsInvalid();
+                                          || currentToken.IsNone();
                     break;
             }
 

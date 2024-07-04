@@ -33,7 +33,7 @@ public class SyntaxTreeBuilder
         {
             var lastIndex = _index;
 
-            if (_tokens[_index].IsEndOfFile() || _tokens[_index].IsInvalid())
+            if (_tokens[_index].IsEndOfFile() || _tokens[_index].IsNone())
                 break;
 
             var node = StatementParser.Parse(ref _index, in _tokens);

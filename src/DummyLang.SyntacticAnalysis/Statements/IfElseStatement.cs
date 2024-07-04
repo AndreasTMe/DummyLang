@@ -1,7 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
-using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
@@ -73,22 +71,5 @@ public sealed class IfElseStatement : IStatement
         }
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor)
-    {
-        visitor.Visit(this);
-
-        If.Condition.Accept(visitor);
-        If.Block.Accept(visitor);
-
-        if (ElseIfs != null)
-        {
-            foreach (var elseIf in ElseIfs)
-            {
-                elseIf.Condition.Accept(visitor);
-                elseIf.Block.Accept(visitor);
-            }
-        }
-
-        Else?.Block.Accept(visitor);
-    }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

@@ -1,7 +1,7 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System.Collections.Generic;
@@ -279,100 +279,114 @@ internal static class ExpressionParser
                 Token.ExpectedAt(tokens[endIndex].Position, TokenType.GreaterThan));
     }
 
-    private static IExpression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)
+    private static PrimaryExpression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)
     {
-        Token leftParenthesis;
-        Token rightParenthesis;
-        var   expressions = new List<IExpression>();
-        var   commas      = new List<Token>();
+        Token                     leftParen;
+        Token                     rightParen;
+        List<ArgumentExpression>? arguments = null;
+
+        FunctionCallExpression functionCallExpression;
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
-            leftParenthesis  = GetAndMoveToNext(ref index, in tokens);
-            rightParenthesis = tokens[endIndex];
+            leftParen  = GetAndMoveToNext(ref index, in tokens);
+            rightParen = tokens[endIndex];
+
+            if (index < endIndex)
+                arguments = new List<ArgumentExpression>();
 
             while (index < endIndex)
             {
-                expressions.Add(Parse(ref index, in tokens));
+                var argument = Parse(ref index, in tokens);
+                var comma = TypeAt(index, in tokens) == TokenType.Comma
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
 
-                if (TypeAt(index, in tokens) == TokenType.Comma)
-                    commas.Add(GetAndMoveToNext(ref index, in tokens));
+                arguments!.Add(new ArgumentExpression(argument, comma));
             }
 
-            // Ensuring correct indexing
-            index = endIndex + 1;
-
-            return new PrimaryExpression(
-                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas));
+            index                  = endIndex + 1;
+            functionCallExpression = new FunctionCallExpression(identifier, leftParen, rightParen, arguments);
         }
-
-        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftParenthesis)
-            return new InvalidExpression(
-                typeof(FunctionCallExpression),
-                Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
-
-        leftParenthesis = GetAndMoveToNext(ref index, in tokens);
-        rightParenthesis = tokens[endIndex].Type == TokenType.RightParenthesis
-            ? tokens[endIndex]
-            : Token.None;
-
-        while (index < endIndex)
+        else
         {
-            expressions.Add(Parse(ref index, in tokens));
+            if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+            {
+                leftParen              = GetAndMoveToNext(ref index, in tokens);
+                functionCallExpression = new FunctionCallExpression(identifier, leftParen, Token.None);
+            }
+            else
+            {
+                leftParen = GetAndMoveToNext(ref index, in tokens);
+                rightParen = tokens[endIndex].Type == TokenType.RightParenthesis
+                    ? tokens[endIndex]
+                    : Token.None;
 
-            if (TypeAt(index, in tokens) == TokenType.Comma)
-                commas.Add(GetAndMoveToNext(ref index, in tokens));
+                if (index < endIndex)
+                    arguments = new List<ArgumentExpression>();
+
+                while (index < endIndex)
+                {
+                    var argument = Parse(ref index, in tokens);
+                    var comma = TypeAt(index, in tokens) == TokenType.Comma
+                        ? GetAndMoveToNext(ref index, in tokens)
+                        : Token.None;
+
+                    arguments!.Add(new ArgumentExpression(argument, comma));
+                }
+
+                functionCallExpression = new FunctionCallExpression(identifier, leftParen, rightParen, arguments);
+            }
+
+            index = endIndex;
         }
 
-        // Ensuring correct indexing
-        index = endIndex;
-
-        return rightParenthesis == Token.None
-            ? new InvalidExpression(
-                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas))
-            : new InvalidExpression(
-                new FunctionCallExpression(identifier, leftParenthesis, rightParenthesis, expressions, commas),
-                Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
+        return new PrimaryExpression(functionCallExpression);
     }
 
-    private static IExpression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
+    private static PrimaryExpression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
     {
         Token        leftBracket;
         Token        rightBracket;
-        IExpression? expression;
+        IExpression? expression = null;
+
+        IndexerExpression indexerExpression;
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
-            leftBracket  = GetAndMoveToNext(ref index, in tokens);
-            expression   = Parse(ref index, in tokens);
+            leftBracket = GetAndMoveToNext(ref index, in tokens);
+
+            if (TypeAt(index, in tokens) != TokenType.RightBracket)
+                expression = Parse(ref index, in tokens);
+
             rightBracket = tokens[endIndex];
 
             // Ensuring correct indexing
-            index = endIndex + 1;
+            index             = endIndex + 1;
+            indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, expression);
+        }
+        else
+        {
+            if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftBracket)
+            {
+                leftBracket       = GetAndMoveToNext(ref index, in tokens);
+                indexerExpression = new IndexerExpression(identifier, leftBracket, Token.None, expression);
+            }
+            else
+            {
+                leftBracket = GetAndMoveToNext(ref index, in tokens);
+                expression  = Parse(ref index, in tokens);
+                rightBracket = tokens[endIndex].Type == TokenType.RightBracket
+                    ? tokens[endIndex]
+                    : Token.None;
 
-            return new PrimaryExpression(new IndexerExpression(identifier, leftBracket, rightBracket, expression));
+                // Ensuring correct indexing
+                index             = endIndex;
+                indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, expression);
+            }
         }
 
-        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftBracket)
-            return new InvalidExpression(
-                typeof(IndexerExpression),
-                Token.ExpectedAt(tokens[index].Position, TokenType.RightBracket));
-
-        leftBracket = GetAndMoveToNext(ref index, in tokens);
-        expression  = Parse(ref index, in tokens);
-        rightBracket = tokens[endIndex].Type == TokenType.RightBracket
-            ? tokens[endIndex]
-            : Token.None;
-
-        // Ensuring correct indexing
-        index = endIndex;
-
-        return rightBracket == Token.None
-            ? new InvalidExpression(
-                new IndexerExpression(identifier, leftBracket, rightBracket, expression))
-            : new InvalidExpression(
-                new IndexerExpression(identifier, leftBracket, rightBracket, expression),
-                Token.ExpectedAt(tokens[endIndex].Position, TokenType.RightParenthesis));
+        return new PrimaryExpression(indexerExpression);
     }
 
     private static NumberLiteralExpression ParseNumberExpression(ref int index, in Token[] tokens) =>

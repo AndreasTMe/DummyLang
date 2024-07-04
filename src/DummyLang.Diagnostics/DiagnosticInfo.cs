@@ -6,16 +6,14 @@ namespace DummyLang.Diagnostics;
 public readonly struct DiagnosticInfo : IEquatable<DiagnosticInfo>
 {
     private static readonly StringBuilder Sb = new();
-
-    public DiagnosticType Type    { get; }
+    
     public string         Message { get; }
     public string         Path    { get; }
     public int            Line    { get; }
     public int            Column  { get; }
 
-    public DiagnosticInfo(DiagnosticType type, string message, string path, int line, int column)
+    public DiagnosticInfo(string message, string path, int line, int column)
     {
-        Type    = type;
         Message = message;
         Path    = path;
         Line    = line;
@@ -41,8 +39,7 @@ public readonly struct DiagnosticInfo : IEquatable<DiagnosticInfo>
     }
 
     public bool Equals(DiagnosticInfo other) =>
-        Type == other.Type
-        && Message == other.Message
+        Message == other.Message
         && Path == other.Path
         && Line == other.Line
         && Column == other.Column
@@ -51,7 +48,7 @@ public readonly struct DiagnosticInfo : IEquatable<DiagnosticInfo>
     public override bool Equals(object? obj) => obj is DiagnosticInfo other && Equals(other);
 
     public override int GetHashCode() =>
-        HashCode.Combine(typeof(DiagnosticInfo), (int)Type, Message, Path, Line, Column);
+        HashCode.Combine(typeof(DiagnosticInfo), Message, Path, Line, Column);
 
     public static bool operator ==(DiagnosticInfo left, DiagnosticInfo right) => left.Equals(right);
 

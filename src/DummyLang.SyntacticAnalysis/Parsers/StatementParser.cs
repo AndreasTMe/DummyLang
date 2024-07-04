@@ -1,9 +1,8 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.LexicalAnalysis.Extensions;
+using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 using DummyLang.SyntacticAnalysis.Statements;
-using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 using DummyLang.SyntacticAnalysis.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,13 +59,13 @@ internal static class StatementParser
 
         var statements  = new List<IStatement>();
         var next        = TokenAt(index, in tokens);
-        var shouldThrow = next.IsInvalid() || next.IsEndOfFile();
+        var shouldThrow = next.IsNone() || next.IsEndOfFile();
         while (next.Type != TokenType.RightBrace && !shouldThrow)
         {
             statements.Add(Parse(ref index, in tokens));
 
             next = TokenAt(index, in tokens);
-            if (!next.IsInvalid() && !next.IsEndOfFile())
+            if (!next.IsNone() && !next.IsEndOfFile())
                 continue;
 
             shouldThrow = true;

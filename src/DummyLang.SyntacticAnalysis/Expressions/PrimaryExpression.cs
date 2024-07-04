@@ -1,6 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
@@ -15,10 +14,5 @@ public sealed class PrimaryExpression : IExpression
         Token      = token ?? Token.None;
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor)
-    {
-        visitor.Visit(this);
-
-        Expression.Accept(visitor);
-    }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

@@ -1,6 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
@@ -17,11 +16,5 @@ public sealed class MemberAccessExpression : IExpression
         Member     = member;
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor)
-    {
-        visitor.Visit(this);
-
-        Identifier.Accept(visitor);
-        Member.Accept(visitor);
-    }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

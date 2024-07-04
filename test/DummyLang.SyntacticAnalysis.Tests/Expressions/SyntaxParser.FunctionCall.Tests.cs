@@ -39,8 +39,7 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.RightParenthesis, functionCall.RightParenthesis.Type);
         Assert.Equal(")", functionCall.RightParenthesis.Value);
 
-        Assert.Empty(functionCall.Parameters);
-        Assert.Empty(functionCall.Commas);
+        Assert.Null(functionCall.Arguments);
     }
 
     [Fact]
@@ -74,17 +73,24 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.RightParenthesis, functionCall.RightParenthesis.Type);
         Assert.Equal(")", functionCall.RightParenthesis.Value);
 
-        Assert.Equal(3, functionCall.Parameters.Count);
-        Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
-        Assert.IsType<ParenthesisedExpression>(functionCall.Parameters[1]);
-        // TODO: Update the following line when lambdas are added
-        Assert.IsType<BinaryExpression>(functionCall.Parameters[2]);
+        Assert.NotNull(functionCall.Arguments);
+        Assert.Equal(3, functionCall.Arguments.Count);
 
-        Assert.Equal(2, functionCall.Commas.Count);
-        Assert.Equal(TokenType.Comma, functionCall.Commas[0].Type);
-        Assert.Equal(",", functionCall.Commas[0].Value);
-        Assert.Equal(TokenType.Comma, functionCall.Commas[1].Type);
-        Assert.Equal(",", functionCall.Commas[1].Value);
+        Assert.NotNull(functionCall.Arguments[0].Argument);
+        Assert.IsType<NumberLiteralExpression>(functionCall.Arguments[0].Argument);
+        Assert.Equal(TokenType.Comma, functionCall.Arguments[0].Comma.Type);
+        Assert.Equal(",", functionCall.Arguments[0].Comma.Value);
+
+        Assert.NotNull(functionCall.Arguments[1].Argument);
+        Assert.IsType<ParenthesisedExpression>(functionCall.Arguments[1].Argument);
+        Assert.Equal(TokenType.Comma, functionCall.Arguments[1].Comma.Type);
+        Assert.Equal(",", functionCall.Arguments[1].Comma.Value);
+
+        // TODO: Update the following line when lambdas are added
+        Assert.NotNull(functionCall.Arguments[2].Argument);
+        Assert.IsType<BinaryExpression>(functionCall.Arguments[2].Argument);
+        Assert.Equal(TokenType.None, functionCall.Arguments[2].Comma.Type);
+        Assert.Equal("", functionCall.Arguments[2].Comma.Value);
     }
 
     [Fact]
@@ -101,7 +107,7 @@ public class FunctionCallSyntaxParserTests
         // Assert
         Assert.NotNull(expression);
         Assert.Equal(3, tokens.Length);
-        Assert.Equal(1, index);
+        Assert.Equal(2, index);
         Assert.IsType<InvalidExpression>(expression);
 
         var invalid = (InvalidExpression)expression;
@@ -145,10 +151,9 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.None, functionCall.RightParenthesis.Type);
         Assert.Equal("", functionCall.RightParenthesis.Value);
 
-        Assert.Equal(1, functionCall.Parameters.Count);
-        Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
-
-        Assert.Empty(functionCall.Commas);
+        Assert.NotNull(functionCall.Arguments);
+        Assert.Equal(1, functionCall.Arguments.Count);
+        Assert.IsType<ArgumentExpression>(functionCall.Arguments[0]);
     }
 
     [Fact]
@@ -188,12 +193,9 @@ public class FunctionCallSyntaxParserTests
         Assert.Equal(TokenType.None, functionCall.RightParenthesis.Type);
         Assert.Equal("", functionCall.RightParenthesis.Value);
 
-        Assert.Equal(2, functionCall.Parameters.Count);
-        Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[0]);
-        Assert.IsType<NumberLiteralExpression>(functionCall.Parameters[1]);
-
-        Assert.Equal(1, functionCall.Commas.Count);
-        Assert.Equal(TokenType.Comma, functionCall.Commas[0].Type);
-        Assert.Equal(",", functionCall.Commas[0].Value);
+        Assert.NotNull(functionCall.Arguments);
+        Assert.Equal(2, functionCall.Arguments.Count);
+        Assert.IsType<ArgumentExpression>(functionCall.Arguments[0]);
+        Assert.IsType<ArgumentExpression>(functionCall.Arguments[1]);
     }
 }

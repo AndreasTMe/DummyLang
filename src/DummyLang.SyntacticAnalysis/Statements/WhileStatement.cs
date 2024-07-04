@@ -1,7 +1,5 @@
 ﻿using DummyLang.LexicalAnalysis;
 using DummyLang.SyntacticAnalysis.Abstractions;
-using DummyLang.SyntacticAnalysis.Expressions.Abstractions;
-using DummyLang.SyntacticAnalysis.Statements.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Statements;
 
@@ -29,11 +27,5 @@ public sealed class WhileStatement : IStatement
         Block            = block;
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor)
-    {
-        visitor.Visit(this);
-
-        Condition.Accept(visitor);
-        Block.Accept(visitor);
-    }
+    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }
