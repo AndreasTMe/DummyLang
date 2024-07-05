@@ -205,14 +205,16 @@ internal static class ExpressionParser
         {
             case TokenType.PointerAccess:
             case TokenType.Dot:
+                var access = GetAndMoveToNext(ref index, in tokens);
                 return new MemberAccessExpression(
                     expression,
-                    GetAndMoveToNext(ref index, in tokens),
-                    Parse(ref index, in tokens));
+                    access,
+                    ParseIdentifierRelatedExpressions(ref index, in tokens));
             case TokenType.DoubleDot:
+                var range = GetAndMoveToNext(ref index, in tokens);
                 return new RangeExpression(
                     expression,
-                    GetAndMoveToNext(ref index, in tokens),
+                    range,
                     Parse(ref index, in tokens));
             default:
                 return expression;

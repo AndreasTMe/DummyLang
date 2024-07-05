@@ -5,10 +5,12 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class IndexerExpression : IExpression
 {
-    public Token        Identifier   { get; }
-    public Token        LeftBracket  { get; }
-    public IExpression? Index        { get; }
-    public Token        RightBracket { get; }
+    public Token Identifier   { get; }
+    public Token LeftBracket  { get; }
+    public Token RightBracket { get; }
+
+    // TODO: Multiple indices
+    public IExpression? Index { get; }
 
     internal IndexerExpression(Token identifier, Token leftBracket, Token rightBracket, IExpression? index)
     {

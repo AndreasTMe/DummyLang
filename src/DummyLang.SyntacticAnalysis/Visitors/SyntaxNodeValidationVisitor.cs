@@ -114,7 +114,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (expression.RightBracket.Type != TokenType.RightBracket)
             CaptureDiagnosticsInfo(expression.LeftBracket, "Right bracket token expected.");
         else if (expression.Index is null)
-            CaptureDiagnosticsInfo(expression.LeftBracket, "Index expression expected.");
+            CaptureDiagnosticsInfo(expression.LeftBracket, "Indexer expected.");
         else
             expression.Index.Accept(this);
     }
@@ -126,6 +126,14 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(MemberAccessExpression expression)
     {
+        if (expression.Access.Type != TokenType.PointerAccess && expression.Access.Type != TokenType.Dot)
+            LanguageSyntax.Throw("Invalid access token added. How did this happen?");
+
+        if (expression.Member is null)
+            CaptureDiagnosticsInfo(expression.Access, "Identifier expected.");
+        
+        expression.Identifier.Accept(this);
+        expression.Member?.Accept(this);
     }
 
     public void Visit(NumberLiteralExpression expression)
