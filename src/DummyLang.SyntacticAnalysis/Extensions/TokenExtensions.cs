@@ -5,9 +5,6 @@ namespace DummyLang.SyntacticAnalysis.Extensions;
 
 internal static class TokenExtensions
 {
-    public static bool IsAdditiveOperator(this Token token) =>
-        token.Type == TokenType.Plus || token.Type == TokenType.Minus;
-
     public static OperatorPrecedence GetOperatorPrecedence(this Token token)
     {
         switch (token.Type)

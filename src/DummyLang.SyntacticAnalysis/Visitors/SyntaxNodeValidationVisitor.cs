@@ -131,7 +131,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.Member is null)
             CaptureDiagnosticsInfo(expression.Access, "Identifier expected.");
-        
+
         expression.Identifier.Accept(this);
         expression.Member?.Accept(this);
     }
@@ -144,14 +144,35 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(ParenthesisedExpression expression)
     {
+        if (expression.LeftParen.Type != TokenType.LeftParenthesis)
+            LanguageSyntax.Throw("Invalid left parenthesis token added. How did this happen?");
+
+        if (expression.Expression is null)
+            CaptureDiagnosticsInfo(expression.LeftParen, "Expression expected.");
+
+        if (expression.RightParen.Type != TokenType.RightParenthesis)
+            CaptureDiagnosticsInfo(expression.LeftParen, "Right parenthesis expected.");
+
+        expression.Expression?.Accept(this);
     }
 
     public void Visit(PrimaryExpression expression)
     {
+        if (expression.Expression is null)
+            LanguageSyntax.Throw("Empty primary expression. How did this happen?");
+
+        if (!expression.Token.IsNone()
+            && expression.Token.Type != TokenType.PlusPlus
+            && expression.Token.Type != TokenType.MinusMinus)
+            LanguageSyntax.Throw("Invalid primary expression token added. How did this happen?");
+
+        expression.Expression.Accept(this);
     }
 
     public void Visit(RangeExpression expression)
     {
+        if (expression.Operator.Type != TokenType.DoubleDot)
+            LanguageSyntax.Throw("Invalid range operator token added. How did this happen?");
     }
 
     public void Visit(StringLiteralExpression expression)
@@ -172,6 +193,17 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(TypeBinaryExpression expression)
     {
+        if (!expression.Operator.IsBitwiseOperator())
+            LanguageSyntax.Throw("Bitwise operator expected. How did this happen?");
+
+        if (expression.Left is null)
+            LanguageSyntax.Throw("Left side of a type binary expression is null. How did this happen?");
+
+        if (expression.Right is null)
+            CaptureDiagnosticsInfo(expression.Operator, "Expression expected after bitwise operator.");
+
+        expression.Left.Accept(this);
+        expression.Right?.Accept(this);
     }
 
     public void Visit(TypeGenericExpression expression)
@@ -180,10 +212,25 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(TypeIdentifierExpression expression)
     {
+        if (expression.Token.Type != TokenType.Identifier)
+            LanguageSyntax.Throw("Invalid identifier token added. How did this happen?");
     }
 
     public void Visit(UnaryExpression expression)
     {
+        var type = expression.Token.Type;
+        if (type != TokenType.Plus
+            && type != TokenType.Minus
+            && type != TokenType.PlusPlus
+            && type != TokenType.MinusMinus
+            && type != TokenType.Bang
+            && type != TokenType.Tilde
+            && type != TokenType.Star
+            && type != TokenType.Ampersand)
+            LanguageSyntax.Throw("Invalid unary operator token added. How did this happen?");
+
+        if (expression.Expression is null)
+            CaptureDiagnosticsInfo(expression.Token, "Expression expected after unary operator.");
     }
 
     public void Visit(BreakStatement statement)

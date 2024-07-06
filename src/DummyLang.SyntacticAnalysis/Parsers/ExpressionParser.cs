@@ -79,16 +79,11 @@ internal static class ExpressionParser
             {
                 var leftParen  = GetAndMoveToNext(ref index, in tokens);
                 var expression = Parse(ref index, in tokens);
+                var rightParen = TypeAt(index, in tokens) == TokenType.RightParenthesis
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
 
-                Debug.Assert(index < tokens.Length);
-                return TypeAt(index, in tokens) == TokenType.RightParenthesis
-                    ? new ParenthesisedExpression(
-                        leftParen,
-                        expression,
-                        GetAndMoveToNext(ref index, in tokens))
-                    : new InvalidExpression(
-                        typeof(ParenthesisedExpression),
-                        Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
+                return new ParenthesisedExpression(leftParen, expression, rightParen);
             }
             case TokenType.RightParenthesis:
                 return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
@@ -118,16 +113,11 @@ internal static class ExpressionParser
             {
                 var leftParen  = GetAndMoveToNext(ref index, in tokens);
                 var expression = ParseType(ref index, in tokens);
+                var rightParen = TypeAt(index, in tokens) == TokenType.RightParenthesis
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
 
-                Debug.Assert(index < tokens.Length);
-                return TypeAt(index, in tokens) == TokenType.RightParenthesis
-                    ? new ParenthesisedExpression(
-                        leftParen,
-                        expression,
-                        GetAndMoveToNext(ref index, in tokens))
-                    : new InvalidExpression(
-                        typeof(ParenthesisedExpression),
-                        Token.ExpectedAt(tokens[index].Position, TokenType.RightParenthesis));
+                return new ParenthesisedExpression(leftParen, expression, rightParen);
             }
             case TokenType.RightParenthesis:
                 return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
@@ -147,18 +137,10 @@ internal static class ExpressionParser
 
     private static UnaryExpression ParseUnaryExpression(ref int index, in Token[] tokens)
     {
-        var          unaryOperator = GetAndMoveToNext(ref index, in tokens);
-        IExpression? expression    = default;
+        var unaryOperator = GetAndMoveToNext(ref index, in tokens);
+        var expression    = ParseExpressionBasedOnCurrentToken(ref index, in tokens);
 
-        if (TypeAt(index, in tokens) == TokenType.Identifier)
-            expression = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
-
-        if (unaryOperator.IsAdditiveOperator() && tokens[index].IsNumber())
-            expression = ParseNumberExpression(ref index, in tokens);
-
-        return new UnaryExpression(
-            unaryOperator,
-            expression ?? new InvalidExpression(GetAndMoveToNext(ref index, in tokens)));
+        return new UnaryExpression(unaryOperator, expression);
     }
 
     private static IExpression ParseIdentifierRelatedExpressions(ref int index, in Token[] tokens)
