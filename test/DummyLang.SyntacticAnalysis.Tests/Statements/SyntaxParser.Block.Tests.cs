@@ -30,7 +30,7 @@ public class CompoundSyntaxParserTests
         Assert.Equal(TokenType.LeftBrace, compoundStatement.LeftBrace.Type);
         Assert.Equal("{", compoundStatement.LeftBrace.Value);
 
-        Assert.Empty(compoundStatement.Statements);
+        Assert.Null(compoundStatement.Statements);
 
         Assert.Equal(TokenType.RightBrace, compoundStatement.RightBrace.Type);
         Assert.Equal("}", compoundStatement.RightBrace.Value);
@@ -65,7 +65,8 @@ public class CompoundSyntaxParserTests
         Assert.Equal(TokenType.LeftBrace, compoundStatement.LeftBrace.Type);
         Assert.Equal("{", compoundStatement.LeftBrace.Value);
 
-        Assert.Equal(3, compoundStatement.Statements.Length);
+        Assert.NotNull(compoundStatement.Statements);
+        Assert.Equal(3, compoundStatement.Statements.Count);
         Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
         Assert.IsType<ExpressionStatement>(compoundStatement.Statements[1]);
         Assert.IsType<ReturnStatement>(compoundStatement.Statements[2]);
@@ -107,7 +108,8 @@ public class CompoundSyntaxParserTests
         Assert.Equal(TokenType.LeftBrace, compoundStatement.LeftBrace.Type);
         Assert.Equal("{", compoundStatement.LeftBrace.Value);
 
-        Assert.Equal(4, compoundStatement.Statements.Length);
+        Assert.NotNull(compoundStatement.Statements);
+        Assert.Equal(4, compoundStatement.Statements.Count);
         Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
         Assert.IsType<ExpressionStatement>(compoundStatement.Statements[1]);
 
@@ -115,6 +117,7 @@ public class CompoundSyntaxParserTests
         var innerCompoundStatement = (CompoundStatement)compoundStatement.Statements[2];
         Assert.Equal(TokenType.LeftBrace, innerCompoundStatement.LeftBrace.Type);
         Assert.Equal("{", innerCompoundStatement.LeftBrace.Value);
+        Assert.NotNull(innerCompoundStatement.Statements);
         Assert.Single(innerCompoundStatement.Statements);
         Assert.IsType<ExpressionStatement>(innerCompoundStatement.Statements[0]);
         Assert.Equal(TokenType.RightBrace, innerCompoundStatement.RightBrace.Type);
@@ -125,7 +128,7 @@ public class CompoundSyntaxParserTests
         Assert.Equal(TokenType.RightBrace, compoundStatement.RightBrace.Type);
         Assert.Equal("}", compoundStatement.RightBrace.Value);
     }
-    
+
     [Fact]
     public void ParseStatement_EmptyBlockNoClosingBrace_ShouldThrowLanguageSyntaxException()
     {

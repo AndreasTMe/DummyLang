@@ -272,18 +272,52 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(BreakStatement statement)
     {
+        if (statement.BreakKeyword.Type != TokenType.Break)
+            LanguageSyntax.Throw("Invalid 'break' token added. How did this happen?");
+
+        if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
+            CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'break' keyword.");
+
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'break' statement.");
     }
 
     public void Visit(CompoundStatement statement)
     {
+        if (statement.LeftBrace.Type != TokenType.LeftBrace)
+            LanguageSyntax.Throw("Invalid left brace token added. How did this happen?");
+
+        if (statement.RightBrace.Type != TokenType.RightBrace)
+            CaptureDiagnosticsInfo(statement.RightBrace, "Right brace expected at the end of a block statement.");
+
+        if (statement.Statements is null)
+            return;
+
+        foreach (var innerStatement in statement.Statements)
+            innerStatement.Accept(this);
     }
 
     public void Visit(ContinueStatement statement)
     {
+        if (statement.ContinueKeyword.Type != TokenType.Continue)
+            LanguageSyntax.Throw("Invalid 'continue' token added. How did this happen?");
+
+        if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
+            CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'continue' keyword.");
+
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'continue' statement.");
     }
 
     public void Visit(ExpressionStatement statement)
     {
+        if (statement.Expression is null)
+            LanguageSyntax.Throw($"This should have been a {nameof(NoOpStatement)}. How did this happen?");
+
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of an expression statement.");
+
+        statement.Expression?.Accept(this);
     }
 
     public void Visit(IfElseStatement statement)
@@ -292,6 +326,8 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(NoOpStatement statement)
     {
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            LanguageSyntax.Throw("Invalid semicolon token added. How did this happen?");
     }
 
     public void Visit(ReturnStatement statement)

@@ -62,79 +62,38 @@ internal static class ExpressionParser
     {
         Debug.Assert(index < tokens.Length);
 
-        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-        switch (tokens[index].Type)
+        return tokens[index].Type switch
         {
-            case TokenType.Plus:
-            case TokenType.Minus:
-            case TokenType.PlusPlus:
-            case TokenType.MinusMinus:
-            case TokenType.Bang:
-            case TokenType.Tilde:
-            case TokenType.Star:
-            case TokenType.Ampersand:
-                return ParseUnaryExpression(ref index, in tokens);
-            case TokenType.LeftParenthesis:
-            {
-                var leftParen  = GetAndMoveToNext(ref index, in tokens);
-                var expression = Parse(ref index, in tokens);
-                var rightParen = TypeAt(index, in tokens) == TokenType.RightParenthesis
-                    ? GetAndMoveToNext(ref index, in tokens)
-                    : Token.None;
-
-                return new ParenthesisedExpression(leftParen, expression, rightParen);
-            }
-            case TokenType.RightParenthesis:
-            case TokenType.RightBrace:
-            case TokenType.RightBracket:
-                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
-            case TokenType.Identifier:
-                return ParseIdentifierRelatedExpressions(ref index, in tokens);
-            case TokenType.Integer:
-            case TokenType.Real:
-                return ParseNumberExpression(ref index, in tokens);
-            case TokenType.Character:
-                return ParseCharacterExpression(ref index, in tokens);
-            case TokenType.String:
-                return ParseStringExpression(ref index, in tokens);
-            default:
-                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
-        }
+            TokenType.Plus
+                or TokenType.Minus
+                or TokenType.PlusPlus
+                or TokenType.MinusMinus
+                or TokenType.Bang
+                or TokenType.Tilde
+                or TokenType.Star
+                or TokenType.Ampersand => ParseUnaryExpression(ref index, in tokens),
+            TokenType.LeftParenthesis           => ParseParenthesizedExpression(ref index, in tokens),
+            TokenType.Identifier                => ParseIdentifierRelatedExpressions(ref index, in tokens),
+            TokenType.Integer or TokenType.Real => ParseNumberExpression(ref index, in tokens),
+            TokenType.Character                 => ParseCharacterExpression(ref index, in tokens),
+            TokenType.String                    => ParseStringExpression(ref index, in tokens),
+            _                                   => new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens))
+        };
     }
 
     private static ITypeExpression ParseTypeExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
     {
         Debug.Assert(index < tokens.Length);
 
-        // ReSharper disable once ConvertSwitchStatementToSwitchExpression
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-        switch (tokens[index].Type)
+        return tokens[index].Type switch
         {
-            case TokenType.LeftParenthesis:
-            {
-                var leftParen  = GetAndMoveToNext(ref index, in tokens);
-                var expression = ParseType(ref index, in tokens);
-                var rightParen = TypeAt(index, in tokens) == TokenType.RightParenthesis
-                    ? GetAndMoveToNext(ref index, in tokens)
-                    : Token.None;
-
-                return new ParenthesisedExpression(leftParen, expression, rightParen);
-            }
-            case TokenType.RightParenthesis:
-                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
-            case TokenType.Identifier:
-                return ParseTypeIdentifierExpression(ref index, in tokens);
-            case TokenType.Integer:
-            case TokenType.Real:
-                return ParseNumberExpression(ref index, in tokens);
-            case TokenType.Character:
-                return ParseCharacterExpression(ref index, in tokens);
-            case TokenType.String:
-                return ParseStringExpression(ref index, in tokens);
-            default:
-                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
-        }
+            TokenType.LeftParenthesis           => ParseParenthesizedExpression(ref index, in tokens, true),
+            TokenType.Identifier                => ParseTypeIdentifierExpression(ref index, in tokens),
+            TokenType.Integer or TokenType.Real => ParseNumberExpression(ref index, in tokens),
+            TokenType.Character                 => ParseCharacterExpression(ref index, in tokens),
+            TokenType.String                    => ParseStringExpression(ref index, in tokens),
+            _                                   => new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens))
+        };
     }
 
     private static UnaryExpression ParseUnaryExpression(ref int index, in Token[] tokens)
@@ -143,6 +102,31 @@ internal static class ExpressionParser
         var expression    = ParseExpressionBasedOnCurrentToken(ref index, in tokens);
 
         return new UnaryExpression(unaryOperator, expression);
+    }
+
+    private static ParenthesisedExpression ParseParenthesizedExpression(ref int index,
+                                                                        in Token[] tokens,
+                                                                        bool isType = false)
+    {
+        var leftParen  = GetAndMoveToNext(ref index, in tokens);
+        var rightParen = Token.None;
+
+        if (isType)
+        {
+            var typeExpression = ParseType(ref index, in tokens);
+
+            if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+                rightParen = GetAndMoveToNext(ref index, in tokens);
+
+            return new ParenthesisedExpression(leftParen, typeExpression, rightParen);
+        }
+
+        var expression = Parse(ref index, in tokens);
+
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+            rightParen = GetAndMoveToNext(ref index, in tokens);
+
+        return new ParenthesisedExpression(leftParen, expression, rightParen);
     }
 
     private static IExpression ParseIdentifierRelatedExpressions(ref int index, in Token[] tokens)

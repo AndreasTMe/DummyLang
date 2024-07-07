@@ -5,10 +5,10 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class ExpressionStatement : IStatement
 {
-    public IExpression Expression { get; }
-    public Token       Terminator { get; }
+    public IExpression? Expression { get; }
+    public Token        Terminator { get; }
 
-    internal ExpressionStatement(IExpression expression, Token terminator)
+    internal ExpressionStatement(IExpression? expression, Token terminator)
     {
         Expression = expression;
         Terminator = terminator;

@@ -16,32 +16,19 @@ internal static class StatementParser
         Debug.Assert(index < tokens.Length);
 
         var token = TokenAt(index, in tokens);
-        switch (token.Type)
+        return token.Type switch
         {
-            case TokenType.Semicolon:
-                return new NoOpStatement(GetAndMoveToNext(ref index, in tokens));
-            case TokenType.LeftBrace:
-                return ParseBlock(ref index, in tokens);
-            case TokenType.Var:
-            case TokenType.Const:
-                return ParseVariableDeclaration(ref index, in tokens);
-            // TODO: case TokenType.Func:
-            case TokenType.If:
-                return ParseIfElse(ref index, in tokens);
-            case TokenType.Else:
-                LanguageSyntax.Found(token, "The 'else' keyword can only come after an 'if'/'else if' block.");
-                break;
-            case TokenType.Break:
-                return ParseBreak(ref index, in tokens);
-            case TokenType.While:
-                return ParseWhile(ref index, in tokens);
-            case TokenType.Continue:
-                return ParseContinue(ref index, in tokens);
-            case TokenType.Return:
-                return ParseReturn(ref index, in tokens);
-        }
-
-        return ParseExpression(ref index, in tokens);
+            TokenType.Semicolon              => new NoOpStatement(GetAndMoveToNext(ref index, in tokens)),
+            TokenType.LeftBrace              => ParseBlock(ref index, in tokens),
+            TokenType.Var or TokenType.Const => ParseVariableDeclaration(ref index, in tokens),
+            // TODO: TokenType.Func => ParseFunctionDeclaration(ref index, in tokens),
+            TokenType.If       => ParseIfElse(ref index, in tokens),
+            TokenType.Break    => ParseBreak(ref index, in tokens),
+            TokenType.While    => ParseWhile(ref index, in tokens),
+            TokenType.Continue => ParseContinue(ref index, in tokens),
+            TokenType.Return   => ParseReturn(ref index, in tokens),
+            _                  => ParseExpression(ref index, in tokens)
+        };
     }
 
     private static Token GetAndMoveToNext(ref int index, in Token[] tokens) =>
@@ -55,29 +42,31 @@ internal static class StatementParser
 
     private static CompoundStatement ParseBlock(ref int index, in Token[] tokens)
     {
-        var leftBrace = GetAndMoveToNext(ref index, in tokens);
+        var               leftBrace  = GetAndMoveToNext(ref index, in tokens);
+        List<IStatement>? statements = null;
 
-        var statements  = new List<IStatement>();
-        var next        = TokenAt(index, in tokens);
-        var shouldThrow = next.IsNone() || next.IsEndOfFile();
-        while (next.Type != TokenType.RightBrace && !shouldThrow)
+        var next = TokenAt(index, in tokens);
+        if (next.Type != TokenType.RightBrace)
         {
-            statements.Add(Parse(ref index, in tokens));
+            statements = new List<IStatement>();
 
-            next = TokenAt(index, in tokens);
-            if (!next.IsNone() && !next.IsEndOfFile())
-                continue;
+            while (next.Type != TokenType.RightBrace)
+            {
+                statements.Add(Parse(ref index, in tokens));
 
-            shouldThrow = true;
-            break;
+                next = TokenAt(index, in tokens);
+                if (!next.IsNone() && !next.IsEndOfFile())
+                    continue;
+
+                break;
+            }
         }
 
-        if (shouldThrow)
-            LanguageSyntax.Found(next, "Could not find closing brace for block.");
+        var rightBrace = next.Type == TokenType.RightBrace
+            ? GetAndMoveToNext(ref index, in tokens)
+            : Token.None;
 
-        var rightBrace = GetAndMoveToNext(ref index, in tokens);
-
-        return new CompoundStatement(leftBrace, statements.ToArray(), rightBrace);
+        return new CompoundStatement(leftBrace, rightBrace, statements);
     }
 
     private static VariableDeclarationStatement ParseVariableDeclaration(ref int index, in Token[] tokens)
@@ -205,13 +194,9 @@ internal static class StatementParser
         if (TypeAt(index, in tokens) == TokenType.Identifier)
             label = GetAndMoveToNext(ref index, in tokens);
 
+        var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
-            LanguageSyntax.Expects(
-                TokenType.Semicolon,
-                tokens[index],
-                "Semicolon expected at the end of a 'break' statement.");
-
-        var terminator = GetAndMoveToNext(ref index, in tokens);
+            terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new BreakStatement(breakKeyword, label, terminator);
     }
@@ -260,14 +245,10 @@ internal static class StatementParser
         var label = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Identifier)
             label = GetAndMoveToNext(ref index, in tokens);
-
+        
+        var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
-            LanguageSyntax.Expects(
-                TokenType.Semicolon,
-                tokens[index],
-                "Semicolon expected at the end of a 'continue' statement.");
-
-        var terminator = GetAndMoveToNext(ref index, in tokens);
+            terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new ContinueStatement(continueKeyword, label, terminator);
     }
@@ -314,14 +295,10 @@ internal static class StatementParser
     private static ExpressionStatement ParseExpression(ref int index, in Token[] tokens)
     {
         var expression = ExpressionParser.Parse(ref index, in tokens);
-
+        
+        var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
-            LanguageSyntax.Expects(
-                TokenType.Semicolon,
-                tokens[index],
-                "Semicolon expected at the end of an expression statement.");
-
-        var terminator = GetAndMoveToNext(ref index, in tokens);
+            terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new ExpressionStatement(expression, terminator);
     }
