@@ -86,7 +86,9 @@ internal static class ExpressionParser
                 return new ParenthesisedExpression(leftParen, expression, rightParen);
             }
             case TokenType.RightParenthesis:
-                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+            case TokenType.RightBrace:
+            case TokenType.RightBracket:
+                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
             case TokenType.Identifier:
                 return ParseIdentifierRelatedExpressions(ref index, in tokens);
             case TokenType.Integer:
@@ -97,7 +99,7 @@ internal static class ExpressionParser
             case TokenType.String:
                 return ParseStringExpression(ref index, in tokens);
             default:
-                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
         }
     }
 
@@ -120,7 +122,7 @@ internal static class ExpressionParser
                 return new ParenthesisedExpression(leftParen, expression, rightParen);
             }
             case TokenType.RightParenthesis:
-                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
             case TokenType.Identifier:
                 return ParseTypeIdentifierExpression(ref index, in tokens);
             case TokenType.Integer:
@@ -131,7 +133,7 @@ internal static class ExpressionParser
             case TokenType.String:
                 return ParseStringExpression(ref index, in tokens);
             default:
-                return new InvalidExpression(GetAndMoveToNext(ref index, in tokens));
+                return new UnexpectedTokenExpression(GetAndMoveToNext(ref index, in tokens));
         }
     }
 
@@ -210,57 +212,67 @@ internal static class ExpressionParser
         if (TypeAt(index, in tokens) != TokenType.LessThan)
             return new TypeIdentifierExpression(identifierToken);
 
-        Token leftGeneric;
-        Token rightGeneric;
-        var   expressions = new List<ITypeExpression>();
-        var   commas      = new List<Token>();
+        Token                         leftGeneric;
+        Token                         rightGeneric;
+        List<TypeArgumentExpression>? arguments = null;
+
+        TypeGenericExpression expression;
 
         if (ParsingUtilities.TryGetBalancedTypeBrackets(in tokens, index, out var endIndex))
         {
             leftGeneric  = GetAndMoveToNext(ref index, in tokens);
             rightGeneric = tokens[endIndex];
 
+            if (index < endIndex)
+                arguments = new List<TypeArgumentExpression>();
+
             while (index < endIndex)
             {
-                expressions.Add(ParseType(ref index, in tokens));
-
-                if (TypeAt(index, in tokens) == TokenType.Comma)
-                    commas.Add(GetAndMoveToNext(ref index, in tokens));
+                var argument = ParseType(ref index, in tokens);
+                var comma = TypeAt(index, in tokens) == TokenType.Comma
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
+                arguments!.Add(new TypeArgumentExpression(argument, comma));
             }
 
             // Ensuring correct indexing
-            index = endIndex + 1;
-
-            return new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas);
+            index      = endIndex + 1;
+            expression = new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, arguments);
         }
-
-        if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LessThan)
-            return new InvalidExpression(
-                typeof(TypeGenericExpression),
-                Token.ExpectedAt(tokens[index].Position, TokenType.GreaterThan));
-
-        leftGeneric = GetAndMoveToNext(ref index, in tokens);
-        rightGeneric = tokens[endIndex].Type == TokenType.GreaterThan
-            ? tokens[endIndex]
-            : Token.None;
-
-        while (index < endIndex)
+        else
         {
-            expressions.Add(ParseType(ref index, in tokens));
+            if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LessThan)
+            {
+                leftGeneric = GetAndMoveToNext(ref index, in tokens);
+                expression  = new TypeGenericExpression(identifierToken, leftGeneric, Token.None);
+            }
+            else
+            {
+                leftGeneric = GetAndMoveToNext(ref index, in tokens);
+                rightGeneric = tokens[endIndex].Type == TokenType.GreaterThan
+                    ? tokens[endIndex]
+                    : Token.None;
 
-            if (TypeAt(index, in tokens) == TokenType.Comma)
-                commas.Add(GetAndMoveToNext(ref index, in tokens));
+                if (index < endIndex)
+                    arguments = new List<TypeArgumentExpression>();
+
+                while (index < endIndex)
+                {
+                    var argument = ParseType(ref index, in tokens);
+                    var comma = TypeAt(index, in tokens) == TokenType.Comma
+                        ? GetAndMoveToNext(ref index, in tokens)
+                        : Token.None;
+                    arguments!.Add(new TypeArgumentExpression(argument, comma));
+                }
+
+                expression = new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, arguments);
+            }
+
+            // Ensuring correct indexing
+            index = endIndex;
         }
 
-        // Ensuring correct indexing
-        index = endIndex;
-
-        return rightGeneric == Token.None
-            ? new InvalidExpression(
-                new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas))
-            : new InvalidExpression(
-                new TypeGenericExpression(identifierToken, leftGeneric, rightGeneric, expressions, commas),
-                Token.ExpectedAt(tokens[endIndex].Position, TokenType.GreaterThan));
+        return expression;
     }
 
     private static PrimaryExpression ParseFunctionCallExpression(ref int index, in Token[] tokens, in Token identifier)

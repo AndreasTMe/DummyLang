@@ -6,23 +6,20 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class TypeGenericExpression : IExpression, ITypeExpression
 {
-    public Token                 Identifier     { get; }
-    public Token                 LessThan       { get; }
-    public Token                 GreaterThan    { get; }
-    public List<ITypeExpression> TypeParameters { get; }
-    public List<Token>           Commas         { get; }
+    public Token                                  Identifier    { get; }
+    public Token                                  LessThan      { get; }
+    public Token                                  GreaterThan   { get; }
+    public IReadOnlyList<TypeArgumentExpression>? TypeArguments { get; }
 
     internal TypeGenericExpression(Token identifier,
                                    Token lessThan,
                                    Token greaterThan,
-                                   List<ITypeExpression> typeParameters,
-                                   List<Token> commas)
+                                   List<TypeArgumentExpression>? typeArguments = null)
     {
-        Identifier     = identifier;
-        LessThan       = lessThan;
-        GreaterThan    = greaterThan;
-        TypeParameters = typeParameters;
-        Commas         = commas;
+        Identifier    = identifier;
+        LessThan      = lessThan;
+        GreaterThan   = greaterThan;
+        TypeArguments = typeArguments;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

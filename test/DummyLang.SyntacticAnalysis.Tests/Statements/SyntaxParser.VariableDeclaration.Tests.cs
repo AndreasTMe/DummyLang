@@ -205,13 +205,10 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal("<", generic.LessThan.Value);
         Assert.Equal(TokenType.GreaterThan, generic.GreaterThan.Type);
         Assert.Equal(">", generic.GreaterThan.Value);
-        Assert.NotNull(generic.TypeParameters);
-        Assert.Equal(2, generic.TypeParameters.Count);
-        Assert.IsType<TypeIdentifierExpression>(generic.TypeParameters[0]);
-        Assert.IsType<TypeIdentifierExpression>(generic.TypeParameters[1]);
-        Assert.Single(generic.Commas);
-        Assert.Equal(TokenType.Comma, generic.Commas[0].Type);
-        Assert.Equal(",", generic.Commas[0].Value);
+        Assert.NotNull(generic.TypeArguments);
+        Assert.Equal(2, generic.TypeArguments.Count);
+        Assert.IsType<TypeArgumentExpression>(generic.TypeArguments[0]);
+        Assert.IsType<TypeArgumentExpression>(generic.TypeArguments[1]);
 
         Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("", variableDeclaration.ValueAssignment.Value);

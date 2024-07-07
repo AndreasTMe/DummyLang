@@ -119,11 +119,6 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             expression.Index.Accept(this);
     }
 
-    public void Visit(InvalidExpression expression)
-    {
-        // TODO: Remove
-    }
-
     public void Visit(MemberAccessExpression expression)
     {
         if (expression.Access.Type != TokenType.PointerAccess && expression.Access.Type != TokenType.Dot)
@@ -191,6 +186,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             CaptureDiagnosticsInfo(expression.StringToken, message);
     }
 
+    public void Visit(TypeArgumentExpression expression)
+    {
+        if (expression.Argument is null && expression.Comma.IsNone())
+            LanguageSyntax.Throw("Empty argument added. How did this happen?");
+
+        if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
+            LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+    }
+
     public void Visit(TypeBinaryExpression expression)
     {
         if (!expression.Operator.IsBitwiseOperator())
@@ -208,6 +212,34 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(TypeGenericExpression expression)
     {
+        if (expression.Identifier.Type != TokenType.Identifier)
+            LanguageSyntax.Throw("Invalid identifier token added. How did this happen?");
+
+        if (expression.LessThan.Type != TokenType.LessThan)
+            LanguageSyntax.Throw("Invalid left generic bracket token added. How did this happen?");
+
+        if (expression.GreaterThan.Type != TokenType.GreaterThan)
+        {
+            CaptureDiagnosticsInfo(expression.LessThan, "Right generic bracket token expected.");
+        }
+        else if (expression.TypeArguments is { Count: > 0 })
+        {
+            if (!expression.TypeArguments[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(expression.GreaterThan, "Last argument should not be followed by comma.");
+
+            for (var i = 0; i < expression.TypeArguments.Count; i++)
+            {
+                var argument = expression.TypeArguments[i];
+
+                if (argument.Argument is null)
+                    CaptureDiagnosticsInfo(Token.None, "Argument expected.");
+
+                if (i != expression.TypeArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                    CaptureDiagnosticsInfo(Token.None, "Comma expected.");
+
+                argument.Accept(this);
+            }
+        }
     }
 
     public void Visit(TypeIdentifierExpression expression)
@@ -231,7 +263,12 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.Expression is null)
             CaptureDiagnosticsInfo(expression.Token, "Expression expected after unary operator.");
+
+        // TODO: A lot of checks here for the inner expression
     }
+
+    public void Visit(UnexpectedTokenExpression expression) =>
+        CaptureDiagnosticsInfo(expression.Token, "Unexpected token.");
 
     public void Visit(BreakStatement statement)
     {

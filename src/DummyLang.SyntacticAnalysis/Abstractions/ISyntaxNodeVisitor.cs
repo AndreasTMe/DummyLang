@@ -21,8 +21,6 @@ public interface ISyntaxNodeVisitor
 
     void Visit(IndexerExpression expression);
 
-    void Visit(InvalidExpression expression); // TODO: Remove
-
     void Visit(MemberAccessExpression expression);
 
     void Visit(NumberLiteralExpression expression);
@@ -35,6 +33,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(StringLiteralExpression expression);
 
+    void Visit(TypeArgumentExpression expression);
+
     void Visit(TypeBinaryExpression expression);
 
     void Visit(TypeGenericExpression expression);
@@ -42,6 +42,8 @@ public interface ISyntaxNodeVisitor
     void Visit(TypeIdentifierExpression expression);
 
     void Visit(UnaryExpression expression);
+
+    void Visit(UnexpectedTokenExpression expression);
 
     /*************
      * Statements
