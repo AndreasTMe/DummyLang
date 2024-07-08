@@ -289,7 +289,7 @@ internal static class StatementParser
 
         var terminator = GetAndMoveToNext(ref index, in tokens);
 
-        return new ReturnStatement(returnKeyword, expressions.ToArray(), terminator);
+        return new ReturnStatement(returnKeyword, terminator, expressions);
     }
 
     private static ExpressionStatement ParseExpression(ref int index, in Token[] tokens)

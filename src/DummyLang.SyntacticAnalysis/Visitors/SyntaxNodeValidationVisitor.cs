@@ -332,6 +332,8 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(ReturnStatement statement)
     {
+        if (statement.ReturnKeyword.Type != TokenType.Return)
+            LanguageSyntax.Throw("Invalid 'return' token added. How did this happen?");
     }
 
     public void Visit(VariableDeclarationStatement statement)
