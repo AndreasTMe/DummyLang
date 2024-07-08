@@ -245,7 +245,7 @@ internal static class StatementParser
         var label = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Identifier)
             label = GetAndMoveToNext(ref index, in tokens);
-        
+
         var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
@@ -255,47 +255,40 @@ internal static class StatementParser
 
     private static ReturnStatement ParseReturn(ref int index, in Token[] tokens)
     {
-        var returnKeyword = GetAndMoveToNext(ref index, in tokens);
+        var                       returnKeyword   = GetAndMoveToNext(ref index, in tokens);
+        List<ArgumentExpression>? returnArguments = null;
 
-        var expressions = new List<IExpression>();
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
         {
-            expressions.Add(ExpressionParser.Parse(ref index, in tokens));
+            var returnArgument = ExpressionParser.Parse(ref index, in tokens);
+            var comma = TypeAt(index, in tokens) == TokenType.Comma
+                ? GetAndMoveToNext(ref index, in tokens)
+                : Token.None;
 
-            if (TokenAt(index, in tokens).IsIdentifierOrLiteral())
-                LanguageSyntax.Expects(
-                    TokenType.Comma,
-                    tokens[index],
-                    "Comma expected between multiple 'return' arguments.");
+            returnArguments = new List<ArgumentExpression> { new(returnArgument, comma) };
 
-            while (TypeAt(index, in tokens) == TokenType.Comma)
+            while (comma.Type == TokenType.Comma)
             {
-                index++;
-                expressions.Add(ExpressionParser.Parse(ref index, in tokens));
+                returnArgument = ExpressionParser.Parse(ref index, in tokens);
+                comma = TypeAt(index, in tokens) == TokenType.Comma
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
 
-                if (TokenAt(index, in tokens).IsIdentifierOrLiteral())
-                    LanguageSyntax.Expects(
-                        TokenType.Comma,
-                        tokens[index],
-                        "Comma expected between multiple 'return' arguments.");
+                returnArguments.Add(new ArgumentExpression(returnArgument, comma));
             }
         }
 
+        var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
-            LanguageSyntax.Expects(
-                TokenType.Semicolon,
-                tokens[index],
-                "Semicolon expected at the end of a 'return' statement.");
+            terminator = GetAndMoveToNext(ref index, in tokens);
 
-        var terminator = GetAndMoveToNext(ref index, in tokens);
-
-        return new ReturnStatement(returnKeyword, terminator, expressions);
+        return new ReturnStatement(returnKeyword, terminator, returnArguments);
     }
 
     private static ExpressionStatement ParseExpression(ref int index, in Token[] tokens)
     {
         var expression = ExpressionParser.Parse(ref index, in tokens);
-        
+
         var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);

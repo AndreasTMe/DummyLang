@@ -334,6 +334,28 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
     {
         if (statement.ReturnKeyword.Type != TokenType.Return)
             LanguageSyntax.Throw("Invalid 'return' token added. How did this happen?");
+
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'return' statement.");
+
+        if (statement.ReturnArguments is not { Count: > 0 })
+            return;
+
+        if (!statement.ReturnArguments[^1].Comma.IsNone())
+            CaptureDiagnosticsInfo(statement.Terminator, "Last argument should not be followed by comma.");
+
+        for (var i = 0; i < statement.ReturnArguments.Count; i++)
+        {
+            var argument = statement.ReturnArguments[i];
+
+            if (argument.Argument is null)
+                CaptureDiagnosticsInfo(Token.None, "Argument expected.");
+
+            if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                CaptureDiagnosticsInfo(Token.None, "Comma expected.");
+
+            argument.Accept(this);
+        }
     }
 
     public void Visit(VariableDeclarationStatement statement)

@@ -31,9 +31,9 @@ public class ReturnSyntaxParserTests
         Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
         Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
-        Assert.NotNull(returnStatement.Expressions);
-        Assert.Single(returnStatement.Expressions);
-        Assert.IsType<NumberLiteralExpression>(returnStatement.Expressions[0]);
+        Assert.NotNull(returnStatement.ReturnArguments);
+        Assert.Single(returnStatement.ReturnArguments);
+        Assert.IsType<NumberLiteralExpression>(returnStatement.ReturnArguments[0]);
 
         Assert.Equal(TokenType.Semicolon, returnStatement.Terminator.Type);
         Assert.Equal(";", returnStatement.Terminator.Value);
@@ -61,9 +61,9 @@ public class ReturnSyntaxParserTests
         Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
         Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
-        Assert.NotNull(returnStatement.Expressions);
-        Assert.Single(returnStatement.Expressions);
-        Assert.IsType<BinaryExpression>(returnStatement.Expressions[0]);
+        Assert.NotNull(returnStatement.ReturnArguments);
+        Assert.Single(returnStatement.ReturnArguments);
+        Assert.IsType<BinaryExpression>(returnStatement.ReturnArguments[0]);
 
         Assert.Equal(TokenType.Semicolon, returnStatement.Terminator.Type);
         Assert.Equal(";", returnStatement.Terminator.Value);
@@ -91,11 +91,11 @@ public class ReturnSyntaxParserTests
         Assert.Equal(TokenType.Return, returnStatement.ReturnKeyword.Type);
         Assert.Equal("return", returnStatement.ReturnKeyword.Value);
 
-        Assert.NotNull(returnStatement.Expressions);
-        Assert.Equal(3, returnStatement.Expressions.Count);
-        Assert.IsType<NumberLiteralExpression>(returnStatement.Expressions[0]);
-        Assert.IsType<BinaryExpression>(returnStatement.Expressions[1]);
-        Assert.IsType<StringLiteralExpression>(returnStatement.Expressions[2]);
+        Assert.NotNull(returnStatement.ReturnArguments);
+        Assert.Equal(3, returnStatement.ReturnArguments.Count);
+        Assert.IsType<NumberLiteralExpression>(returnStatement.ReturnArguments[0]);
+        Assert.IsType<BinaryExpression>(returnStatement.ReturnArguments[1]);
+        Assert.IsType<StringLiteralExpression>(returnStatement.ReturnArguments[2]);
 
         Assert.Equal(TokenType.Semicolon, returnStatement.Terminator.Type);
         Assert.Equal(";", returnStatement.Terminator.Value);
