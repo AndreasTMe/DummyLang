@@ -19,17 +19,17 @@ public sealed class IfElseStatement : IStatement
 
     public sealed class IfBlock
     {
-        public Token             IfKeyword        { get; }
-        public Token             LeftParenthesis  { get; }
-        public IExpression       Condition        { get; }
-        public Token             RightParenthesis { get; }
-        public CompoundStatement Block            { get; }
+        public Token              IfKeyword        { get; }
+        public Token              LeftParenthesis  { get; }
+        public IExpression?       Condition        { get; }
+        public Token              RightParenthesis { get; }
+        public CompoundStatement? Block            { get; }
 
         internal IfBlock(Token ifKeyword,
                          Token leftParenthesis,
-                         IExpression condition,
+                         IExpression? condition,
                          Token rightParenthesis,
-                         CompoundStatement block)
+                         CompoundStatement? block)
         {
             IfKeyword        = ifKeyword;
             LeftParenthesis  = leftParenthesis;
@@ -41,30 +41,22 @@ public sealed class IfElseStatement : IStatement
 
     public sealed class ElseIfBlock
     {
-        public Token             ElseKeyword      { get; }
-        public Token             IfKeyword        { get; }
-        public Token             LeftParenthesis  { get; }
-        public IExpression       Condition        { get; }
-        public Token             RightParenthesis { get; }
-        public CompoundStatement Block            { get; }
+        public Token    ElseKeyword { get; }
+        public IfBlock? IfBlock     { get; }
 
-        internal ElseIfBlock(Token elseKeyword, IfBlock ifBlock)
+        internal ElseIfBlock(Token elseKeyword, IfBlock? ifBlock)
         {
-            ElseKeyword      = elseKeyword;
-            IfKeyword        = ifBlock.IfKeyword;
-            LeftParenthesis  = ifBlock.LeftParenthesis;
-            Condition        = ifBlock.Condition;
-            RightParenthesis = ifBlock.RightParenthesis;
-            Block            = ifBlock.Block;
+            ElseKeyword = elseKeyword;
+            IfBlock     = ifBlock;
         }
     }
 
     public sealed class ElseBlock
     {
-        public Token             ElseKeyword { get; }
-        public CompoundStatement Block       { get; }
+        public Token              ElseKeyword { get; }
+        public CompoundStatement? Block       { get; }
 
-        internal ElseBlock(Token elseKeyword, CompoundStatement block)
+        internal ElseBlock(Token elseKeyword, CompoundStatement? block)
         {
             ElseKeyword = elseKeyword;
             Block       = block;

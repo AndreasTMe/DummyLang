@@ -144,8 +144,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.Expression is null)
             CaptureDiagnosticsInfo(expression.LeftParen, "Expression expected.");
-
-        if (expression.RightParen.Type != TokenType.RightParenthesis)
+        else if (expression.RightParen.Type != TokenType.RightParenthesis)
             CaptureDiagnosticsInfo(expression.LeftParen, "Right parenthesis expected.");
 
         expression.Expression?.Accept(this);
@@ -233,8 +232,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
                 if (argument.Argument is null)
                     CaptureDiagnosticsInfo(Token.None, "Argument expected.");
-
-                if (i != expression.TypeArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                else if (i != expression.TypeArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
                     CaptureDiagnosticsInfo(Token.None, "Comma expected.");
 
                 argument.Accept(this);
@@ -277,8 +275,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
             CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'break' keyword.");
-
-        if (statement.Terminator.Type != TokenType.Semicolon)
+        else if (statement.Terminator.Type != TokenType.Semicolon)
             CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'break' statement.");
     }
 
@@ -304,8 +301,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
             CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'continue' keyword.");
-
-        if (statement.Terminator.Type != TokenType.Semicolon)
+        else if (statement.Terminator.Type != TokenType.Semicolon)
             CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'continue' statement.");
     }
 
@@ -322,6 +318,49 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(IfElseStatement statement)
     {
+        Visit(statement.If);
+
+        if (statement.ElseIfs is { Count: > 0 })
+        {
+            foreach (var elseIf in statement.ElseIfs)
+            {
+                if (elseIf.ElseKeyword.Type != TokenType.Else)
+                    LanguageSyntax.Throw("Invalid 'else' token added. How did this happen?");
+
+                if (elseIf.IfBlock is null)
+                    LanguageSyntax.Throw("Invalid 'else if' block. How did this happen?");
+
+                Visit(elseIf.IfBlock);
+            }
+        }
+
+        if (statement.Else is null)
+            return;
+
+        if (statement.Else.ElseKeyword.Type != TokenType.Else)
+            LanguageSyntax.Throw("Invalid 'else' token added. How did this happen?");
+
+        if (statement.Else.Block is null)
+            LanguageSyntax.Throw("Invalid 'else' block. How did this happen?");
+
+        statement.Else.Block.Accept(this);
+    }
+
+    private void Visit(IfElseStatement.IfBlock block)
+    {
+        if (block.IfKeyword.Type != TokenType.If)
+            LanguageSyntax.Throw("Invalid 'if' token added. How did this happen?");
+
+        if (block.LeftParenthesis.Type != TokenType.LeftParenthesis)
+            CaptureDiagnosticsInfo(block.IfKeyword, "Left parenthesis token expected after 'if' keyword.");
+        else if (block.Condition is null)
+            CaptureDiagnosticsInfo(block.LeftParenthesis, "Expression expected.");
+        else if (block.RightParenthesis.Type != TokenType.RightParenthesis)
+            CaptureDiagnosticsInfo(block.IfKeyword, "Right parenthesis expected after the 'if' condition.");
+        else if (block.Block is null)
+            CaptureDiagnosticsInfo(block.RightParenthesis, "Statement expected.");
+        else
+            block.Block.Accept(this);
     }
 
     public void Visit(NoOpStatement statement)
@@ -350,8 +389,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
             if (argument.Argument is null)
                 CaptureDiagnosticsInfo(Token.None, "Argument expected.");
-
-            if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+            else if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
                 CaptureDiagnosticsInfo(Token.None, "Comma expected.");
 
             argument.Accept(this);

@@ -137,29 +137,15 @@ internal static class StatementParser
     {
         var ifKeyword = GetAndMoveToNext(ref index, in tokens);
 
+        var leftParenthesis = Token.None;
         if (TypeAt(index, in tokens) != TokenType.LeftParenthesis)
-            LanguageSyntax.Expects(
-                TokenType.LeftParenthesis,
-                tokens[index],
-                "Left parenthesis token expected after 'if' keyword.");
-
-        var leftParenthesis = GetAndMoveToNext(ref index, in tokens);
-
-        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
-            LanguageSyntax.Found(tokens[index], "Condition expected for 'if' statement.");
+            leftParenthesis = GetAndMoveToNext(ref index, in tokens);
 
         var condition = ExpressionParser.Parse(ref index, in tokens);
 
+        var rightParenthesis = Token.None;
         if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
-            LanguageSyntax.Expects(
-                TokenType.RightParenthesis,
-                tokens[index],
-                "Right parenthesis expected after the end of the condition.");
-
-        var rightParenthesis = GetAndMoveToNext(ref index, in tokens);
-
-        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
-            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open an 'if' block.");
+            rightParenthesis = GetAndMoveToNext(ref index, in tokens);
 
         var ifBlock = ParseBlock(ref index, in tokens);
 
@@ -177,11 +163,7 @@ internal static class StatementParser
     private static IfElseStatement.ElseBlock ParseElsePart(ref int index, in Token[] tokens)
     {
         var elseKeyword = GetAndMoveToNext(ref index, in tokens);
-
-        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
-            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open an 'else' block.");
-
-        var elseBlock = ParseBlock(ref index, in tokens);
+        var elseBlock   = ParseBlock(ref index, in tokens);
 
         return new IfElseStatement.ElseBlock(elseKeyword, elseBlock);
     }
