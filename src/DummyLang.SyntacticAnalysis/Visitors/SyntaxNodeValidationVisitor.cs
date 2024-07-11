@@ -398,6 +398,28 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(VariableDeclarationStatement statement)
     {
+        if (statement.DeclarationKeyword.Type != TokenType.Var && statement.DeclarationKeyword.Type != TokenType.Const)
+            LanguageSyntax.Throw("Invalid declaration token added. How did this happen?");
+
+        if (statement.Identifier is null)
+            CaptureDiagnosticsInfo(statement.DeclarationKeyword, "Identifier expected.");
+
+        if (statement.TypeAssignment.Type != TokenType.Colon)
+            CaptureDiagnosticsInfo(statement.DeclarationKeyword, "Colon expected.");
+
+        if (statement.ValueAssignment.Type != TokenType.None && statement.ValueAssignment.Type != TokenType.Assign)
+            CaptureDiagnosticsInfo(statement.ValueAssignment, "Assignment expected.");
+
+        if (statement.ValueAssignment.Type == TokenType.Assign && statement.Value is null)
+            CaptureDiagnosticsInfo(statement.ValueAssignment, "Expression expected.");
+
+        if (statement.Type is null && statement.Value is null)
+            CaptureDiagnosticsInfo(statement.TypeAssignment, "Type expression expected.");
+
+        if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                "Semicolon expected at the end of a variable declaration statement.");
     }
 
     public void Visit(WhileStatement statement)

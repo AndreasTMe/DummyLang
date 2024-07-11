@@ -73,28 +73,20 @@ internal static class StatementParser
     {
         var declarationKeyword = GetAndMoveToNext(ref index, in tokens);
 
+        IdentifierExpression? identifier = null;
         if (TypeAt(index, in tokens) != TokenType.Identifier)
-            LanguageSyntax.Expects(
-                TokenType.Identifier,
-                tokens[index],
-                $"Identifier expected after '{declarationKeyword.Value}' keyword.");
+            identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
 
-        var identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
-
+        var typeAssignmentOperator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Colon)
-            LanguageSyntax.Expects(
-                TokenType.Colon,
-                tokens[index],
-                "Colon expected after identifier in a variable declaration statement.");
+            typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
 
-        var              typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
-        ITypeExpression? typeValue              = default;
-
+        ITypeExpression? typeValue = null;
         if (TypeAt(index, in tokens) != TokenType.Assign)
             typeValue = ExpressionParser.ParseType(ref index, in tokens);
 
         var          valueAssignmentOperator = Token.None;
-        IExpression? valueAssignment         = default;
+        IExpression? valueAssignment         = null;
 
         if (TypeAt(index, in tokens) == TokenType.Assign)
         {
@@ -102,13 +94,9 @@ internal static class StatementParser
             valueAssignment         = ExpressionParser.Parse(ref index, in tokens);
         }
 
+        var terminator = Token.None;
         if (TypeAt(index, in tokens) != TokenType.Semicolon)
-            LanguageSyntax.Expects(
-                TokenType.Semicolon,
-                tokens[index],
-                "Semicolon expected at the end of a variable declaration statement.");
-
-        var terminator = GetAndMoveToNext(ref index, in tokens);
+            terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new VariableDeclarationStatement(
             declarationKeyword,
