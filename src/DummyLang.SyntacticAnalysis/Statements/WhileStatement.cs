@@ -5,19 +5,19 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class WhileStatement : IStatement
 {
-    public Token             WhileKeyword     { get; }
-    public Token             Label            { get; }
-    public Token             LeftParenthesis  { get; }
-    public IExpression       Condition        { get; }
-    public Token             RightParenthesis { get; }
-    public CompoundStatement Block            { get; }
+    public Token              WhileKeyword     { get; }
+    public Token              Label            { get; }
+    public Token              LeftParenthesis  { get; }
+    public IExpression?       Condition        { get; }
+    public Token              RightParenthesis { get; }
+    public CompoundStatement? Block            { get; }
 
     internal WhileStatement(Token whileKeyword,
                             Token label,
                             Token leftParenthesis,
-                            IExpression condition,
+                            IExpression? condition,
                             Token rightParenthesis,
-                            CompoundStatement block)
+                            CompoundStatement? block)
     {
         WhileKeyword     = whileKeyword;
         Label            = label;

@@ -424,6 +424,26 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(WhileStatement statement)
     {
+        if (statement.WhileKeyword.Type != TokenType.While)
+            LanguageSyntax.Throw("Invalid 'while' token added. How did this happen?");
+
+        if (statement.LeftParenthesis.Type != TokenType.LeftParenthesis)
+            CaptureDiagnosticsInfo(
+                statement.LeftParenthesis,
+                "Left parenthesis token expected after 'while' keyword or its label");
+
+        if (statement.Condition is null)
+            CaptureDiagnosticsInfo(statement.LeftParenthesis, "Expression expected.");
+
+        if (statement.RightParenthesis.Type != TokenType.RightParenthesis)
+            CaptureDiagnosticsInfo(
+                statement.LeftParenthesis,
+                "Right parenthesis token expected after the 'while' condition");
+
+        if (statement.Block is null)
+            CaptureDiagnosticsInfo(statement.RightParenthesis, "'while' block expected.");
+        else
+            statement.Block.Accept(this);
     }
 
     private void CaptureDiagnosticsInfo(Token token, string message)

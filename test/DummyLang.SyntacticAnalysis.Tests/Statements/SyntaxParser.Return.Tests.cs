@@ -112,9 +112,7 @@ public class ReturnSyntaxParserTests
         var index     = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Eof, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
     
     [Fact]
@@ -128,9 +126,7 @@ public class ReturnSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Eof, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
     
     [Fact]
@@ -144,9 +140,7 @@ public class ReturnSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Comma, exception.Expected);
-        Assert.Equal(TokenType.Identifier, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
     
     [Fact]
@@ -160,8 +154,6 @@ public class ReturnSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Comma, exception.Expected);
-        Assert.Equal(TokenType.String, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 }

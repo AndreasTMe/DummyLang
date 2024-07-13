@@ -179,33 +179,23 @@ internal static class StatementParser
         if (TypeAt(index, in tokens) == TokenType.Identifier)
             label = GetAndMoveToNext(ref index, in tokens);
 
-        if (TypeAt(index, in tokens) != TokenType.LeftParenthesis)
-            LanguageSyntax.Expects(
-                TokenType.LeftParenthesis,
-                tokens[index],
-                "Left parenthesis token expected after 'while' keyword or its label.");
-
-        var leftParenthesis = GetAndMoveToNext(ref index, in tokens);
-
-        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
-            LanguageSyntax.Found(tokens[index], "Condition expected for 'while' statement.");
+        var leftParenthesis = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+            leftParenthesis = GetAndMoveToNext(ref index, in tokens);
 
         var condition = ExpressionParser.Parse(ref index, in tokens);
 
-        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
-            LanguageSyntax.Expects(
-                TokenType.RightParenthesis,
-                tokens[index],
-                "Right parenthesis expected after the end of the condition.");
+        var rightParenthesis = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+            rightParenthesis = GetAndMoveToNext(ref index, in tokens);
 
-        var rightParenthesis = GetAndMoveToNext(ref index, in tokens);
-
-        if (TypeAt(index, in tokens) != TokenType.LeftBrace)
-            LanguageSyntax.Expects(TokenType.LeftBrace, tokens[index], "Left brace expected to open a 'while' block.");
-
-        var whileBlock = ParseBlock(ref index, in tokens);
-
-        return new WhileStatement(whileKeyword, label, leftParenthesis, condition, rightParenthesis, whileBlock);
+        return new WhileStatement(
+            whileKeyword,
+            label,
+            leftParenthesis,
+            condition,
+            rightParenthesis,
+            TypeAt(index, in tokens) == TokenType.LeftBrace ? ParseBlock(ref index, in tokens) : null);
     }
 
     private static ContinueStatement ParseContinue(ref int index, in Token[] tokens)

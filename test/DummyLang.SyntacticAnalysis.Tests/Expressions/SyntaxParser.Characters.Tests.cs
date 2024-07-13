@@ -36,7 +36,6 @@ public class CharacterSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid char in "Visitor.Visit"
     }
 
     [Fact]
@@ -52,7 +51,6 @@ public class CharacterSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid char in "Visitor.Visit"
     }
 
     [Fact]

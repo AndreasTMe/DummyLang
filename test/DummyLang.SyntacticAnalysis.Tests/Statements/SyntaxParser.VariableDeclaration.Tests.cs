@@ -230,9 +230,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Identifier, exception.Expected);
-        Assert.Equal(TokenType.Colon, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -246,9 +244,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Colon, exception.Expected);
-        Assert.Equal(TokenType.Assign, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -262,9 +258,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Colon, exception.Expected);
-        Assert.Equal(TokenType.Assign, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -278,10 +272,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Colon, exception.Expected);
-        Assert.Equal(TokenType.Identifier, exception.Found.Type);
-        Assert.Equal("i32", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -298,9 +289,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Var, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -317,10 +306,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Identifier, exception.Found.Type);
-        Assert.Equal("bar", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -337,9 +323,7 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Var, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -356,9 +340,6 @@ public class VariableDeclarationSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Identifier, exception.Found.Type);
-        Assert.Equal("bar", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 }

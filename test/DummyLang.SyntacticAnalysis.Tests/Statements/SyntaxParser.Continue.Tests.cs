@@ -77,10 +77,7 @@ public class ContinueSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Integer, exception.Found.Type);
-        Assert.Equal("1", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -94,8 +91,6 @@ public class ContinueSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Eof, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 }

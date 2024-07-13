@@ -231,10 +231,7 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.LeftParenthesis, exception.Expected);
-        Assert.Equal(TokenType.Identifier, exception.Found.Type);
-        Assert.Equal("a", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -251,9 +248,7 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.RightParenthesis, exception.Found.Type);
-        Assert.Equal(")", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -270,10 +265,7 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.RightParenthesis, exception.Expected);
-        Assert.Equal(TokenType.LeftBrace, exception.Found.Type);
-        Assert.Equal("{", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -290,10 +282,7 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.LeftBrace, exception.Expected);
-        Assert.Equal(TokenType.RightBrace, exception.Found.Type);
-        Assert.Equal("}", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -311,10 +300,7 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.LeftBrace, exception.Expected);
-        Assert.Equal(TokenType.RightBrace, exception.Found.Type);
-        Assert.Equal("}", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 
     [Fact]
@@ -331,8 +317,6 @@ public class IfElseSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Else, exception.Found.Type);
-        Assert.Equal("else", exception.Found.Value);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 }

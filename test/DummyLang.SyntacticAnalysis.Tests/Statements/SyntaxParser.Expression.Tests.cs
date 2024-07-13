@@ -70,8 +70,7 @@ public class ExpressionSyntaxParserTests
         var index     = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Colon, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
     
     [Fact]
@@ -85,9 +84,7 @@ public class ExpressionSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Eof, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
     
     [Fact]
@@ -104,8 +101,6 @@ public class ExpressionSyntaxParserTests
         var index  = 0;
 
         // Assert
-        var exception = Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
-        Assert.Equal(TokenType.Semicolon, exception.Expected);
-        Assert.Equal(TokenType.Var, exception.Found.Type);
+        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
     }
 }

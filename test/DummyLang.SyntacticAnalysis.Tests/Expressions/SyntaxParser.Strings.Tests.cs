@@ -52,7 +52,6 @@ public class StringSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid string in "Visitor.Visit"
     }
 
     [Fact]
@@ -68,7 +67,6 @@ public class StringSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid string in "Visitor.Visit"
     }
 
     [Fact]
@@ -100,7 +98,6 @@ public class StringSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid string in "Visitor.Visit"
     }
 
     [Fact]
@@ -116,6 +113,5 @@ public class StringSyntaxParserTests
         Assert.NotNull(expression);
         Assert.Equal(2, tokens.Length);
         Assert.Equal(1, index);
-        // TODO: Handle invalid string in "Visitor.Visit"
     }
 }
