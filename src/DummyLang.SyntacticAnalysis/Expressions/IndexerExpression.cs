@@ -5,6 +5,9 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class IndexerExpression : IExpression
 {
+    internal const string RightBracketExpected = "Right bracket token expected.";
+    internal const string IndexerExpected      = "Indexer expected.";
+
     public Token Identifier   { get; }
     public Token LeftBracket  { get; }
     public Token RightBracket { get; }

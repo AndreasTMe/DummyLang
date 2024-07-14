@@ -119,10 +119,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (expression.LeftBracket.Type != TokenType.LeftBracket)
             LanguageSyntax.Throw("Invalid left bracket token added. How did this happen?");
 
-        if (expression.RightBracket.Type != TokenType.RightBracket)
-            CaptureDiagnosticsInfo(expression.LeftBracket, "Right bracket token expected.");
-        else if (expression.Index is null)
-            CaptureDiagnosticsInfo(expression.LeftBracket, "Indexer expected.");
+        if (expression.Index is null)
+            CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.IndexerExpected);
+        else if (expression.RightBracket.Type != TokenType.RightBracket)
+            CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.RightBracketExpected);
         else
             expression.Index.Accept(this);
     }

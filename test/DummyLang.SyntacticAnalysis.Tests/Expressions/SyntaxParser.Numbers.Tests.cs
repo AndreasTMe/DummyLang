@@ -12,9 +12,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Binary()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("0b101");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("0b101");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -31,9 +32,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Hexadecimal()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("0x0123456789abcdef");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("0x0123456789abcdef");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -50,9 +52,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Unsigned()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123u");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123u");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -69,9 +72,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Long()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123l");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123l");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -88,9 +92,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_UnsignedLong()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123ul");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123ul");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -107,9 +112,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Float()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123.123f");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123.123f");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -126,9 +132,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Double()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123.123d");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123.123d");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -145,9 +152,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_Decimal()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123.123m");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123.123m");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -164,9 +172,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_WithExponent()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123.12e-10");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123.12e-10");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -183,9 +192,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Numbers_RealShouldHaveDot()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("123f");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("123f");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -197,12 +207,12 @@ public class NumberSyntaxParserTests
         var numberLiteralExpression = (NumberLiteralExpression)expression;
         Assert.Equal(NumberType.Integer, numberLiteralExpression.Type);
         Assert.Equal("123", numberLiteralExpression.NumberToken.Value);
-        
+
         // Act again
         tokens     = ParsingUtilities.ReadAllTokens("123e10");
         index      = 0;
         expression = ExpressionParser.Parse(ref index, in tokens);
-        
+
         // Assert
         Assert.NotNull(expression);
         Assert.Equal(3, tokens.Length);
@@ -218,9 +228,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Expressions_SimpleBinaryExpression()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("1 + 2");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("1 + 2");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -239,9 +250,10 @@ public class NumberSyntaxParserTests
     public void ParseExpression_Expressions_MoreComplexMathTree()
     {
         // Arrange
+        var tokens = ParsingUtilities.ReadAllTokens("0b1010 + 2.0e-10f * (-3L - foo++)");
+        var index  = 0;
+
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("0b1010 + 2.0e-10f * (-3L - foo++)");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -250,7 +262,7 @@ public class NumberSyntaxParserTests
         Assert.Equal(12, tokens.Length);
         Assert.Equal(11, index);
         Assert.IsType<BinaryExpression>(expression);
-        
+
         var binaryExpression = (BinaryExpression)expression;
         Assert.Equal(TokenType.Plus, binaryExpression.Operator.Type);
         Assert.IsType<NumberLiteralExpression>(binaryExpression.Left);

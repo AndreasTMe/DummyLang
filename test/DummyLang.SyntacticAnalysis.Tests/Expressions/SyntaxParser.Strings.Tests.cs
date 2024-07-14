@@ -13,10 +13,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"some string 123\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"some string 123\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -35,10 +35,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -57,10 +57,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"some\\\" string\\n \\xab12 123\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"some\\\" string\\n \\xab12 123\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -73,16 +73,16 @@ public class StringSyntaxParserTests
         expression.Accept(validator);
         Assert.False(validator.HasErrors);
     }
-    
+
     [Fact]
     public void ParseExpression_NoClosingDoubleQuote_InvalidExpression()
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -102,10 +102,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"\\\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"\\\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -125,10 +125,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"\\w\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"\\w\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -140,7 +140,9 @@ public class StringSyntaxParserTests
         expression.Accept(validator);
         Assert.True(validator.HasErrors);
         Assert.Equal(1, validator.ErrorCount);
-        Assert.Contains(validator.Diagnostics, d => d.Message.EndsWith(StringLiteralExpression.InvalidEscapedCharacters));
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(StringLiteralExpression.InvalidEscapedCharacters));
     }
 
     [Fact]
@@ -148,10 +150,10 @@ public class StringSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("\"\\xZ\"");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("\"\\xZ\"");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -163,6 +165,8 @@ public class StringSyntaxParserTests
         expression.Accept(validator);
         Assert.True(validator.HasErrors);
         Assert.Equal(1, validator.ErrorCount);
-        Assert.Contains(validator.Diagnostics, d => d.Message.EndsWith(StringLiteralExpression.InvalidEscapedCharacters));
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(StringLiteralExpression.InvalidEscapedCharacters));
     }
 }

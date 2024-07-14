@@ -13,10 +13,10 @@ public class CharacterSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'a'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'a'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -35,10 +35,10 @@ public class CharacterSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'\\n'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'\\n'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -57,10 +57,10 @@ public class CharacterSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'\\x123'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'\\x123'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -73,16 +73,16 @@ public class CharacterSyntaxParserTests
         expression.Accept(validator);
         Assert.False(validator.HasErrors);
     }
-    
+
     [Fact]
     public void ParseExpression_Empty_InvalidExpression()
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("''");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("''");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -102,10 +102,10 @@ public class CharacterSyntaxParserTests
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'a");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'a");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -119,16 +119,16 @@ public class CharacterSyntaxParserTests
         Assert.Equal(1, validator.ErrorCount);
         Assert.Contains(validator.Diagnostics, d => d.Message.EndsWith(CharacterLiteralExpression.InvalidSingleQuotes));
     }
-    
+
     [Fact]
     public void ParseExpression_NonEscapedCharacter_InvalidExpression()
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'\\'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'\\'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -142,16 +142,16 @@ public class CharacterSyntaxParserTests
         Assert.Equal(1, validator.ErrorCount);
         Assert.Contains(validator.Diagnostics, d => d.Message.EndsWith(CharacterLiteralExpression.NonEscapedCharacter));
     }
-    
+
     [Fact]
     public void ParseExpression_InvalidEscapedCharacter_InvalidExpression()
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'\\e'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'\\e'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -163,18 +163,20 @@ public class CharacterSyntaxParserTests
         expression.Accept(validator);
         Assert.True(validator.HasErrors);
         Assert.Equal(1, validator.ErrorCount);
-        Assert.Contains(validator.Diagnostics, d => d.Message.EndsWith(CharacterLiteralExpression.InvalidEscapedCharacter));
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(CharacterLiteralExpression.InvalidEscapedCharacter));
     }
-    
+
     [Fact]
     public void ParseExpression_InvalidHex_InvalidExpression()
     {
         // Arrange
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens("'\\xZ'");
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens("'\\xZ'");
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert

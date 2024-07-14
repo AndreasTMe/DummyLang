@@ -15,10 +15,10 @@ public class FunctionCallSyntaxParserTests
         // Arrange
         const string source    = "test()";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -54,10 +54,10 @@ public class FunctionCallSyntaxParserTests
         // Arrange
         const string source    = "test(1, (2 + 3), b => DoSomething())";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -110,10 +110,10 @@ public class FunctionCallSyntaxParserTests
         // Arrange
         const string source    = "test(";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -153,10 +153,10 @@ public class FunctionCallSyntaxParserTests
         // Arrange
         const string source    = "test(1";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -201,10 +201,10 @@ public class FunctionCallSyntaxParserTests
                               var t = 1;
                               """;
         var validator = new SyntaxNodeValidationVisitor();
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -240,17 +240,17 @@ public class FunctionCallSyntaxParserTests
             validator.Diagnostics,
             d => d.Message.EndsWith(FunctionCallExpression.RightParenthesisExpected));
     }
-    
+
     [Fact]
     public void ParseExpression_FunctionCall_LastArgumentHasComma()
     {
         // Arrange
         const string source    = "test(1,)";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
@@ -285,17 +285,17 @@ public class FunctionCallSyntaxParserTests
             validator.Diagnostics,
             d => d.Message.EndsWith(FunctionCallExpression.LastArgumentHasComma));
     }
-    
+
     [Fact]
     public void ParseExpression_FunctionCall_CommaExpected()
     {
         // Arrange
         const string source    = "test(1 2)";
         var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
 
         // Act
-        var tokens     = ParsingUtilities.ReadAllTokens(source);
-        var index      = 0;
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         // Assert
