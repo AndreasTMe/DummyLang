@@ -6,7 +6,9 @@ using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
+using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DummyLang.SyntacticAnalysis.Visitors;
 
@@ -14,6 +16,12 @@ namespace DummyLang.SyntacticAnalysis.Visitors;
 internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 {
     private readonly Dictionary<string, List<DiagnosticInfo>> _diagnostics = new();
+
+    internal FrozenSet<DiagnosticInfo> Diagnostics => _diagnostics.SelectMany(d => d.Value).ToFrozenSet();
+
+    internal int ErrorCount => _diagnostics.Select(d => d.Value.Count).Sum();
+
+    internal bool HasErrors => ErrorCount > 0;
 
     public void Visit(ArgumentExpression expression)
     {
@@ -26,11 +34,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(BinaryExpression expression)
     {
-        if (!expression.Operator.IsBinaryOperator())
-            LanguageSyntax.Throw("Binary operator expected. How did this happen?");
-
         if (expression.Left is null)
             LanguageSyntax.Throw("Left side of a binary expression is null. How did this happen?");
+
+        if (!expression.Operator.IsBinaryOperator())
+            LanguageSyntax.Throw("Binary operator expected. How did this happen?");
 
         if (expression.Right is null)
             CaptureDiagnosticsInfo(expression.Operator, "Expression expected after binary operator.");
@@ -45,20 +53,20 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         var message        = string.Empty;
 
         if (!characterValue.HasValidCharacterLength())
-            message = "Character literal token with invalid length provided.";
-        else if (!characterValue.IsSurroundedBySingleQuotes())
-            message = "A character literal must start with a single quote (') and end with a single quote (').";
+            message = characterValue.IsSurroundedBySingleQuotes()
+                ? CharacterLiteralExpression.InvalidLength
+                : CharacterLiteralExpression.InvalidSingleQuotes;
         else if (characterValue.IsUnescapedSingleQuoteOrBackslash())
-            message = "The character literal provided must be escaped with a backslash (\\).";
+            message = CharacterLiteralExpression.NonEscapedCharacter;
         else if (characterValue[1] == '\\')
         {
             if (characterValue[2] == 'x')
             {
                 if (!characterValue.IsValidHexadecimalCharacter())
-                    message = "The token provided is not a valid escaped character literal.";
+                    message = CharacterLiteralExpression.InvalidHex;
             }
             else if (!characterValue.IsValidEscapedCharacter())
-                message = "The token provided is not a valid hexadecimal character literal.";
+                message = CharacterLiteralExpression.InvalidEscapedCharacter;
         }
 
         if (!string.IsNullOrWhiteSpace(message))
@@ -75,22 +83,22 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.RightParenthesis.Type != TokenType.RightParenthesis)
         {
-            CaptureDiagnosticsInfo(expression.LeftParenthesis, "Right parenthesis token expected.");
+            CaptureDiagnosticsInfo(expression.LeftParenthesis, FunctionCallExpression.RightParenthesisExpected);
         }
         else if (expression.Arguments is { Count: > 0 })
         {
             if (!expression.Arguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.RightParenthesis, "Last argument should not be followed by comma.");
+                CaptureDiagnosticsInfo(expression.RightParenthesis, FunctionCallExpression.LastArgumentHasComma);
 
             for (var i = 0; i < expression.Arguments.Count; i++)
             {
                 var argument = expression.Arguments[i];
 
                 if (argument.Argument is null)
-                    CaptureDiagnosticsInfo(Token.None, "Argument expected.");
+                    LanguageSyntax.Throw("Argument is null. How did this happen?");
 
                 if (i != expression.Arguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, "Comma expected.");
+                    CaptureDiagnosticsInfo(Token.None, FunctionCallExpression.CommaExpected);
 
                 argument.Accept(this);
             }
@@ -134,7 +142,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
     public void Visit(NumberLiteralExpression expression)
     {
         if (expression.Type == NumberType.None)
-            CaptureDiagnosticsInfo(expression.NumberToken, "Invalid number type.");
+            LanguageSyntax.Throw("Invalid number type. How did this happen?");
     }
 
     public void Visit(ParenthesisedExpression expression)
@@ -175,11 +183,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         var message     = string.Empty;
 
         if (!stringValue.IsValidLength() || !stringValue.IsSurroundedByDoubleQuotes())
-            message = "A string literal must start with a double quote (\") and end with a double quote (\").";
+            message = StringLiteralExpression.InvalidDoubleQuotes;
         else if (stringValue.EscapesLastDoubleQuote())
-            message = "The last double quote of a string literal should not be escaped.";
+            message = StringLiteralExpression.EscapedLastDoubleQuote;
         else if (stringValue.HasInvalidEscapedCharacters())
-            message = "The string literal provided contains an invalid escaped character literal.";
+            message = StringLiteralExpression.InvalidEscapedCharacters;
 
         if (!string.IsNullOrWhiteSpace(message))
             CaptureDiagnosticsInfo(expression.StringToken, message);

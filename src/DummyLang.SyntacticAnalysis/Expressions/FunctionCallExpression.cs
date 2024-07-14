@@ -6,6 +6,10 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class FunctionCallExpression : IExpression
 {
+    internal const string RightParenthesisExpected = "Right parenthesis token expected.";
+    internal const string LastArgumentHasComma     = "Last argument should not be followed by comma.";
+    internal const string CommaExpected            = "Comma expected.";
+
     public Token                              Identifier       { get; }
     public Token                              LeftParenthesis  { get; }
     public Token                              RightParenthesis { get; }
