@@ -96,8 +96,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
                 if (argument.Argument is null)
                     LanguageSyntax.Throw("Argument is null. How did this happen?");
-
-                if (i != expression.Arguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                else if (i != expression.Arguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
                     CaptureDiagnosticsInfo(Token.None, FunctionCallExpression.CommaExpected);
 
                 argument.Accept(this);
@@ -200,6 +199,8 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
             LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+
+        expression.Argument?.Accept(this);
     }
 
     public void Visit(TypeBinaryExpression expression)
@@ -211,7 +212,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Left side of a type binary expression is null. How did this happen?");
 
         if (expression.Right is null)
-            CaptureDiagnosticsInfo(expression.Operator, "Expression expected after bitwise operator.");
+            CaptureDiagnosticsInfo(expression.Operator, TypeBinaryExpression.RightExpressionMissing);
 
         expression.Left.Accept(this);
         expression.Right?.Accept(this);
@@ -227,21 +228,21 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.GreaterThan.Type != TokenType.GreaterThan)
         {
-            CaptureDiagnosticsInfo(expression.LessThan, "Right generic bracket token expected.");
+            CaptureDiagnosticsInfo(expression.LessThan, TypeGenericExpression.RightGenericBracketMissing);
         }
         else if (expression.TypeArguments is { Count: > 0 })
         {
             if (!expression.TypeArguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.GreaterThan, "Last argument should not be followed by comma.");
+                CaptureDiagnosticsInfo(expression.GreaterThan, TypeGenericExpression.LastArgumentHasComma);
 
             for (var i = 0; i < expression.TypeArguments.Count; i++)
             {
                 var argument = expression.TypeArguments[i];
 
                 if (argument.Argument is null)
-                    CaptureDiagnosticsInfo(Token.None, "Argument expected.");
+                    LanguageSyntax.Throw("Argument is null. How did this happen?");
                 else if (i != expression.TypeArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, "Comma expected.");
+                    CaptureDiagnosticsInfo(Token.None, TypeGenericExpression.CommaExpected);
 
                 argument.Accept(this);
             }
