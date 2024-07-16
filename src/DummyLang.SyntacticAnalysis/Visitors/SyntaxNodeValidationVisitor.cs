@@ -411,24 +411,22 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid declaration token added. How did this happen?");
 
         if (statement.Identifier is null)
-            CaptureDiagnosticsInfo(statement.DeclarationKeyword, "Identifier expected.");
+            CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.IdentifierExpected);
 
         if (statement.TypeAssignment.Type != TokenType.Colon)
-            CaptureDiagnosticsInfo(statement.DeclarationKeyword, "Colon expected.");
+            CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.ColonExpected);
 
         if (statement.ValueAssignment.Type != TokenType.None && statement.ValueAssignment.Type != TokenType.Assign)
-            CaptureDiagnosticsInfo(statement.ValueAssignment, "Assignment expected.");
+            CaptureDiagnosticsInfo(statement.ValueAssignment, VariableDeclarationStatement.AssignmentExpected);
 
         if (statement.ValueAssignment.Type == TokenType.Assign && statement.Value is null)
-            CaptureDiagnosticsInfo(statement.ValueAssignment, "Expression expected.");
+            CaptureDiagnosticsInfo(statement.ValueAssignment, VariableDeclarationStatement.ExpressionExpected);
 
         if (statement.Type is null && statement.Value is null)
-            CaptureDiagnosticsInfo(statement.TypeAssignment, "Type expression expected.");
+            CaptureDiagnosticsInfo(statement.TypeAssignment, VariableDeclarationStatement.TypeExpressionExpected);
 
         if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(
-                statement.Terminator,
-                "Semicolon expected at the end of a variable declaration statement.");
+            CaptureDiagnosticsInfo(statement.Terminator, VariableDeclarationStatement.SemicolonExpected);
     }
 
     public void Visit(WhileStatement statement)

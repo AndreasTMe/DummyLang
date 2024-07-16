@@ -3,7 +3,6 @@ using DummyLang.LexicalAnalysis.Extensions;
 using DummyLang.SyntacticAnalysis.Abstractions;
 using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Statements;
-using DummyLang.SyntacticAnalysis.Utilities;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -74,11 +73,11 @@ internal static class StatementParser
         var declarationKeyword = GetAndMoveToNext(ref index, in tokens);
 
         IdentifierExpression? identifier = null;
-        if (TypeAt(index, in tokens) != TokenType.Identifier)
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
             identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
 
         var typeAssignmentOperator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Colon)
+        if (TypeAt(index, in tokens) == TokenType.Colon)
             typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
 
         ITypeExpression? typeValue = null;
@@ -95,7 +94,7 @@ internal static class StatementParser
         }
 
         var terminator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        if (TypeAt(index, in tokens) == TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new VariableDeclarationStatement(

@@ -5,6 +5,13 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class VariableDeclarationStatement : IStatement
 {
+    internal const string IdentifierExpected     = "Identifier expected.";
+    internal const string ColonExpected          = "Colon expected.";
+    internal const string AssignmentExpected     = "Assignment expected.";
+    internal const string ExpressionExpected     = "Expression expected.";
+    internal const string TypeExpressionExpected = "Type expression expected.";
+    internal const string SemicolonExpected      = "Semicolon expected at the end of a variable declaration statement.";
+
     public Token            DeclarationKeyword { get; }
     public IExpression?     Identifier         { get; }
     public Token            TypeAssignment     { get; }
