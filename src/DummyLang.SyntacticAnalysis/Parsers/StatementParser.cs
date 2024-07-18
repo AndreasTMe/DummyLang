@@ -87,7 +87,7 @@ internal static class StatementParser
         var          valueAssignmentOperator = Token.None;
         IExpression? valueAssignment         = null;
 
-        if (TypeAt(index, in tokens) == TokenType.Assign)
+        if (typeAssignmentOperator.Type == TokenType.Colon && TypeAt(index, in tokens) == TokenType.Assign)
         {
             valueAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
             valueAssignment         = ExpressionParser.Parse(ref index, in tokens);

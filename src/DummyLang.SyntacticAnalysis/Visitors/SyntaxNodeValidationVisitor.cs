@@ -412,20 +412,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (statement.Identifier is null)
             CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.IdentifierExpected);
-
-        if (statement.TypeAssignment.Type != TokenType.Colon)
+        else if (statement.TypeAssignment.Type != TokenType.Colon)
             CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.ColonExpected);
-
-        if (statement.ValueAssignment.Type != TokenType.None && statement.ValueAssignment.Type != TokenType.Assign)
+        else if (statement.ValueAssignment.Type != TokenType.None && statement.ValueAssignment.Type != TokenType.Assign)
             CaptureDiagnosticsInfo(statement.ValueAssignment, VariableDeclarationStatement.AssignmentExpected);
-
-        if (statement.ValueAssignment.Type == TokenType.Assign && statement.Value is null)
+        else if (statement.ValueAssignment.Type == TokenType.Assign && statement.Value is null)
             CaptureDiagnosticsInfo(statement.ValueAssignment, VariableDeclarationStatement.ExpressionExpected);
-
-        if (statement.Type is null && statement.Value is null)
+        else if (statement.Type is null && statement.Value is null)
             CaptureDiagnosticsInfo(statement.TypeAssignment, VariableDeclarationStatement.TypeExpressionExpected);
-
-        if (statement.Terminator.Type != TokenType.Semicolon)
+        else if (statement.Terminator.Type != TokenType.Semicolon)
             CaptureDiagnosticsInfo(statement.Terminator, VariableDeclarationStatement.SemicolonExpected);
     }
 
