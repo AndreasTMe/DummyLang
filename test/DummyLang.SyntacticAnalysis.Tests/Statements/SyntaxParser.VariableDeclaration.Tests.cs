@@ -3,6 +3,7 @@ using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Parsers;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
+using DummyLang.SyntacticAnalysis.Visitors;
 using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests.Statements;
@@ -13,11 +14,12 @@ public class VariableDeclarationSyntaxParserTests
     public void ParseStatement_VarDeclaration_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "var foo: i32 = 1 + 2;";
+        const string source    = "var foo: i32 = 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -48,17 +50,22 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
     public void ParseStatement_ConstDeclaration_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "const foo: i32 = 1 + 2;";
+        const string source    = "const foo: i32 = 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -89,17 +96,22 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
     public void ParseStatement_DeclarationInferredType_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "var foo := 1 + 2;";
+        const string source    = "var foo := 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -127,17 +139,22 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
     public void ParseStatement_DeclarationNoAssignment_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "var foo: i32;";
+        const string source    = "var foo: i32;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -168,17 +185,22 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
-    
+
     [Fact]
     public void ParseStatement_DeclarationGenericNoAssignment_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "var foo: SomeType<Type1, Type2>;";
+        const string source    = "var foo: SomeType<Type1, Type2>;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -217,129 +239,397 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
         Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
-    
+
     [Fact]
-    public void ParseStatement_VarDeclarationNoIdentifier_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoIdentifier_IdentifierExpected()
     {
         // Arrange
-        const string source = "var := 1 + 2;";
+        const string source    = "var := 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(7, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.Null(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.Null(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
+
+        Assert.IsType<BinaryExpression>(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.Semicolon, variableDeclaration.Terminator.Type);
+        Assert.Equal(";", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.IdentifierExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationSwapColonAndAssignment_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationSwapColonAndAssignment_ColonExpected()
     {
         // Arrange
-        const string source = "var foo =: 1 + 2;";
+        const string source    = "var foo =: 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(2, index);
+        Assert.Equal(TokenType.Assign, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal("", variableDeclaration.TypeAssignment.Value);
+
+        Assert.Null(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.ColonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoColon_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoColon_ColonExpected()
     {
         // Arrange
-        const string source = "var foo = 1 + 2;";
+        const string source    = "var foo = 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(2, index);
+        Assert.Equal(TokenType.Assign, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal("", variableDeclaration.TypeAssignment.Value);
+
+        Assert.Null(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.ColonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoColonNoAssignment_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoColonNoAssignment_ColonExpected()
     {
         // Arrange
-        const string source = "var foo i32 1 + 2;";
+        const string source    = "var foo i32 1 + 2;";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(3, index);
+        Assert.Equal(TokenType.Integer, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal("", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.ColonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoSemicolon1_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoSemicolon1_SemicolonExpected()
     {
         // Arrange
         const string source = """
                               var foo: i32 = 1 + 2
                               var bar := 2;
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(8, index);
+        Assert.Equal(TokenType.Var, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
+
+        Assert.IsType<BinaryExpression>(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.SemicolonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoSemicolon2_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoSemicolon2_SemicolonExpected()
     {
         // Arrange
         const string source = """
                               var foo: i32 = 1 + 2
                               bar = 2;
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(8, index);
+        Assert.Equal(TokenType.Identifier, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
+
+        Assert.IsType<BinaryExpression>(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.SemicolonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon1_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon1_SemicolonExpected()
     {
         // Arrange
         const string source = """
                               var foo: i32
                               var bar := 2;
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(4, index);
+        Assert.Equal(TokenType.Var, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.SemicolonExpected));
     }
 
     [Fact]
-    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon2_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_VarDeclarationNoAssignmentNoSemicolon2_SemicolonExpected()
     {
         // Arrange
         const string source = """
                               var foo: i32
                               bar = 2;
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(4, index);
+        Assert.Equal(TokenType.Identifier, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<VariableDeclarationStatement>(statement);
+        var variableDeclaration = (VariableDeclarationStatement)statement;
+
+        Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
+        Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
+
+        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+
+        Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
+        Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
+
+        Assert.IsType<TypeIdentifierExpression>(variableDeclaration.Type);
+
+        Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
+        Assert.Equal("", variableDeclaration.ValueAssignment.Value);
+
+        Assert.Null(variableDeclaration.Value);
+
+        Assert.Equal(TokenType.None, variableDeclaration.Terminator.Type);
+        Assert.Equal("", variableDeclaration.Terminator.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(VariableDeclarationStatement.SemicolonExpected));
     }
 }
