@@ -6,6 +6,8 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class CompoundStatement : IStatement
 {
+    internal const string RightBraceExpected = "Right brace expected at the end of a block statement.";
+    
     public Token                      LeftBrace  { get; }
     public Token                      RightBrace { get; }
     public IReadOnlyList<IStatement>? Statements { get; }

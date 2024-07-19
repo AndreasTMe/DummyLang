@@ -294,7 +294,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid left brace token added. How did this happen?");
 
         if (statement.RightBrace.Type != TokenType.RightBrace)
-            CaptureDiagnosticsInfo(statement.RightBrace, "Right brace expected at the end of a block statement.");
+            CaptureDiagnosticsInfo(statement.RightBrace, CompoundStatement.RightBraceExpected);
 
         if (statement.Statements is null)
             return;

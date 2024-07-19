@@ -2,6 +2,7 @@
 using DummyLang.SyntacticAnalysis.Parsers;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
+using DummyLang.SyntacticAnalysis.Visitors;
 using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests.Statements;
@@ -12,11 +13,12 @@ public class CompoundSyntaxParserTests
     public void ParseStatement_EmptyBlock_ShouldBeReadCorrectly()
     {
         // Arrange
-        const string source = "{ }";
+        const string source    = "{ }";
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+        var          validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens    = ParsingUtilities.ReadAllTokens(source);
-        var index     = 0;
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -34,6 +36,10 @@ public class CompoundSyntaxParserTests
 
         Assert.Equal(TokenType.RightBrace, compoundStatement.RightBrace.Type);
         Assert.Equal("}", compoundStatement.RightBrace.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -48,10 +54,11 @@ public class CompoundSyntaxParserTests
                                   return a;
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -73,6 +80,10 @@ public class CompoundSyntaxParserTests
 
         Assert.Equal(TokenType.RightBrace, compoundStatement.RightBrace.Type);
         Assert.Equal("}", compoundStatement.RightBrace.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -91,10 +102,11 @@ public class CompoundSyntaxParserTests
                                   return a;
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -127,6 +139,10 @@ public class CompoundSyntaxParserTests
 
         Assert.Equal(TokenType.RightBrace, compoundStatement.RightBrace.Type);
         Assert.Equal("}", compoundStatement.RightBrace.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -137,12 +153,37 @@ public class CompoundSyntaxParserTests
                               {
                                   var a := 1 + 2;
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(9, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<CompoundStatement>(statement);
+        var compoundStatement = (CompoundStatement)statement;
+
+        Assert.Equal(TokenType.LeftBrace, compoundStatement.LeftBrace.Type);
+        Assert.Equal("{", compoundStatement.LeftBrace.Value);
+
+        Assert.NotNull(compoundStatement.Statements);
+        Assert.Equal(1, compoundStatement.Statements.Count);
+        Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
+
+        Assert.Equal(TokenType.None, compoundStatement.RightBrace.Type);
+        Assert.Equal("", compoundStatement.RightBrace.Value);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(CompoundStatement.RightBraceExpected));
     }
 }
