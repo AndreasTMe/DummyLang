@@ -146,7 +146,7 @@ public class CompoundSyntaxParserTests
     }
 
     [Fact]
-    public void ParseStatement_EmptyBlockNoClosingBrace_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_EmptyBlockNoClosingBrace_RightBraceExpected()
     {
         // Arrange
         const string source = """
