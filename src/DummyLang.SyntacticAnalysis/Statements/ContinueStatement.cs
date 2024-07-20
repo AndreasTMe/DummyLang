@@ -5,9 +5,12 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class ContinueStatement : IStatement
 {
-    public Token ContinueKeyword { get; }
-    public Token Label           { get; }
-    public Token Terminator      { get; }
+    internal const string InvalidToken      = "Invalid token after 'break' keyword.";
+    internal const string SemicolonExpected = "Semicolon expected at the end of a 'break' statement.";
+    
+    public         Token  ContinueKeyword { get; }
+    public         Token  Label           { get; }
+    public         Token  Terminator      { get; }
 
     internal ContinueStatement(Token continueKeyword, Token label, Token terminator)
     {

@@ -283,9 +283,9 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'break' token added. How did this happen?");
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
-            CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'break' keyword.");
+            CaptureDiagnosticsInfo(statement.Label, BreakStatement.InvalidToken);
         else if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'break' statement.");
+            CaptureDiagnosticsInfo(statement.Terminator, BreakStatement.SemicolonExpected);
     }
 
     public void Visit(CompoundStatement statement)
@@ -309,9 +309,9 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'continue' token added. How did this happen?");
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
-            CaptureDiagnosticsInfo(statement.Label, "Invalid token after 'continue' keyword.");
+            CaptureDiagnosticsInfo(statement.Label, ContinueStatement.InvalidToken);
         else if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'continue' statement.");
+            CaptureDiagnosticsInfo(statement.Terminator, ContinueStatement.SemicolonExpected);
     }
 
     public void Visit(ExpressionStatement statement)
@@ -320,7 +320,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw($"This should have been a {nameof(NoOpStatement)}. How did this happen?");
 
         if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of an expression statement.");
+            CaptureDiagnosticsInfo(statement.Terminator, ExpressionStatement.SemicolonExpected);
 
         statement.Expression?.Accept(this);
     }
@@ -384,22 +384,22 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'return' token added. How did this happen?");
 
         if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, "Semicolon expected at the end of a 'return' statement.");
+            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.SemicolonExpected);
 
         if (statement.ReturnArguments is not { Count: > 0 })
             return;
 
         if (!statement.ReturnArguments[^1].Comma.IsNone())
-            CaptureDiagnosticsInfo(statement.Terminator, "Last argument should not be followed by comma.");
+            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.LastArgumentHasComma);
 
         for (var i = 0; i < statement.ReturnArguments.Count; i++)
         {
             var argument = statement.ReturnArguments[i];
 
             if (argument.Argument is null)
-                CaptureDiagnosticsInfo(Token.None, "Argument expected.");
+                LanguageSyntax.Throw("Argument is null. How did this happen?");
             else if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                CaptureDiagnosticsInfo(Token.None, "Comma expected.");
+                CaptureDiagnosticsInfo(Token.None, ReturnStatement.CommaExpected);
 
             argument.Accept(this);
         }

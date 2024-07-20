@@ -5,6 +5,8 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class ExpressionStatement : IStatement
 {
+    internal const string SemicolonExpected = "Semicolon expected at the end of an expression statement.";
+    
     public IExpression? Expression { get; }
     public Token        Terminator { get; }
 

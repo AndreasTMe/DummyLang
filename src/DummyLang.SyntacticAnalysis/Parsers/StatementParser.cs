@@ -164,7 +164,7 @@ internal static class StatementParser
             label = GetAndMoveToNext(ref index, in tokens);
 
         var terminator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        if (TypeAt(index, in tokens) == TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new BreakStatement(breakKeyword, label, terminator);
@@ -206,7 +206,7 @@ internal static class StatementParser
             label = GetAndMoveToNext(ref index, in tokens);
 
         var terminator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        if (TypeAt(index, in tokens) == TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new ContinueStatement(continueKeyword, label, terminator);
@@ -238,7 +238,7 @@ internal static class StatementParser
         }
 
         var terminator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        if (TypeAt(index, in tokens) == TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new ReturnStatement(returnKeyword, terminator, returnArguments);
@@ -249,7 +249,7 @@ internal static class StatementParser
         var expression = ExpressionParser.Parse(ref index, in tokens);
 
         var terminator = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.Semicolon)
+        if (TypeAt(index, in tokens) == TokenType.Semicolon)
             terminator = GetAndMoveToNext(ref index, in tokens);
 
         return new ExpressionStatement(expression, terminator);
