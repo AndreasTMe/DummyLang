@@ -72,6 +72,7 @@ internal static class ExpressionParser
                 or TokenType.Tilde
                 or TokenType.Star
                 or TokenType.Ampersand => ParseUnaryExpression(ref index, in tokens),
+            TokenType.DoubleDot                 => ParseRangeExpression(ref index, in tokens),
             TokenType.LeftParenthesis           => ParseParenthesizedExpression(ref index, in tokens),
             TokenType.Identifier                => ParseIdentifierRelatedExpressions(ref index, in tokens),
             TokenType.Integer or TokenType.Real => ParseNumberExpression(ref index, in tokens),
@@ -102,6 +103,19 @@ internal static class ExpressionParser
         var expression    = ParseExpressionBasedOnCurrentToken(ref index, in tokens);
 
         return new UnaryExpression(unaryOperator, expression);
+    }
+
+    private static RangeExpression ParseRangeExpression(ref int index,
+                                                        in Token[] tokens,
+                                                        IExpression? startExpression = null)
+    {
+        var range = GetAndMoveToNext(ref index, in tokens);
+
+        IExpression? endExpression = null;
+        if (TypeAt(index, in tokens) != TokenType.RightBracket)
+            endExpression = Parse(ref index, in tokens);
+
+        return new RangeExpression(startExpression, range, endExpression);
     }
 
     private static ParenthesisedExpression ParseParenthesizedExpression(ref int index,
@@ -179,11 +193,7 @@ internal static class ExpressionParser
                     access,
                     ParseIdentifierRelatedExpressions(ref index, in tokens));
             case TokenType.DoubleDot:
-                var range = GetAndMoveToNext(ref index, in tokens);
-                return new RangeExpression(
-                    expression,
-                    range,
-                    Parse(ref index, in tokens));
+                return ParseRangeExpression(ref index, in tokens, expression);
             default:
                 return expression;
         }
@@ -335,7 +345,7 @@ internal static class ExpressionParser
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
             leftBracket = GetAndMoveToNext(ref index, in tokens);
-            
+
             if (index < endIndex)
                 indices = new List<IndexArgumentExpression>();
 
@@ -365,7 +375,7 @@ internal static class ExpressionParser
             else
             {
                 leftBracket = GetAndMoveToNext(ref index, in tokens);
-                
+
                 if (index < endIndex)
                     indices = new List<IndexArgumentExpression>();
 

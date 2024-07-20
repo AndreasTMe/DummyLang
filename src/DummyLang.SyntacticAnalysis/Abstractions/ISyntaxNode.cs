@@ -1,6 +1,6 @@
 ﻿namespace DummyLang.SyntacticAnalysis.Abstractions;
 
-public interface ISyntaxNode
+public interface ISyntaxNode : INode
 {
     void Accept(ISyntaxNodeVisitor visitor);
 }

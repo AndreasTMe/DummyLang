@@ -9,7 +9,6 @@ public sealed class RangeExpression : IExpression
     public Token        Operator { get; }
     public IExpression? End      { get; }
 
-    // TODO: Empty start and end are not handled at the moment
     internal RangeExpression(IExpression? start, Token @operator, IExpression? end)
     {
         Start    = start;

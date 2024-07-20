@@ -13,5 +13,7 @@ do
         var syntaxParser = new SyntaxTreeBuilder();
         var tree = syntaxParser.Feed(input)
                                .Build();
+        
+        tree.ValidateSyntax();
     }
 } while (input != string.Empty);
