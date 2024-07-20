@@ -41,8 +41,51 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.RightBracket, indexer.RightBracket.Type);
         Assert.Equal("]", indexer.RightBracket.Value);
 
-        Assert.NotNull(indexer.Index);
-        Assert.IsType<NumberLiteralExpression>(indexer.Index);
+        Assert.NotNull(indexer.Indices);
+        Assert.Single(indexer.Indices);
+        Assert.IsType<IndexArgumentExpression>(indexer.Indices[0]);
+
+        Assert.False(validator.HasErrors);
+        expression.Accept(validator);
+        Assert.False(validator.HasErrors);
+    }
+    
+    [Fact]
+    public void ParseExpression_2DArray_ReadSuccessfully()
+    {
+        // Arrange
+        const string source    = "test[1, 2]";
+        var          validator = new SyntaxNodeValidationVisitor();
+        var          tokens    = ParsingUtilities.ReadAllTokens(source);
+        var          index     = 0;
+
+        // Act
+        var expression = ExpressionParser.Parse(ref index, in tokens);
+
+        // Assert
+        Assert.NotNull(expression);
+        Assert.Equal(7, tokens.Length);
+        Assert.Equal(6, index);
+        Assert.IsType<PrimaryExpression>(expression);
+
+        var primary = (PrimaryExpression)expression;
+        Assert.Equal(Token.None, primary.Token);
+        Assert.IsType<IndexerExpression>(primary.Expression);
+
+        var indexer = (IndexerExpression)primary.Expression;
+        Assert.Equal(TokenType.Identifier, indexer.Identifier.Type);
+        Assert.Equal("test", indexer.Identifier.Value);
+
+        Assert.Equal(TokenType.LeftBracket, indexer.LeftBracket.Type);
+        Assert.Equal("[", indexer.LeftBracket.Value);
+
+        Assert.Equal(TokenType.RightBracket, indexer.RightBracket.Type);
+        Assert.Equal("]", indexer.RightBracket.Value);
+
+        Assert.NotNull(indexer.Indices);
+        Assert.Equal(2, indexer.Indices.Count);
+        Assert.IsType<IndexArgumentExpression>(indexer.Indices[0]);
+        Assert.IsType<IndexArgumentExpression>(indexer.Indices[1]);
 
         Assert.False(validator.HasErrors);
         expression.Accept(validator);
@@ -81,7 +124,7 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.RightBracket, indexer.RightBracket.Type);
         Assert.Equal("]", indexer.RightBracket.Value);
 
-        Assert.Null(indexer.Index);
+        Assert.Null(indexer.Indices);
 
         Assert.False(validator.HasErrors);
         expression.Accept(validator);
@@ -122,7 +165,7 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.None, indexer.RightBracket.Type);
         Assert.Equal("", indexer.RightBracket.Value);
 
-        Assert.Null(indexer.Index);
+        Assert.Null(indexer.Indices);
 
         Assert.False(validator.HasErrors);
         expression.Accept(validator);
@@ -163,8 +206,9 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.None, indexer.RightBracket.Type);
         Assert.Equal("", indexer.RightBracket.Value);
 
-        Assert.NotNull(indexer.Index);
-        Assert.IsType<NumberLiteralExpression>(indexer.Index);
+        Assert.NotNull(indexer.Indices);
+        Assert.Single(indexer.Indices);
+        Assert.IsType<IndexArgumentExpression>(indexer.Indices[0]);
 
         Assert.False(validator.HasErrors);
         expression.Accept(validator);
@@ -208,8 +252,9 @@ public class IndexerSyntaxParserTests
         Assert.Equal(TokenType.None, indexer.RightBracket.Type);
         Assert.Equal("", indexer.RightBracket.Value);
 
-        Assert.NotNull(indexer.Index);
-        Assert.IsType<BinaryExpression>(indexer.Index);
+        Assert.NotNull(indexer.Indices);
+        Assert.Single(indexer.Indices);
+        Assert.IsType<IndexArgumentExpression>(indexer.Indices[0]);
 
         Assert.False(validator.HasErrors);
         expression.Accept(validator);

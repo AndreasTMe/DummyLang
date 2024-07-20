@@ -23,7 +23,7 @@ public sealed class FunctionCallExpression : IExpression
         Identifier       = identifier;
         LeftParenthesis  = leftParenthesis;
         RightParenthesis = rightParenthesis;
-        Arguments        = arguments;
+        Arguments        = arguments is { Count: > 0 } ? arguments : null;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

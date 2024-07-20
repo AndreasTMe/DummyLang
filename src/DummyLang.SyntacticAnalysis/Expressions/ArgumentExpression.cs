@@ -3,7 +3,7 @@ using DummyLang.SyntacticAnalysis.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class ArgumentExpression : IExpression
+public class ArgumentExpression : IExpression
 {
     public IExpression? Argument { get; }
     public Token        Comma    { get; }
@@ -14,5 +14,5 @@ public sealed class ArgumentExpression : IExpression
         Comma    = comma;
     }
 
-    public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
+    public virtual void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

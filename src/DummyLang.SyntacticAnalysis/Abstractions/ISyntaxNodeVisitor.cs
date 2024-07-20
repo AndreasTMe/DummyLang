@@ -19,6 +19,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(IdentifierExpression expression);
 
+    void Visit(IndexArgumentExpression expression);
+
     void Visit(IndexerExpression expression);
 
     void Visit(MemberAccessExpression expression);

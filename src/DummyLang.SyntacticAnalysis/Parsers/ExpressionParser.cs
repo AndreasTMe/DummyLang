@@ -326,43 +326,66 @@ internal static class ExpressionParser
 
     private static PrimaryExpression ParseIndexerExpression(ref int index, in Token[] tokens, in Token identifier)
     {
-        Token        leftBracket;
-        Token        rightBracket;
-        IExpression? expression = null;
+        Token                          leftBracket;
+        Token                          rightBracket;
+        List<IndexArgumentExpression>? indices = null;
 
         IndexerExpression indexerExpression;
 
         if (ParsingUtilities.TryGetBalancedBrackets(in tokens, index, out var endIndex))
         {
             leftBracket = GetAndMoveToNext(ref index, in tokens);
+            
+            if (index < endIndex)
+                indices = new List<IndexArgumentExpression>();
 
-            if (TypeAt(index, in tokens) != TokenType.RightBracket)
-                expression = Parse(ref index, in tokens);
+            while (index < endIndex)
+            {
+                var argument = Parse(ref index, in tokens);
+                var comma = TypeAt(index, in tokens) == TokenType.Comma
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
+
+                indices!.Add(new IndexArgumentExpression(argument, comma));
+            }
 
             rightBracket = tokens[endIndex];
 
             // Ensuring correct indexing
             index             = endIndex + 1;
-            indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, expression);
+            indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, indices);
         }
         else
         {
             if (index == endIndex - 1 && TypeAt(index, in tokens) == TokenType.LeftBracket)
             {
                 leftBracket       = GetAndMoveToNext(ref index, in tokens);
-                indexerExpression = new IndexerExpression(identifier, leftBracket, Token.None, expression);
+                indexerExpression = new IndexerExpression(identifier, leftBracket, Token.None, indices);
             }
             else
             {
                 leftBracket = GetAndMoveToNext(ref index, in tokens);
-                expression  = Parse(ref index, in tokens);
+                
+                if (index < endIndex)
+                    indices = new List<IndexArgumentExpression>();
+
+                while (index < endIndex)
+                {
+                    var argument = Parse(ref index, in tokens);
+                    var comma = TypeAt(index, in tokens) == TokenType.Comma
+                        ? GetAndMoveToNext(ref index, in tokens)
+                        : Token.None;
+
+                    indices!.Add(new IndexArgumentExpression(argument, comma));
+                }
+
                 rightBracket = tokens[endIndex].Type == TokenType.RightBracket
                     ? tokens[endIndex]
                     : Token.None;
 
                 // Ensuring correct indexing
                 index             = endIndex;
-                indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, expression);
+                indexerExpression = new IndexerExpression(identifier, leftBracket, rightBracket, indices);
             }
         }
 

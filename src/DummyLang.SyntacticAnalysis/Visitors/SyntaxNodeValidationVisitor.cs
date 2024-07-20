@@ -30,6 +30,8 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
             LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+
+        expression.Argument?.Accept(this);
     }
 
     public void Visit(BinaryExpression expression)
@@ -110,6 +112,17 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid identifier token added. How did this happen?");
     }
 
+    public void Visit(IndexArgumentExpression expression)
+    {
+        if (expression.Argument is null && expression.Comma.IsNone())
+            LanguageSyntax.Throw("Empty argument added. How did this happen?");
+
+        if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
+            LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+
+        expression.Argument?.Accept(this);
+    }
+
     public void Visit(IndexerExpression expression)
     {
         if (expression.Identifier.Type != TokenType.Identifier)
@@ -118,12 +131,13 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (expression.LeftBracket.Type != TokenType.LeftBracket)
             LanguageSyntax.Throw("Invalid left bracket token added. How did this happen?");
 
-        if (expression.Index is null)
+        if (expression.Indices is null || expression.Indices.Count == 0)
             CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.IndexerExpected);
         else if (expression.RightBracket.Type != TokenType.RightBracket)
             CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.RightBracketExpected);
         else
-            expression.Index.Accept(this);
+            foreach (var index in expression.Indices)
+                index.Accept(this);
     }
 
     public void Visit(MemberAccessExpression expression)

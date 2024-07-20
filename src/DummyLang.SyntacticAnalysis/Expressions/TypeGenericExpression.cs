@@ -23,7 +23,7 @@ public sealed class TypeGenericExpression : IExpression, ITypeExpression
         Identifier    = identifier;
         LessThan      = lessThan;
         GreaterThan   = greaterThan;
-        TypeArguments = typeArguments;
+        TypeArguments = typeArguments is { Count: > 0 } ? typeArguments : null;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
