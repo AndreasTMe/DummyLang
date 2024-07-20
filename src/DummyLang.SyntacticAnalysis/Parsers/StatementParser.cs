@@ -21,12 +21,12 @@ internal static class StatementParser
             TokenType.LeftBrace              => ParseBlock(ref index, in tokens),
             TokenType.Var or TokenType.Const => ParseVariableDeclaration(ref index, in tokens),
             // TODO: TokenType.Func => ParseFunctionDeclaration(ref index, in tokens),
-            TokenType.If       => ParseIfElse(ref index, in tokens),
-            TokenType.Break    => ParseBreak(ref index, in tokens),
-            TokenType.While    => ParseWhile(ref index, in tokens),
-            TokenType.Continue => ParseContinue(ref index, in tokens),
-            TokenType.Return   => ParseReturn(ref index, in tokens),
-            _                  => ParseExpression(ref index, in tokens)
+            TokenType.If or TokenType.Else => ParseIfElse(ref index, in tokens),
+            TokenType.Break                => ParseBreak(ref index, in tokens),
+            TokenType.While                => ParseWhile(ref index, in tokens),
+            TokenType.Continue             => ParseContinue(ref index, in tokens),
+            TokenType.Return               => ParseReturn(ref index, in tokens),
+            _                              => ParseExpression(ref index, in tokens)
         };
     }
 
@@ -109,9 +109,11 @@ internal static class StatementParser
 
     private static IfElseStatement ParseIfElse(ref int index, in Token[] tokens)
     {
-        var ifPart      = ParseIfPart(ref index, in tokens);
-        var elseIfParts = new List<IfElseStatement.ElseIfBlock>();
+        IfElseStatement.IfBlock? ifPart = null;
+        if (TypeAt(index, in tokens) == TokenType.If)
+            ifPart = ParseIfPart(ref index, in tokens);
 
+        var elseIfParts = new List<IfElseStatement.ElseIfBlock>();
         while (TypeAt(index, in tokens) == TokenType.Else && TypeAt(index + 1, in tokens) == TokenType.If)
             elseIfParts.Add(ParseElseIfPart(ref index, in tokens));
 
@@ -125,16 +127,20 @@ internal static class StatementParser
         var ifKeyword = GetAndMoveToNext(ref index, in tokens);
 
         var leftParenthesis = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.LeftParenthesis)
+        if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
             leftParenthesis = GetAndMoveToNext(ref index, in tokens);
 
-        var condition = ExpressionParser.Parse(ref index, in tokens);
+        IExpression? condition = null;
+        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
+            condition = ExpressionParser.Parse(ref index, in tokens);
 
         var rightParenthesis = Token.None;
-        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
             rightParenthesis = GetAndMoveToNext(ref index, in tokens);
 
-        var ifBlock = ParseBlock(ref index, in tokens);
+        CompoundStatement? ifBlock = null;
+        if (TypeAt(index, in tokens) == TokenType.LeftBrace)
+            ifBlock = ParseBlock(ref index, in tokens);
 
         return new IfElseStatement.IfBlock(ifKeyword, leftParenthesis, condition, rightParenthesis, ifBlock);
     }
@@ -150,7 +156,10 @@ internal static class StatementParser
     private static IfElseStatement.ElseBlock ParseElsePart(ref int index, in Token[] tokens)
     {
         var elseKeyword = GetAndMoveToNext(ref index, in tokens);
-        var elseBlock   = ParseBlock(ref index, in tokens);
+
+        CompoundStatement? elseBlock = null;
+        if (TypeAt(index, in tokens) == TokenType.LeftBrace)
+            elseBlock = ParseBlock(ref index, in tokens);
 
         return new IfElseStatement.ElseBlock(elseKeyword, elseBlock);
     }

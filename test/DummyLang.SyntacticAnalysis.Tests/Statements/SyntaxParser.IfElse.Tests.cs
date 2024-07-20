@@ -3,6 +3,7 @@ using DummyLang.SyntacticAnalysis.Expressions;
 using DummyLang.SyntacticAnalysis.Parsers;
 using DummyLang.SyntacticAnalysis.Statements;
 using DummyLang.SyntacticAnalysis.Utilities;
+using DummyLang.SyntacticAnalysis.Visitors;
 using Xunit;
 
 namespace DummyLang.SyntacticAnalysis.Tests.Statements;
@@ -17,10 +18,11 @@ public class IfElseSyntaxParserTests
                               if (a > 0) {
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -31,6 +33,7 @@ public class IfElseSyntaxParserTests
         Assert.IsType<IfElseStatement>(statement);
         var ifElseStatement = (IfElseStatement)statement;
 
+        Assert.NotNull(ifElseStatement.If);
         Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
         Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
         Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
@@ -42,6 +45,10 @@ public class IfElseSyntaxParserTests
 
         Assert.Null(ifElseStatement.ElseIfs);
         Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -53,10 +60,11 @@ public class IfElseSyntaxParserTests
                               } else if (a < 0) {
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -67,6 +75,7 @@ public class IfElseSyntaxParserTests
         Assert.IsType<IfElseStatement>(statement);
         var ifElseStatement = (IfElseStatement)statement;
 
+        Assert.NotNull(ifElseStatement.If);
         Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
         Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
         Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
@@ -93,6 +102,10 @@ public class IfElseSyntaxParserTests
         Assert.NotNull(ifElseStatement.ElseIfs[0].IfBlock!.Block);
 
         Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -105,10 +118,11 @@ public class IfElseSyntaxParserTests
                               } else {
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -119,6 +133,7 @@ public class IfElseSyntaxParserTests
         Assert.IsType<IfElseStatement>(statement);
         var ifElseStatement = (IfElseStatement)statement;
 
+        Assert.NotNull(ifElseStatement.If);
         Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
         Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
         Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
@@ -148,6 +163,10 @@ public class IfElseSyntaxParserTests
         Assert.Equal(TokenType.Else, ifElseStatement.Else.ElseKeyword.Type);
         Assert.Equal("else", ifElseStatement.Else.ElseKeyword.Value);
         Assert.NotNull(ifElseStatement.Else.Block);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
@@ -161,10 +180,11 @@ public class IfElseSyntaxParserTests
                               } else {
                               }
                               """;
-
-        // Act
         var tokens    = ParsingUtilities.ReadAllTokens(source);
         var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
+
+        // Act
         var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
@@ -175,6 +195,7 @@ public class IfElseSyntaxParserTests
         Assert.IsType<IfElseStatement>(statement);
         var ifElseStatement = (IfElseStatement)statement;
 
+        Assert.NotNull(ifElseStatement.If);
         Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
         Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
         Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
@@ -215,78 +236,194 @@ public class IfElseSyntaxParserTests
         Assert.Equal(TokenType.Else, ifElseStatement.Else.ElseKeyword.Type);
         Assert.Equal("else", ifElseStatement.Else.ElseKeyword.Value);
         Assert.NotNull(ifElseStatement.Else.Block);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.False(validator.HasErrors);
     }
 
     [Fact]
-    public void ParseStatement_IfConditionNoLeftParenthesis_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_IfConditionNoLeftParenthesis_LeftParenthesisExpected()
     {
         // Arrange
         const string source = """
                               if a > 0) {
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(7, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.NotNull(ifElseStatement.If);
+        Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
+        Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
+        Assert.Equal(TokenType.None, ifElseStatement.If.LeftParenthesis.Type);
+        Assert.Equal("", ifElseStatement.If.LeftParenthesis.Value);
+        Assert.IsType<BinaryExpression>(ifElseStatement.If.Condition);
+        Assert.Equal(TokenType.RightParenthesis, ifElseStatement.If.RightParenthesis.Type);
+        Assert.Equal(")", ifElseStatement.If.RightParenthesis.Value);
+        Assert.NotNull(ifElseStatement.If.Block);
+
+        Assert.Null(ifElseStatement.ElseIfs);
+        Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.LeftParenthesisExpected));
     }
 
     [Fact]
-    public void ParseStatement_IfConditionNoCondition_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_IfConditionNoCondition_ExpressionExpected()
     {
         // Arrange
         const string source = """
                               if () {
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(5, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.NotNull(ifElseStatement.If);
+        Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
+        Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
+        Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
+        Assert.Equal("(", ifElseStatement.If.LeftParenthesis.Value);
+        Assert.Null(ifElseStatement.If.Condition);
+        Assert.Equal(TokenType.RightParenthesis, ifElseStatement.If.RightParenthesis.Type);
+        Assert.Equal(")", ifElseStatement.If.RightParenthesis.Value);
+        Assert.NotNull(ifElseStatement.If.Block);
+
+        Assert.Null(ifElseStatement.ElseIfs);
+        Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.ExpressionExpected));
     }
 
     [Fact]
-    public void ParseStatement_IfConditionNoRightParenthesis_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_IfConditionNoRightParenthesis_RightParenthesisExpected()
     {
         // Arrange
         const string source = """
                               if (a > 0 {
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(7, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.NotNull(ifElseStatement.If);
+        Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
+        Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
+        Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
+        Assert.Equal("(", ifElseStatement.If.LeftParenthesis.Value);
+        Assert.IsType<BinaryExpression>(ifElseStatement.If.Condition);
+        Assert.Equal(TokenType.None, ifElseStatement.If.RightParenthesis.Type);
+        Assert.Equal("", ifElseStatement.If.RightParenthesis.Value);
+        Assert.NotNull(ifElseStatement.If.Block);
+
+        Assert.Null(ifElseStatement.ElseIfs);
+        Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.RightParenthesisExpected));
     }
 
     [Fact]
-    public void ParseStatement_IfConditionNoLeftBrace_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_IfConditionNoLeftBrace_CompoundStatementExpected()
     {
         // Arrange
         const string source = """
                               if (a > 0)
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(6, index);
+        Assert.Equal(TokenType.RightBrace, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.NotNull(ifElseStatement.If);
+        Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
+        Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
+        Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
+        Assert.Equal("(", ifElseStatement.If.LeftParenthesis.Value);
+        Assert.IsType<BinaryExpression>(ifElseStatement.If.Condition);
+        Assert.Equal(TokenType.RightParenthesis, ifElseStatement.If.RightParenthesis.Type);
+        Assert.Equal(")", ifElseStatement.If.RightParenthesis.Value);
+        Assert.Null(ifElseStatement.If.Block);
+
+        Assert.Null(ifElseStatement.ElseIfs);
+        Assert.Null(ifElseStatement.Else);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.CompoundStatementExpected));
     }
 
     [Fact]
-    public void ParseStatement_IfConditionElseNoLeftBrace_ShouldThrowLanguageSyntaxException()
+    public void ParseStatement_IfConditionElseNoLeftBrace_CompoundStatementExpected()
     {
         // Arrange
         const string source = """
@@ -294,13 +431,45 @@ public class IfElseSyntaxParserTests
                               } else
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(9, index);
+        Assert.Equal(TokenType.RightBrace, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.NotNull(ifElseStatement.If);
+        Assert.Equal(TokenType.If, ifElseStatement.If.IfKeyword.Type);
+        Assert.Equal("if", ifElseStatement.If.IfKeyword.Value);
+        Assert.Equal(TokenType.LeftParenthesis, ifElseStatement.If.LeftParenthesis.Type);
+        Assert.Equal("(", ifElseStatement.If.LeftParenthesis.Value);
+        Assert.IsType<BinaryExpression>(ifElseStatement.If.Condition);
+        Assert.Equal(TokenType.RightParenthesis, ifElseStatement.If.RightParenthesis.Type);
+        Assert.Equal(")", ifElseStatement.If.RightParenthesis.Value);
+        Assert.NotNull(ifElseStatement.If.Block);
+
+        Assert.Null(ifElseStatement.ElseIfs);
+
+        Assert.NotNull(ifElseStatement.Else);
+        Assert.Equal(TokenType.Else, ifElseStatement.Else.ElseKeyword.Type);
+        Assert.Equal("else", ifElseStatement.Else.ElseKeyword.Value);
+        Assert.Null(ifElseStatement.Else.Block);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.CompoundStatementExpected));
     }
 
     [Fact]
@@ -311,12 +480,35 @@ public class IfElseSyntaxParserTests
                               else {
                               }
                               """;
+        var tokens    = ParsingUtilities.ReadAllTokens(source);
+        var index     = 0;
+        var validator = new SyntaxNodeValidationVisitor();
 
         // Act
-        var tokens = ParsingUtilities.ReadAllTokens(source);
-        var index  = 0;
+        var statement = StatementParser.Parse(ref index, in tokens);
 
         // Assert
-        Assert.Throws<LanguageSyntaxException>(() => StatementParser.Parse(ref index, in tokens));
+        Assert.Equal(3, index);
+        Assert.Equal(TokenType.Eof, tokens[index].Type);
+
+        Assert.NotNull(statement);
+        Assert.IsType<IfElseStatement>(statement);
+        var ifElseStatement = (IfElseStatement)statement;
+
+        Assert.Null(ifElseStatement.If);
+        Assert.Null(ifElseStatement.ElseIfs);
+
+        Assert.NotNull(ifElseStatement.Else);
+        Assert.Equal(TokenType.Else, ifElseStatement.Else.ElseKeyword.Type);
+        Assert.Equal("else", ifElseStatement.Else.ElseKeyword.Value);
+        Assert.NotNull(ifElseStatement.Else.Block);
+
+        Assert.False(validator.HasErrors);
+        statement.Accept(validator);
+        Assert.True(validator.HasErrors);
+        Assert.Equal(1, validator.ErrorCount);
+        Assert.Contains(
+            validator.Diagnostics,
+            d => d.Message.EndsWith(IfElseStatement.ElseBeforeIf));
     }
 }

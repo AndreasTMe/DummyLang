@@ -327,7 +327,12 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(IfElseStatement statement)
     {
-        Visit(statement.If);
+        if (statement.If is not null)
+            Visit(statement.If);
+        else if (statement.ElseIfs is not null)
+            CaptureDiagnosticsInfo(statement.ElseIfs[0].ElseKeyword, IfElseStatement.ElseBeforeIf);
+        else if (statement.Else is not null)
+            CaptureDiagnosticsInfo(statement.Else.ElseKeyword, IfElseStatement.ElseBeforeIf);
 
         if (statement.ElseIfs is { Count: > 0 })
         {
@@ -350,9 +355,9 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'else' token added. How did this happen?");
 
         if (statement.Else.Block is null)
-            LanguageSyntax.Throw("Invalid 'else' block. How did this happen?");
-
-        statement.Else.Block.Accept(this);
+            CaptureDiagnosticsInfo(statement.Else.ElseKeyword, IfElseStatement.CompoundStatementExpected);
+        else
+            statement.Else.Block.Accept(this);
     }
 
     private void Visit(IfElseStatement.IfBlock block)
@@ -361,13 +366,13 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'if' token added. How did this happen?");
 
         if (block.LeftParenthesis.Type != TokenType.LeftParenthesis)
-            CaptureDiagnosticsInfo(block.IfKeyword, "Left parenthesis token expected after 'if' keyword.");
+            CaptureDiagnosticsInfo(block.IfKeyword, IfElseStatement.LeftParenthesisExpected);
         else if (block.Condition is null)
-            CaptureDiagnosticsInfo(block.LeftParenthesis, "Expression expected.");
+            CaptureDiagnosticsInfo(block.LeftParenthesis, IfElseStatement.ExpressionExpected);
         else if (block.RightParenthesis.Type != TokenType.RightParenthesis)
-            CaptureDiagnosticsInfo(block.IfKeyword, "Right parenthesis expected after the 'if' condition.");
+            CaptureDiagnosticsInfo(block.IfKeyword, IfElseStatement.RightParenthesisExpected);
         else if (block.Block is null)
-            CaptureDiagnosticsInfo(block.RightParenthesis, "Statement expected.");
+            CaptureDiagnosticsInfo(block.RightParenthesis, IfElseStatement.CompoundStatementExpected);
         else
             block.Block.Accept(this);
     }

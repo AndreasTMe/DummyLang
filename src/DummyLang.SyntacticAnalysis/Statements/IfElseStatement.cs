@@ -6,11 +6,17 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class IfElseStatement : IStatement
 {
-    public IfBlock            If      { get; }
+    internal const string LeftParenthesisExpected   = "Left parenthesis token expected after 'if' keyword.";
+    internal const string ExpressionExpected        = "Expression expected.";
+    internal const string RightParenthesisExpected  = "Right parenthesis expected after the 'if' condition.";
+    internal const string CompoundStatementExpected = "Compound statement expected. Check for missing left brace.";
+    internal const string ElseBeforeIf = "An 'if' statement must exist before an 'else if'/'else' statement.";
+
+    public IfBlock?           If      { get; }
     public List<ElseIfBlock>? ElseIfs { get; }
     public ElseBlock?         Else    { get; }
 
-    internal IfElseStatement(IfBlock ifBlock, List<ElseIfBlock>? elseIfBlocks, ElseBlock? elseBlock)
+    internal IfElseStatement(IfBlock? ifBlock, List<ElseIfBlock>? elseIfBlocks, ElseBlock? elseBlock)
     {
         If      = ifBlock;
         ElseIfs = elseIfBlocks is { Count: > 0 } ? elseIfBlocks : null;
