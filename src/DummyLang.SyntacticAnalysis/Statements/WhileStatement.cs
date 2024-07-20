@@ -5,6 +5,12 @@ namespace DummyLang.SyntacticAnalysis.Statements;
 
 public sealed class WhileStatement : IStatement
 {
+    internal const string LeftParenthesisExpected =
+        "Left parenthesis token expected after 'while' keyword or its label";
+    internal const string ExpressionExpected       = "Expression expected.";
+    internal const string RightParenthesisExpected = "Right parenthesis token expected after the 'while' condition";
+    internal const string WhileBlockExpected       = "'while' block expected.";
+
     public Token              WhileKeyword     { get; }
     public Token              Label            { get; }
     public Token              LeftParenthesis  { get; }

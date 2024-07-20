@@ -384,24 +384,25 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'return' token added. How did this happen?");
 
         if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.SemicolonExpected);
-
-        if (statement.ReturnArguments is not { Count: > 0 })
-            return;
-
-        if (!statement.ReturnArguments[^1].Comma.IsNone())
-            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.LastArgumentHasComma);
-
-        for (var i = 0; i < statement.ReturnArguments.Count; i++)
         {
-            var argument = statement.ReturnArguments[i];
+            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.SemicolonExpected);
+        }
+        else if (statement.ReturnArguments is { Count: > 0 })
+        {
+            if (!statement.ReturnArguments[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.LastArgumentHasComma);
 
-            if (argument.Argument is null)
-                LanguageSyntax.Throw("Argument is null. How did this happen?");
-            else if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                CaptureDiagnosticsInfo(Token.None, ReturnStatement.CommaExpected);
+            for (var i = 0; i < statement.ReturnArguments.Count; i++)
+            {
+                var argument = statement.ReturnArguments[i];
 
-            argument.Accept(this);
+                if (argument.Argument is null)
+                    LanguageSyntax.Throw("Argument is null. How did this happen?");
+                else if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                    CaptureDiagnosticsInfo(Token.None, ReturnStatement.CommaExpected);
+
+                argument.Accept(this);
+            }
         }
     }
 
@@ -430,20 +431,13 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'while' token added. How did this happen?");
 
         if (statement.LeftParenthesis.Type != TokenType.LeftParenthesis)
-            CaptureDiagnosticsInfo(
-                statement.LeftParenthesis,
-                "Left parenthesis token expected after 'while' keyword or its label");
-
-        if (statement.Condition is null)
-            CaptureDiagnosticsInfo(statement.LeftParenthesis, "Expression expected.");
-
-        if (statement.RightParenthesis.Type != TokenType.RightParenthesis)
-            CaptureDiagnosticsInfo(
-                statement.LeftParenthesis,
-                "Right parenthesis token expected after the 'while' condition");
-
-        if (statement.Block is null)
-            CaptureDiagnosticsInfo(statement.RightParenthesis, "'while' block expected.");
+            CaptureDiagnosticsInfo(statement.LeftParenthesis, WhileStatement.LeftParenthesisExpected);
+        else if (statement.Condition is null)
+            CaptureDiagnosticsInfo(statement.LeftParenthesis, WhileStatement.ExpressionExpected);
+        else if (statement.RightParenthesis.Type != TokenType.RightParenthesis)
+            CaptureDiagnosticsInfo(statement.LeftParenthesis, WhileStatement.RightParenthesisExpected);
+        else if (statement.Block is null)
+            CaptureDiagnosticsInfo(statement.RightParenthesis, WhileStatement.WhileBlockExpected);
         else
             statement.Block.Accept(this);
     }

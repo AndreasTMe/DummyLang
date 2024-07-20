@@ -182,7 +182,9 @@ internal static class StatementParser
         if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
             leftParenthesis = GetAndMoveToNext(ref index, in tokens);
 
-        var condition = ExpressionParser.Parse(ref index, in tokens);
+        IExpression? condition = null;
+        if (TypeAt(index, in tokens) != TokenType.RightParenthesis)
+            condition = ExpressionParser.Parse(ref index, in tokens);
 
         var rightParenthesis = Token.None;
         if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
