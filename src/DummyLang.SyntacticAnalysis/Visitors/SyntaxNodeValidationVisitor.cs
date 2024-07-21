@@ -43,7 +43,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Binary operator expected. How did this happen?");
 
         if (expression.Right is null)
-            CaptureDiagnosticsInfo(expression.Operator, "Expression expected after binary operator.");
+            CaptureDiagnosticsInfo(expression.Operator, BinaryExpression.RightExpressionMissing);
 
         expression.Left.Accept(this);
         expression.Right?.Accept(this);
@@ -269,6 +269,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid identifier token added. How did this happen?");
     }
 
+    public void Visit(TypeParameterExpression expression)
+    {
+        // TODO: Visit type parameter
+    }
+
     public void Visit(UnaryExpression expression)
     {
         var type = expression.Token.Type;
@@ -337,6 +342,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             CaptureDiagnosticsInfo(statement.Terminator, ExpressionStatement.SemicolonExpected);
 
         statement.Expression?.Accept(this);
+    }
+
+    public void Visit(FunctionDeclarationStatement statement)
+    {
+        // TODO: Visit function declaration
     }
 
     public void Visit(IfElseStatement statement)

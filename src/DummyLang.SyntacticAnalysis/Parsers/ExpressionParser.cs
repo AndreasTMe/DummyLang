@@ -85,7 +85,7 @@ internal static class ExpressionParser
     private static ITypeExpression ParseTypeExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
     {
         Debug.Assert(index < tokens.Length);
-
+        
         return tokens[index].Type switch
         {
             TokenType.LeftParenthesis           => ParseParenthesizedExpression(ref index, in tokens, true),

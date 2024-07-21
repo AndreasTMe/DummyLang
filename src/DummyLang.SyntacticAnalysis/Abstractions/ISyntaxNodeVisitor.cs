@@ -43,6 +43,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(TypeIdentifierExpression expression);
 
+    void Visit(TypeParameterExpression expression);
+
     void Visit(UnaryExpression expression);
 
     void Visit(UnexpectedTokenExpression expression);
@@ -58,6 +60,8 @@ public interface ISyntaxNodeVisitor
     void Visit(ContinueStatement statement);
 
     void Visit(ExpressionStatement statement);
+
+    void Visit(FunctionDeclarationStatement statement);
 
     void Visit(IfElseStatement statement);
 
