@@ -39,6 +39,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(TypeBinaryExpression expression);
 
+    void Visit(TypeFunctionExpression expression);
+
     void Visit(TypeGenericExpression expression);
 
     void Visit(TypeIdentifierExpression expression);

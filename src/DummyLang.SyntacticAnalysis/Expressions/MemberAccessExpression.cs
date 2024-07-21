@@ -5,6 +5,8 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class MemberAccessExpression : IExpression
 {
+    internal const string IdentifierExpected = "Identifier expected.";
+
     public IExpression  Identifier { get; }
     public Token        Access     { get; }
     public IExpression? Member     { get; }

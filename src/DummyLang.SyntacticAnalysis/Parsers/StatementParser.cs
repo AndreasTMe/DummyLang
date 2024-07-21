@@ -72,9 +72,9 @@ internal static class StatementParser
     {
         var declarationKeyword = GetAndMoveToNext(ref index, in tokens);
 
-        IdentifierExpression? identifier = null;
+        var identifier = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Identifier)
-            identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
+            identifier = GetAndMoveToNext(ref index, in tokens);
 
         var typeAssignmentOperator = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Colon)
@@ -111,15 +111,17 @@ internal static class StatementParser
     {
         var funcKeyword = GetAndMoveToNext(ref index, in tokens);
 
-        IdentifierExpression? identifier = null;
+        var identifier = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Identifier)
-            identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
+            identifier = GetAndMoveToNext(ref index, in tokens);
 
         var typeAssignmentOperator = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Colon)
             typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
 
-        // TODO: Handle function type
+        ITypeExpression? typeValue = null;
+        if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+            typeValue = ExpressionParser.ParseType(ref index, in tokens);
 
         CompoundStatement? functionBlock = null;
         if (TypeAt(index, in tokens) == TokenType.LeftBrace)
@@ -129,11 +131,7 @@ internal static class StatementParser
             funcKeyword,
             identifier,
             typeAssignmentOperator,
-            Token.None,
-            null,
-            Token.None,
-            Token.None,
-            null,
+            typeValue,
             functionBlock);
     }
 

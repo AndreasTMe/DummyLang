@@ -85,10 +85,12 @@ internal static class ExpressionParser
     private static ITypeExpression ParseTypeExpressionBasedOnCurrentToken(ref int index, in Token[] tokens)
     {
         Debug.Assert(index < tokens.Length);
-        
+
         return tokens[index].Type switch
         {
-            TokenType.LeftParenthesis           => ParseParenthesizedExpression(ref index, in tokens, true),
+            TokenType.LeftParenthesis => TypeAt(index + 2, in tokens) == TokenType.Colon
+                ? ParseFunctionTypeExpression(ref index, in tokens)
+                : ParseParenthesizedExpression(ref index, in tokens, true),
             TokenType.Identifier                => ParseTypeIdentifierExpression(ref index, in tokens),
             TokenType.Integer or TokenType.Real => ParseNumberExpression(ref index, in tokens),
             TokenType.Character                 => ParseCharacterExpression(ref index, in tokens),
@@ -197,6 +199,88 @@ internal static class ExpressionParser
             default:
                 return expression;
         }
+    }
+
+    private static TypeFunctionExpression ParseFunctionTypeExpression(ref int index, in Token[] tokens)
+    {
+        var leftParenthesis = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+            leftParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        List<TypeParameterExpression>? inputTypes = null;
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
+        {
+            var parameter = GetAndMoveToNext(ref index, in tokens);
+
+            var colon = Token.None;
+            if (TypeAt(index, in tokens) == TokenType.Colon)
+                colon = GetAndMoveToNext(ref index, in tokens);
+
+            ITypeExpression? typeValue = null;
+            if (TypeAt(index, in tokens) != TokenType.Comma)
+                typeValue = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
+
+            var comma = Token.None;
+            if (TypeAt(index, in tokens) == TokenType.Comma)
+                comma = GetAndMoveToNext(ref index, in tokens);
+
+            inputTypes = new List<TypeParameterExpression> { new(parameter, colon, typeValue, comma) };
+            
+            while (comma.Type == TokenType.Comma)
+            {
+                parameter = GetAndMoveToNext(ref index, in tokens);
+
+                colon = Token.None;
+                if (TypeAt(index, in tokens) == TokenType.Colon)
+                    colon = GetAndMoveToNext(ref index, in tokens);
+
+                typeValue = null;
+                if (TypeAt(index, in tokens) != TokenType.Comma)
+                    typeValue = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
+
+                comma = Token.None;
+                if (TypeAt(index, in tokens) == TokenType.Comma)
+                    comma = GetAndMoveToNext(ref index, in tokens);
+
+                inputTypes.Add(new TypeParameterExpression(parameter, colon, typeValue, comma));
+            }
+        }
+
+        var rightParenthesis = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.RightParenthesis)
+            rightParenthesis = GetAndMoveToNext(ref index, in tokens);
+
+        var lambdaAssign = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.LambdaAssign)
+            lambdaAssign = GetAndMoveToNext(ref index, in tokens);
+
+        List<TypeArgumentExpression>? outputTypes = null;
+        if (TokenAt(index, in tokens).IsIdentifierOrLiteral())
+        {
+            var outputType = ParseType(ref index, in tokens);
+            var comma = TypeAt(index, in tokens) == TokenType.Comma
+                ? GetAndMoveToNext(ref index, in tokens)
+                : Token.None;
+
+            outputTypes = new List<TypeArgumentExpression> { new(outputType, comma) };
+
+            while (comma.Type == TokenType.Comma)
+            {
+                outputType = ParseType(ref index, in tokens);
+                comma = TypeAt(index, in tokens) == TokenType.Comma
+                    ? GetAndMoveToNext(ref index, in tokens)
+                    : Token.None;
+
+                outputTypes.Add(new TypeArgumentExpression(outputType, comma));
+            }
+        }
+
+        return new TypeFunctionExpression(
+            leftParenthesis,
+            inputTypes,
+            rightParenthesis,
+            lambdaAssign,
+            outputTypes);
     }
 
     private static ITypeExpression ParseTypeIdentifierExpression(ref int index, in Token[] tokens)

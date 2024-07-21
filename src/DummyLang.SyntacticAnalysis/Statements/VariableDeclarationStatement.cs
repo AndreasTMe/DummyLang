@@ -13,7 +13,7 @@ public sealed class VariableDeclarationStatement : IStatement
     internal const string SemicolonExpected      = "Semicolon expected at the end of a variable declaration statement.";
 
     public Token            DeclarationKeyword { get; }
-    public IExpression?     Identifier         { get; }
+    public Token            Identifier         { get; }
     public Token            TypeAssignment     { get; }
     public ITypeExpression? Type               { get; }
     public Token            ValueAssignment    { get; }
@@ -21,7 +21,7 @@ public sealed class VariableDeclarationStatement : IStatement
     public Token            Terminator         { get; }
 
     internal VariableDeclarationStatement(Token declarationKeyword,
-                                          IExpression? identifier,
+                                          Token identifier,
                                           Token typeAssignment,
                                           ITypeExpression? type,
                                           Token valueAssignment,

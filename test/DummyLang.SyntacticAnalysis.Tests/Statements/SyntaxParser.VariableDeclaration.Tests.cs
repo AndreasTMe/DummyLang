@@ -33,7 +33,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -79,7 +80,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Const, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("const", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -125,7 +127,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -168,7 +171,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -214,7 +218,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -268,7 +273,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.Null(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.None, variableDeclaration.Identifier.Type);
+        Assert.Equal("", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -315,7 +321,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
         Assert.Equal("", variableDeclaration.TypeAssignment.Value);
@@ -362,7 +369,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
         Assert.Equal("", variableDeclaration.TypeAssignment.Value);
@@ -409,7 +417,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
         Assert.Equal("", variableDeclaration.TypeAssignment.Value);
@@ -459,7 +468,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -509,7 +519,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -559,7 +570,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
@@ -609,7 +621,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
 
-        Assert.IsType<IdentifierExpression>(variableDeclaration.Identifier);
+        Assert.Equal(TokenType.Identifier, variableDeclaration.Identifier.Type);
+        Assert.Equal("foo", variableDeclaration.Identifier.Value);
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
