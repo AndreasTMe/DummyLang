@@ -5,6 +5,8 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class BinaryExpression : IExpression
 {
+    internal const string RightExpressionMissing = "Expression expected after binary operator.";
+
     public IExpression? Left     { get; }
     public Token        Operator { get; }
     public IExpression? Right    { get; }

@@ -43,7 +43,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Binary operator expected. How did this happen?");
 
         if (expression.Right is null)
-            CaptureDiagnosticsInfo(expression.Operator, "Expression expected after binary operator.");
+            CaptureDiagnosticsInfo(expression.Operator, BinaryExpression.RightExpressionMissing);
 
         expression.Left.Accept(this);
         expression.Right?.Accept(this);
@@ -146,7 +146,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid access token added. How did this happen?");
 
         if (expression.Member is null)
-            CaptureDiagnosticsInfo(expression.Access, "Identifier expected.");
+            CaptureDiagnosticsInfo(expression.Access, MemberAccessExpression.IdentifierExpected);
 
         expression.Identifier.Accept(this);
         expression.Member?.Accept(this);
@@ -164,9 +164,9 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid left parenthesis token added. How did this happen?");
 
         if (expression.Expression is null)
-            CaptureDiagnosticsInfo(expression.LeftParen, "Expression expected.");
+            CaptureDiagnosticsInfo(expression.LeftParen, ParenthesisedExpression.ExpressionExpected);
         else if (expression.RightParen.Type != TokenType.RightParenthesis)
-            CaptureDiagnosticsInfo(expression.LeftParen, "Right parenthesis expected.");
+            CaptureDiagnosticsInfo(expression.LeftParen, ParenthesisedExpression.RightParenthesisExpected);
 
         expression.Expression?.Accept(this);
     }
@@ -232,6 +232,53 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         expression.Right?.Accept(this);
     }
 
+    public void Visit(TypeFunctionExpression expression)
+    {
+        if (expression.LeftParen.Type != TokenType.LeftParenthesis)
+            LanguageSyntax.Throw("Invalid left parenthesis token added. How did this happen?");
+
+        if (expression.InputTypes is { Count: > 0 })
+        {
+            if (!expression.InputTypes[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(expression.LeftParen, TypeFunctionExpression.LastParameterHasComma);
+
+            for (var i = 0; i < expression.InputTypes.Count; i++)
+            {
+                var inputType = expression.InputTypes[i];
+
+                if (i != expression.InputTypes.Count - 1 && inputType.Comma.Type != TokenType.Comma)
+                    CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.CommaExpected);
+
+                inputType.Accept(this);
+            }
+        }
+        else if (expression.RightParen.Type != TokenType.RightParenthesis)
+        {
+            CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.RightParenthesisExpected);
+        }
+        else if (expression.LambdaAssign.Type != TokenType.LambdaAssign)
+        {
+            CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.LambdaAssignExpected);
+        }
+        else if (expression.OutputTypes is { Count: > 0 })
+        {
+            if (!expression.OutputTypes[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(expression.LambdaAssign, TypeFunctionExpression.LastArgumentHasComma);
+
+            for (var i = 0; i < expression.OutputTypes.Count; i++)
+            {
+                var argument = expression.OutputTypes[i];
+
+                if (argument.Argument is null)
+                    LanguageSyntax.Throw("Argument is null. How did this happen?");
+                else if (i != expression.OutputTypes.Count - 1 && argument.Comma.Type != TokenType.Comma)
+                    CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.CommaExpected);
+
+                argument.Accept(this);
+            }
+        }
+    }
+
     public void Visit(TypeGenericExpression expression)
     {
         if (expression.Identifier.Type != TokenType.Identifier)
@@ -269,6 +316,23 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid identifier token added. How did this happen?");
     }
 
+    public void Visit(TypeParameterExpression expression)
+    {
+        if (expression.Identifier.Type != TokenType.Identifier)
+            LanguageSyntax.Throw("Invalid parameter identifier token. How did this happen?");
+
+        if (expression.Colon.Type != TokenType.Colon)
+            LanguageSyntax.Throw("Invalid colon token added. How did this happen?");
+
+        if (expression.Type is null)
+            LanguageSyntax.Throw("Empty type added. How did this happen?");
+
+        if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
+            LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+
+        expression.Type?.Accept(this);
+    }
+
     public void Visit(UnaryExpression expression)
     {
         var type = expression.Token.Type;
@@ -283,13 +347,13 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid unary operator token added. How did this happen?");
 
         if (expression.Expression is null)
-            CaptureDiagnosticsInfo(expression.Token, "Expression expected after unary operator.");
+            CaptureDiagnosticsInfo(expression.Token, UnaryExpression.ExpressionExpected);
 
         // TODO: A lot of checks here for the inner expression
     }
 
     public void Visit(UnexpectedTokenExpression expression) =>
-        CaptureDiagnosticsInfo(expression.Token, "Unexpected token.");
+        CaptureDiagnosticsInfo(expression.Token, UnexpectedTokenExpression.UnexpectedToken);
 
     public void Visit(BreakStatement statement)
     {
@@ -337,6 +401,34 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             CaptureDiagnosticsInfo(statement.Terminator, ExpressionStatement.SemicolonExpected);
 
         statement.Expression?.Accept(this);
+    }
+
+    public void Visit(FunctionDeclarationStatement statement)
+    {
+        if (statement.FuncKeyword.Type != TokenType.Func)
+            LanguageSyntax.Throw("Invalid 'func' token added. How did this happen?");
+
+        if (statement.Identifier.Type != TokenType.Identifier)
+        {
+            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationStatement.InvalidToken);
+        }
+        else if (statement.TypeAssignment.Type != TokenType.Colon)
+        {
+            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationStatement.TypeAssignmentExpected);
+        }
+        else if (statement.Type is null)
+        {
+            CaptureDiagnosticsInfo(statement.TypeAssignment, FunctionDeclarationStatement.TypeExpressionExpected);
+        }
+        else if (statement.Block is null)
+        {
+            CaptureDiagnosticsInfo(statement.FuncKeyword, FunctionDeclarationStatement.CompoundStatementExpected);
+        }
+        else
+        {
+            statement.Type?.Accept(this);
+            statement.Block?.Accept(this);
+        }
     }
 
     public void Visit(IfElseStatement statement)
@@ -430,7 +522,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (statement.DeclarationKeyword.Type != TokenType.Var && statement.DeclarationKeyword.Type != TokenType.Const)
             LanguageSyntax.Throw("Invalid declaration token added. How did this happen?");
 
-        if (statement.Identifier is null)
+        if (statement.Identifier.Type != TokenType.Identifier)
             CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.IdentifierExpected);
         else if (statement.TypeAssignment.Type != TokenType.Colon)
             CaptureDiagnosticsInfo(statement.DeclarationKeyword, VariableDeclarationStatement.ColonExpected);

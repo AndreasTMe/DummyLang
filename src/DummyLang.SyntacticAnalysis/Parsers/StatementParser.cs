@@ -20,13 +20,13 @@ internal static class StatementParser
             TokenType.Semicolon              => new NoOpStatement(GetAndMoveToNext(ref index, in tokens)),
             TokenType.LeftBrace              => ParseBlock(ref index, in tokens),
             TokenType.Var or TokenType.Const => ParseVariableDeclaration(ref index, in tokens),
-            // TODO: TokenType.Func => ParseFunctionDeclaration(ref index, in tokens),
-            TokenType.If or TokenType.Else => ParseIfElse(ref index, in tokens),
-            TokenType.Break                => ParseBreak(ref index, in tokens),
-            TokenType.While                => ParseWhile(ref index, in tokens),
-            TokenType.Continue             => ParseContinue(ref index, in tokens),
-            TokenType.Return               => ParseReturn(ref index, in tokens),
-            _                              => ParseExpression(ref index, in tokens)
+            TokenType.Func                   => ParseFunctionDeclaration(ref index, in tokens),
+            TokenType.If or TokenType.Else   => ParseIfElse(ref index, in tokens),
+            TokenType.Break                  => ParseBreak(ref index, in tokens),
+            TokenType.While                  => ParseWhile(ref index, in tokens),
+            TokenType.Continue               => ParseContinue(ref index, in tokens),
+            TokenType.Return                 => ParseReturn(ref index, in tokens),
+            _                                => ParseExpression(ref index, in tokens)
         };
     }
 
@@ -72,9 +72,9 @@ internal static class StatementParser
     {
         var declarationKeyword = GetAndMoveToNext(ref index, in tokens);
 
-        IdentifierExpression? identifier = null;
+        var identifier = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Identifier)
-            identifier = new IdentifierExpression(GetAndMoveToNext(ref index, in tokens));
+            identifier = GetAndMoveToNext(ref index, in tokens);
 
         var typeAssignmentOperator = Token.None;
         if (TypeAt(index, in tokens) == TokenType.Colon)
@@ -105,6 +105,34 @@ internal static class StatementParser
             valueAssignmentOperator,
             valueAssignment,
             terminator);
+    }
+
+    private static FunctionDeclarationStatement ParseFunctionDeclaration(ref int index, in Token[] tokens)
+    {
+        var funcKeyword = GetAndMoveToNext(ref index, in tokens);
+
+        var identifier = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.Identifier)
+            identifier = GetAndMoveToNext(ref index, in tokens);
+
+        var typeAssignmentOperator = Token.None;
+        if (TypeAt(index, in tokens) == TokenType.Colon)
+            typeAssignmentOperator = GetAndMoveToNext(ref index, in tokens);
+
+        ITypeExpression? typeValue = null;
+        if (TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+            typeValue = ExpressionParser.ParseType(ref index, in tokens);
+
+        CompoundStatement? functionBlock = null;
+        if (TypeAt(index, in tokens) == TokenType.LeftBrace)
+            functionBlock = ParseBlock(ref index, in tokens);
+
+        return new FunctionDeclarationStatement(
+            funcKeyword,
+            identifier,
+            typeAssignmentOperator,
+            typeValue,
+            functionBlock);
     }
 
     private static IfElseStatement ParseIfElse(ref int index, in Token[] tokens)

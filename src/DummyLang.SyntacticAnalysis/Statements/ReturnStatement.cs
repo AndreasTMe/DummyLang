@@ -21,7 +21,7 @@ public sealed class ReturnStatement : IStatement
     {
         ReturnKeyword   = returnKeyword;
         Terminator      = terminator;
-        ReturnArguments = returnArguments;
+        ReturnArguments = returnArguments is { Count: > 0 } ? returnArguments : null;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

@@ -5,6 +5,9 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class ParenthesisedExpression : IExpression, ITypeExpression
 {
+    internal const string ExpressionExpected       = "Expression expected.";
+    internal const string RightParenthesisExpected = "Right parenthesis expected.";
+
     public Token        LeftParen  { get; }
     public ISyntaxNode? Expression { get; }
     public Token        RightParen { get; }

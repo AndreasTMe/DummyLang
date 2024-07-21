@@ -5,6 +5,8 @@ namespace DummyLang.SyntacticAnalysis.Expressions;
 
 public sealed class UnexpectedTokenExpression : IExpression, ITypeExpression
 {
+    internal const string UnexpectedToken = "Unexpected token.";
+
     public Token Token { get; }
 
     internal UnexpectedTokenExpression(Token token) => Token = token;
