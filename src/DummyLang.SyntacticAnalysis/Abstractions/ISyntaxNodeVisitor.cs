@@ -27,6 +27,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(NumberLiteralExpression expression);
 
+    void Visit(ParameterExpression expression);
+
     void Visit(ParenthesisedExpression expression);
 
     void Visit(PrimaryExpression expression);

@@ -158,6 +158,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid number type. How did this happen?");
     }
 
+    public void Visit(ParameterExpression expression)
+    {
+        if (expression.Parameter.Type != TokenType.Identifier)
+            LanguageSyntax.Throw("Invalid parameter token added. How did this happen?");
+
+        if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
+            LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
+    }
+
     public void Visit(ParenthesisedExpression expression)
     {
         if (expression.LeftParen.Type != TokenType.LeftParenthesis)

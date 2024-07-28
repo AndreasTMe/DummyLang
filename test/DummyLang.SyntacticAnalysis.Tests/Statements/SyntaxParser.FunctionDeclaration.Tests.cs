@@ -12,7 +12,7 @@ public class FunctionDeclarationSyntaxParserTests
     {
         // Arrange
         const string source = """
-                              func test: () => void {
+                              func test: () => void = () => {
                               }
                               """;
         var tokens    = ParsingUtilities.ReadAllTokens(source);
