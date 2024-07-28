@@ -121,8 +121,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Eof, tokens[index].Type);
 
         Assert.NotNull(statement);
-        Assert.IsType<VariableDeclarationStatement>(statement);
-        var variableDeclaration = (VariableDeclarationStatement)statement;
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(statement);
+        var variableDeclaration = (VariableDeclarationWithImplicitTypeStatement)statement;
 
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
@@ -132,8 +132,6 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
-
-        Assert.Null(variableDeclaration.Type);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -267,8 +265,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Eof, tokens[index].Type);
 
         Assert.NotNull(statement);
-        Assert.IsType<VariableDeclarationStatement>(statement);
-        var variableDeclaration = (VariableDeclarationStatement)statement;
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(statement);
+        var variableDeclaration = (VariableDeclarationWithImplicitTypeStatement)statement;
 
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
@@ -278,8 +276,6 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.Colon, variableDeclaration.TypeAssignment.Type);
         Assert.Equal(":", variableDeclaration.TypeAssignment.Value);
-
-        Assert.Null(variableDeclaration.Type);
 
         Assert.Equal(TokenType.Assign, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("=", variableDeclaration.ValueAssignment.Value);
@@ -315,8 +311,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Assign, tokens[index].Type);
 
         Assert.NotNull(statement);
-        Assert.IsType<VariableDeclarationStatement>(statement);
-        var variableDeclaration = (VariableDeclarationStatement)statement;
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(statement);
+        var variableDeclaration = (VariableDeclarationWithImplicitTypeStatement)statement;
 
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
@@ -326,8 +322,6 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
         Assert.Equal("", variableDeclaration.TypeAssignment.Value);
-
-        Assert.Null(variableDeclaration.Type);
 
         Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("", variableDeclaration.ValueAssignment.Value);
@@ -363,8 +357,8 @@ public class VariableDeclarationSyntaxParserTests
         Assert.Equal(TokenType.Assign, tokens[index].Type);
 
         Assert.NotNull(statement);
-        Assert.IsType<VariableDeclarationStatement>(statement);
-        var variableDeclaration = (VariableDeclarationStatement)statement;
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(statement);
+        var variableDeclaration = (VariableDeclarationWithImplicitTypeStatement)statement;
 
         Assert.Equal(TokenType.Var, variableDeclaration.DeclarationKeyword.Type);
         Assert.Equal("var", variableDeclaration.DeclarationKeyword.Value);
@@ -374,8 +368,6 @@ public class VariableDeclarationSyntaxParserTests
 
         Assert.Equal(TokenType.None, variableDeclaration.TypeAssignment.Type);
         Assert.Equal("", variableDeclaration.TypeAssignment.Value);
-
-        Assert.Null(variableDeclaration.Type);
 
         Assert.Equal(TokenType.None, variableDeclaration.ValueAssignment.Type);
         Assert.Equal("", variableDeclaration.ValueAssignment.Value);

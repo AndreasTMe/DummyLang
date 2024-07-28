@@ -552,7 +552,29 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(VariableDeclarationWithImplicitTypeStatement statement)
     {
-        // TODO: Implement VariableDeclarationWithImplicitTypeStatement
+        if (statement.DeclarationKeyword.Type != TokenType.Var && statement.DeclarationKeyword.Type != TokenType.Const)
+            LanguageSyntax.Throw("Invalid declaration token added. How did this happen?");
+
+        if (statement.Identifier.Type != TokenType.Identifier)
+            CaptureDiagnosticsInfo(
+                statement.DeclarationKeyword,
+                VariableDeclarationWithImplicitTypeStatement.IdentifierExpected);
+        else if (statement.TypeAssignment.Type != TokenType.Colon)
+            CaptureDiagnosticsInfo(
+                statement.DeclarationKeyword,
+                VariableDeclarationWithImplicitTypeStatement.ColonExpected);
+        else if (statement.ValueAssignment.Type != TokenType.None && statement.ValueAssignment.Type != TokenType.Assign)
+            CaptureDiagnosticsInfo(
+                statement.ValueAssignment,
+                VariableDeclarationWithImplicitTypeStatement.AssignmentExpected);
+        else if (statement.ValueAssignment.Type == TokenType.Assign && statement.Value is null)
+            CaptureDiagnosticsInfo(
+                statement.ValueAssignment,
+                VariableDeclarationWithImplicitTypeStatement.ExpressionExpected);
+        else if (statement.Terminator.Type != TokenType.Semicolon)
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                VariableDeclarationWithImplicitTypeStatement.SemicolonExpected);
     }
 
     public void Visit(WhileStatement statement)

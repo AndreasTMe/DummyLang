@@ -74,7 +74,7 @@ public class CompoundSyntaxParserTests
 
         Assert.NotNull(compoundStatement.Statements);
         Assert.Equal(3, compoundStatement.Statements.Count);
-        Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(compoundStatement.Statements[0]);
         Assert.IsType<ExpressionStatement>(compoundStatement.Statements[1]);
         Assert.IsType<ReturnStatement>(compoundStatement.Statements[2]);
 
@@ -122,7 +122,7 @@ public class CompoundSyntaxParserTests
 
         Assert.NotNull(compoundStatement.Statements);
         Assert.Equal(4, compoundStatement.Statements.Count);
-        Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(compoundStatement.Statements[0]);
         Assert.IsType<ExpressionStatement>(compoundStatement.Statements[1]);
 
         Assert.IsType<CompoundStatement>(compoundStatement.Statements[2]);
@@ -173,7 +173,7 @@ public class CompoundSyntaxParserTests
 
         Assert.NotNull(compoundStatement.Statements);
         Assert.Equal(1, compoundStatement.Statements.Count);
-        Assert.IsType<VariableDeclarationStatement>(compoundStatement.Statements[0]);
+        Assert.IsType<VariableDeclarationWithImplicitTypeStatement>(compoundStatement.Statements[0]);
 
         Assert.Equal(TokenType.None, compoundStatement.RightBrace.Type);
         Assert.Equal("", compoundStatement.RightBrace.Value);
