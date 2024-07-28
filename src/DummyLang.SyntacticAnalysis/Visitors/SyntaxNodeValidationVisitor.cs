@@ -440,6 +440,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         }
     }
 
+    public void Visit(FunctionDeclarationWithImplicitTypeStatement statement)
+    {
+        // TODO: Implement FunctionDeclarationWithImplicitTypeStatement
+    }
+
     public void Visit(IfElseStatement statement)
     {
         if (statement.If is not null)
@@ -543,6 +548,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             CaptureDiagnosticsInfo(statement.TypeAssignment, VariableDeclarationStatement.TypeExpressionExpected);
         else if (statement.Terminator.Type != TokenType.Semicolon)
             CaptureDiagnosticsInfo(statement.Terminator, VariableDeclarationStatement.SemicolonExpected);
+    }
+
+    public void Visit(VariableDeclarationWithImplicitTypeStatement statement)
+    {
+        // TODO: Implement VariableDeclarationWithImplicitTypeStatement
     }
 
     public void Visit(WhileStatement statement)

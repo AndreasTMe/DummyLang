@@ -67,6 +67,8 @@ public interface ISyntaxNodeVisitor
 
     void Visit(FunctionDeclarationStatement statement);
 
+    void Visit(FunctionDeclarationWithImplicitTypeStatement statement);
+
     void Visit(IfElseStatement statement);
 
     void Visit(NoOpStatement statement);
@@ -74,6 +76,8 @@ public interface ISyntaxNodeVisitor
     void Visit(ReturnStatement statement);
 
     void Visit(VariableDeclarationStatement statement);
+
+    void Visit(VariableDeclarationWithImplicitTypeStatement statement);
 
     void Visit(WhileStatement statement);
 }

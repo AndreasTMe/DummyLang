@@ -57,7 +57,7 @@ internal static class StatementParser
         return new CompoundStatement(leftBrace, rightBrace, statements);
     }
 
-    private static VariableDeclarationStatement ParseVariableDeclaration(ref int index, in Token[] tokens)
+    private static IStatement ParseVariableDeclaration(ref int index, in Token[] tokens)
     {
         var declarationKeyword = Parser.GetAndMoveToNext(ref index, in tokens);
 
@@ -79,65 +79,127 @@ internal static class StatementParser
 
         var terminator = Parser.GetAndMoveToNextOrDefault(TokenType.Semicolon, ref index, in tokens);
 
-        return new VariableDeclarationStatement(
-            declarationKeyword,
-            identifier,
-            typeAssignmentOperator,
-            typeValue,
-            valueAssignmentOperator,
-            valueAssignment,
-            terminator);
+        return typeValue is null
+            ? new VariableDeclarationWithImplicitTypeStatement(
+                declarationKeyword,
+                identifier,
+                typeAssignmentOperator,
+                valueAssignmentOperator,
+                valueAssignment,
+                terminator)
+            : new VariableDeclarationStatement(
+                declarationKeyword,
+                identifier,
+                typeAssignmentOperator,
+                typeValue,
+                valueAssignmentOperator,
+                valueAssignment,
+                terminator);
     }
 
-    private static FunctionDeclarationStatement ParseFunctionDeclaration(ref int index, in Token[] tokens)
+    private static IStatement ParseFunctionDeclaration(ref int index, in Token[] tokens)
     {
         var funcKeyword = Parser.GetAndMoveToNext(ref index, in tokens);
 
         var identifier             = Parser.GetAndMoveToNextOrDefault(TokenType.Identifier, ref index, in tokens);
         var typeAssignmentOperator = Parser.GetAndMoveToNextOrDefault(TokenType.Colon, ref index, in tokens);
 
-        ITypeExpression? typeValue = null;
-        if (Parser.TypeAt(index, in tokens) == TokenType.LeftParenthesis)
-            typeValue = ExpressionParser.ParseType(ref index, in tokens);
-
-        var valueAssignmentOperator = Parser.GetAndMoveToNextOrDefault(TokenType.Assign, ref index, in tokens);
-        var leftParenthesis         = Parser.GetAndMoveToNextOrDefault(TokenType.LeftParenthesis, ref index, in tokens);
-
-        List<ParameterExpression>? parameters = null;
-        if (Parser.TypeAt(index, in tokens) != TokenType.RightParenthesis)
+        if (Parser.TypeAt(index, in tokens) == TokenType.Assign)
         {
-            var parameter = Parser.GetAndMoveToNextOrDefault(TokenType.Identifier, ref index, in tokens);
-            var comma     = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
+            var valueAssignmentOperator = Parser.GetAndMoveToNext(ref index, in tokens);
+            var leftParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.LeftParenthesis, ref index, in tokens);
 
-            parameters = new List<ParameterExpression> { new(parameter, comma) };
-
-            while (comma.Type == TokenType.Comma)
+            List<TypeParameterExpression>? typedParameters = null;
+            if (Parser.TypeAt(index, in tokens) != TokenType.RightParenthesis)
             {
-                parameter = Parser.GetAndMoveToNextOrDefault(TokenType.Identifier, ref index, in tokens);
-                comma     = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
+                var parameter = Parser.GetAndMoveToNext(ref index, in tokens);
+                var colon     = Parser.GetAndMoveToNextOrDefault(TokenType.Colon, ref index, in tokens);
 
-                parameters.Add(new ParameterExpression(parameter, comma));
+                ITypeExpression? typeValue = null;
+                if (Parser.TypeAt(index, in tokens) != TokenType.Comma)
+                    typeValue = ExpressionParser.ParseType(ref index, in tokens);
+
+                var comma = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
+                typedParameters = new List<TypeParameterExpression> { new(parameter, colon, typeValue, comma) };
+
+                while (comma.Type == TokenType.Comma)
+                {
+                    parameter = Parser.GetAndMoveToNext(ref index, in tokens);
+                    colon     = Parser.GetAndMoveToNextOrDefault(TokenType.Colon, ref index, in tokens);
+
+                    typeValue = null;
+                    if (Parser.TypeAt(index, in tokens) != TokenType.Comma)
+                        typeValue = ExpressionParser.ParseType(ref index, in tokens);
+
+                    comma = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
+
+                    typedParameters.Add(new TypeParameterExpression(parameter, colon, typeValue, comma));
+                }
             }
+
+            var rightParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.RightParenthesis, ref index, in tokens);
+            var lambdaAssign     = Parser.GetAndMoveToNextOrDefault(TokenType.LambdaAssign, ref index, in tokens);
+
+            CompoundStatement? functionBlock = null;
+            if (Parser.TypeAt(index, in tokens) == TokenType.LeftBrace)
+                functionBlock = ParseBlock(ref index, in tokens);
+
+            return new FunctionDeclarationWithImplicitTypeStatement(
+                funcKeyword,
+                identifier,
+                typeAssignmentOperator,
+                valueAssignmentOperator,
+                leftParenthesis,
+                typedParameters,
+                rightParenthesis,
+                lambdaAssign,
+                functionBlock);
         }
+        else
+        {
+            ITypeExpression? typeValue = null;
+            if (Parser.TypeAt(index, in tokens) == TokenType.LeftParenthesis)
+                typeValue = ExpressionParser.ParseType(ref index, in tokens);
 
-        var rightParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.RightParenthesis, ref index, in tokens);
-        var lambdaAssign     = Parser.GetAndMoveToNextOrDefault(TokenType.LambdaAssign, ref index, in tokens);
+            var valueAssignmentOperator = Parser.GetAndMoveToNextOrDefault(TokenType.Assign, ref index, in tokens);
+            var leftParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.LeftParenthesis, ref index, in tokens);
 
-        CompoundStatement? functionBlock = null;
-        if (Parser.TypeAt(index, in tokens) == TokenType.LeftBrace)
-            functionBlock = ParseBlock(ref index, in tokens);
+            List<ParameterExpression>? parameters = null;
+            if (Parser.TypeAt(index, in tokens) != TokenType.RightParenthesis)
+            {
+                var parameter = Parser.GetAndMoveToNextOrDefault(TokenType.Identifier, ref index, in tokens);
+                var comma     = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
 
-        return new FunctionDeclarationStatement(
-            funcKeyword,
-            identifier,
-            typeAssignmentOperator,
-            typeValue,
-            valueAssignmentOperator,
-            leftParenthesis,
-            parameters,
-            rightParenthesis,
-            lambdaAssign,
-            functionBlock);
+                parameters = new List<ParameterExpression> { new(parameter, comma) };
+
+                while (comma.Type == TokenType.Comma)
+                {
+                    parameter = Parser.GetAndMoveToNextOrDefault(TokenType.Identifier, ref index, in tokens);
+                    comma     = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
+
+                    parameters.Add(new ParameterExpression(parameter, comma));
+                }
+            }
+
+            var rightParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.RightParenthesis, ref index, in tokens);
+            var lambdaAssign     = Parser.GetAndMoveToNextOrDefault(TokenType.LambdaAssign, ref index, in tokens);
+
+            CompoundStatement? functionBlock = null;
+            if (Parser.TypeAt(index, in tokens) == TokenType.LeftBrace)
+                functionBlock = ParseBlock(ref index, in tokens);
+
+            return new FunctionDeclarationStatement(
+                funcKeyword,
+                identifier,
+                typeAssignmentOperator,
+                typeValue,
+                valueAssignmentOperator,
+                leftParenthesis,
+                parameters,
+                rightParenthesis,
+                lambdaAssign,
+                functionBlock);
+        }
     }
 
     private static IfElseStatement ParseIfElse(ref int index, in Token[] tokens)
