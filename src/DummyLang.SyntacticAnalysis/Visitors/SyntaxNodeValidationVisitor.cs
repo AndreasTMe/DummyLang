@@ -442,7 +442,56 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(FunctionDeclarationWithImplicitTypeStatement statement)
     {
-        // TODO: Implement FunctionDeclarationWithImplicitTypeStatement
+        if (statement.FuncKeyword.Type != TokenType.Func)
+            LanguageSyntax.Throw("Invalid 'func' token added. How did this happen?");
+
+        if (statement.Identifier.Type != TokenType.Identifier)
+        {
+            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationWithImplicitTypeStatement.InvalidToken);
+        }
+        else if (statement.TypeAssignment.Type != TokenType.Colon)
+        {
+            CaptureDiagnosticsInfo(
+                statement.Identifier,
+                FunctionDeclarationWithImplicitTypeStatement.TypeAssignmentExpected);
+        }
+
+        if (statement.TypedParameters is { Count: > 0 })
+        {
+            if (!statement.TypedParameters[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.LastArgumentHasComma);
+
+            for (var i = 0; i < statement.TypedParameters.Count; i++)
+            {
+                var typedParameter = statement.TypedParameters[i];
+
+                // TODO: Move to TypeParameterExpression
+                if (typedParameter.Identifier.Type != TokenType.Identifier)
+                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.IdentifierExpected);
+                else if (typedParameter.Colon.Type != TokenType.Colon)
+                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.ColonExpected);
+                else if (typedParameter.Type is null)
+                    CaptureDiagnosticsInfo(
+                        Token.None,
+                        FunctionDeclarationWithImplicitTypeStatement.TypeExpressionExpected);
+                else if (i != statement.TypedParameters.Count - 1 && typedParameter.Comma.Type != TokenType.Comma)
+                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.CommaExpected);
+
+                typedParameter.Accept(this);
+                typedParameter.Type?.Accept(this);
+            }
+        }
+
+        if (statement.Block is null)
+        {
+            CaptureDiagnosticsInfo(
+                statement.FuncKeyword,
+                FunctionDeclarationWithImplicitTypeStatement.CompoundStatementExpected);
+        }
+        else
+        {
+            statement.Block.Accept(this);
+        }
     }
 
     public void Visit(IfElseStatement statement)

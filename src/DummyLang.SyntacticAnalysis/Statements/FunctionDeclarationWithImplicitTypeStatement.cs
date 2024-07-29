@@ -9,8 +9,12 @@ public sealed class FunctionDeclarationWithImplicitTypeStatement : IStatement
 {
     internal const string InvalidToken              = "Invalid token after 'func' keyword.";
     internal const string TypeAssignmentExpected    = "Type assignment expected.";
-    internal const string TypeExpressionExpected    = "Type expression expected.";
     internal const string CompoundStatementExpected = "Compound statement expected. Check for missing left brace.";
+    internal const string LastArgumentHasComma      = "Last argument should not be followed by comma.";
+    internal const string CommaExpected             = "Comma expected.";
+    internal const string TypeExpressionExpected    = "Type expression expected.";
+    internal const string IdentifierExpected        = "Identifier expected";
+    internal const string ColonExpected             = "Colon expected";
 
     public Token                                   FuncKeyword      { get; }
     public Token                                   Identifier       { get; }
