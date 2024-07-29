@@ -465,7 +465,6 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             {
                 var typedParameter = statement.TypedParameters[i];
 
-                // TODO: Move to TypeParameterExpression
                 if (typedParameter.Identifier.Type != TokenType.Identifier)
                     CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.IdentifierExpected);
                 else if (typedParameter.Colon.Type != TokenType.Colon)
@@ -478,7 +477,6 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                     CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.CommaExpected);
 
                 typedParameter.Accept(this);
-                typedParameter.Type?.Accept(this);
             }
         }
 
