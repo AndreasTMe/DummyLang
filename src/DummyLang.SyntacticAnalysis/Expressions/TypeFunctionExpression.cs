@@ -12,23 +12,23 @@ public sealed class TypeFunctionExpression : ITypeExpression
     internal const string LastArgumentHasComma     = "Last argument should not be followed by comma.";
     internal const string CommaExpected            = "Comma expected.";
 
-    public Token                                   LeftParen    { get; }
-    public IReadOnlyList<TypeParameterExpression>? InputTypes   { get; }
-    public Token                                   RightParen   { get; }
-    public Token                                   LambdaAssign { get; }
-    public IReadOnlyList<TypeArgumentExpression>?  OutputTypes  { get; }
+    public Token                                  LeftParen    { get; }
+    public IReadOnlyList<TypeArgumentExpression>? InputTypes   { get; }
+    public Token                                  RightParen   { get; }
+    public Token                                  LambdaAssign { get; }
+    public IReadOnlyList<TypeArgumentExpression>? OutputTypes  { get; }
 
     internal TypeFunctionExpression(Token leftParen,
-                                    IReadOnlyList<TypeParameterExpression>? inputTypes,
+                                    IReadOnlyList<TypeArgumentExpression>? inputTypes,
                                     Token rightParen,
                                     Token lambdaAssign,
                                     IReadOnlyList<TypeArgumentExpression>? outputTypes)
     {
         LeftParen    = leftParen;
-        InputTypes   = inputTypes;
+        InputTypes   = inputTypes is { Count: > 0 } ? inputTypes : null;
         RightParen   = rightParen;
         LambdaAssign = lambdaAssign;
-        OutputTypes  = outputTypes;
+        OutputTypes  = outputTypes is { Count: > 0 } ? outputTypes : null;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor)

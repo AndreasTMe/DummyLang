@@ -201,31 +201,20 @@ internal static class ExpressionParser
     {
         var leftParenthesis = Parser.GetAndMoveToNextOrDefault(TokenType.LeftParenthesis, ref index, in tokens);
 
-        List<TypeParameterExpression>? inputTypes = null;
+        List<TypeArgumentExpression>? inputTypes = null;
         if (Parser.TypeAt(index, in tokens) == TokenType.Identifier)
         {
-            var parameter = Parser.GetAndMoveToNext(ref index, in tokens);
-            var colon     = Parser.GetAndMoveToNextOrDefault(TokenType.Colon, ref index, in tokens);
+            var argument = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
+            var comma    = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
 
-            ITypeExpression? typeValue = null;
-            if (Parser.TypeAt(index, in tokens) != TokenType.Comma)
-                typeValue = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
-
-            var comma = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
-            inputTypes = new List<TypeParameterExpression> { new(parameter, colon, typeValue, comma) };
+            inputTypes = new List<TypeArgumentExpression> { new(argument, comma) };
 
             while (comma.Type == TokenType.Comma)
             {
-                parameter = Parser.GetAndMoveToNext(ref index, in tokens);
-                colon     = Parser.GetAndMoveToNextOrDefault(TokenType.Colon, ref index, in tokens);
+                argument = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
+                comma    = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
 
-                typeValue = null;
-                if (Parser.TypeAt(index, in tokens) != TokenType.Comma)
-                    typeValue = ParseTypeExpressionBasedOnCurrentToken(ref index, in tokens);
-
-                comma = Parser.GetAndMoveToNextOrDefault(TokenType.Comma, ref index, in tokens);
-
-                inputTypes.Add(new TypeParameterExpression(parameter, colon, typeValue, comma));
+                inputTypes.Add(new TypeArgumentExpression(argument, comma));
             }
         }
 
