@@ -3,17 +3,23 @@ using DummyLang.SyntacticAnalysis.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class RangeExpression : IExpression
+public sealed class RangeExpression : PositionedNode, IExpression
 {
-    public IExpression? Start    { get; }
-    public Token        Operator { get; }
-    public IExpression? End      { get; }
+    public TokenPosition Start =>
+        _start ??= TokenPosition.GetMin(FirstInclusive?.Start, Operator.Position, LastExclusive?.Start);
 
-    internal RangeExpression(IExpression? start, Token @operator, IExpression? end)
+    public TokenPosition End =>
+        _end ??= TokenPosition.GetMax(FirstInclusive?.End, Operator.Position, LastExclusive?.End);
+
+    public IExpression? FirstInclusive { get; }
+    public Token        Operator       { get; }
+    public IExpression? LastExclusive  { get; }
+
+    internal RangeExpression(IExpression? firstInclusive, Token @operator, IExpression? lastExclusive)
     {
-        Start    = start;
-        Operator = @operator;
-        End      = end;
+        FirstInclusive = firstInclusive;
+        Operator       = @operator;
+        LastExclusive  = lastExclusive;
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

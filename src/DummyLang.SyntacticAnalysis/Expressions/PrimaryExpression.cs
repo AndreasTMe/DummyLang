@@ -3,8 +3,11 @@ using DummyLang.SyntacticAnalysis.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class PrimaryExpression : IExpression
+public sealed class PrimaryExpression : PositionedNode, IExpression
 {
+    public TokenPosition Start => _start ??= TokenPosition.GetMin(Expression?.Start, Token.Position);
+    public TokenPosition End   => _end ??= TokenPosition.GetMax(Expression?.End, Token.Position);
+
     public IExpression? Expression { get; }
     public Token        Token      { get; }
 

@@ -9,6 +9,4 @@ public sealed class IndexArgumentExpression : ArgumentExpression
         : base(argument, comma)
     {
     }
-
-    public override void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

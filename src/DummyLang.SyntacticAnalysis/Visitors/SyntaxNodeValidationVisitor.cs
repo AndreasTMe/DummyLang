@@ -330,7 +330,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (expression.Identifier.Type != TokenType.Identifier)
             LanguageSyntax.Throw("Invalid parameter identifier token. How did this happen?");
 
-        if (!expression.Comma.IsNone() &&expression.Colon.Type != TokenType.Colon)
+        if (!expression.Comma.IsNone() && expression.Colon.Type != TokenType.Colon)
             LanguageSyntax.Throw("Invalid colon token added. How did this happen?");
 
         if (expression.Type is null)

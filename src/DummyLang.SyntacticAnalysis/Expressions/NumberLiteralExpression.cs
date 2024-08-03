@@ -5,8 +5,11 @@ using System;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class NumberLiteralExpression : IExpression, ITypeExpression
+public sealed class NumberLiteralExpression : PositionedNode, IExpression, ITypeExpression
 {
+    public TokenPosition Start => _start ??= NumberToken.Position;
+    public TokenPosition End   => _end ??= NumberToken.Position;
+
     public Token      NumberToken { get; }
     public NumberType Type        { get; }
 

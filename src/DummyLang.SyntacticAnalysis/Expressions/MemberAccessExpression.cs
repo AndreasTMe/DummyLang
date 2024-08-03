@@ -3,11 +3,14 @@ using DummyLang.SyntacticAnalysis.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class MemberAccessExpression : IExpression
+public sealed class MemberAccessExpression : PositionedNode, IExpression
 {
     internal const string IdentifierExpected = "Identifier expected.";
 
-    public IExpression  Identifier { get; }
+    public TokenPosition Start => _start ??= TokenPosition.GetMin(Identifier?.Start, Access.Position, Member?.Start);
+    public TokenPosition End   => _end ??= TokenPosition.GetMin(Identifier?.End, Access.Position, Member?.End);
+
+    public IExpression? Identifier { get; }
     public Token        Access     { get; }
     public IExpression? Member     { get; }
 

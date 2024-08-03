@@ -1,3 +1,9 @@
-﻿namespace DummyLang.SyntacticAnalysis.Abstractions;
+﻿using DummyLang.LexicalAnalysis;
 
-public interface IExpression : ISyntaxNode;
+namespace DummyLang.SyntacticAnalysis.Abstractions;
+
+public interface IExpression : ISyntaxNode
+{
+    TokenPosition Start { get; }
+    TokenPosition End   { get; }
+}

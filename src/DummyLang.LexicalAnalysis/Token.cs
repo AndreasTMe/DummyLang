@@ -21,9 +21,6 @@ public class Token : IEquatable<Token>
         Position = position;
     }
 
-    public static Token ExpectedAt(TokenPosition position, TokenType type = TokenType.None) =>
-        new(type, string.Empty, position);
-
     public bool Equals(Token? other)
     {
         if (other is null)
