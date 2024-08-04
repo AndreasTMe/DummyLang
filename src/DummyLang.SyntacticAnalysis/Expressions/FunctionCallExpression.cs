@@ -4,30 +4,18 @@ using System.Collections.Generic;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class FunctionCallExpression : PositionedNode, IExpression
+public sealed class FunctionCallExpression : IExpression
 {
     internal const string RightParenthesisExpected = "Right parenthesis token expected.";
     internal const string LastArgumentHasComma     = "Last argument should not be followed by comma.";
     internal const string CommaExpected            = "Comma expected.";
 
-    public TokenPosition Start =>
-        _start ??= TokenPosition.GetMin(
-            Identifier.Position,
-            LeftParenthesis.Position,
-            RightParenthesis.Position,
-            Arguments?[0].Start);
-
-    public TokenPosition End =>
-        _end ??= TokenPosition.GetMax(
-            Identifier.Position,
-            LeftParenthesis.Position,
-            RightParenthesis.Position,
-            Arguments?[^1].End);
-
     public Token                              Identifier       { get; }
     public Token                              LeftParenthesis  { get; }
-    public Token                              RightParenthesis { get; }
     public IReadOnlyList<ArgumentExpression>? Arguments        { get; }
+    public Token                              RightParenthesis { get; }
+
+    public TokenPositions Positions { get; }
 
     internal FunctionCallExpression(Token identifier,
                                     Token leftParenthesis,
@@ -36,8 +24,14 @@ public sealed class FunctionCallExpression : PositionedNode, IExpression
     {
         Identifier       = identifier;
         LeftParenthesis  = leftParenthesis;
-        RightParenthesis = rightParenthesis;
         Arguments        = arguments is { Count: > 0 } ? arguments : null;
+        RightParenthesis = rightParenthesis;
+
+        Positions = new TokenPositions(
+            identifier.Position,
+            leftParenthesis.Position,
+            arguments?[0].Positions[0],
+            rightParenthesis.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

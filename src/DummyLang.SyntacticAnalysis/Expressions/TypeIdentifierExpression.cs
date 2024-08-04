@@ -3,14 +3,18 @@ using DummyLang.SyntacticAnalysis.Abstractions;
 
 namespace DummyLang.SyntacticAnalysis.Expressions;
 
-public sealed class TypeIdentifierExpression : PositionedNode, IExpression, ITypeExpression
+public sealed class TypeIdentifierExpression : IExpression, ITypeExpression
 {
-    public TokenPosition Start => _start ??= Token.Position;
-    public TokenPosition End   => _end ??= Token.Position;
-
     public Token Token { get; }
 
-    internal TypeIdentifierExpression(Token token) => Token = token;
+    public TokenPositions Positions { get; }
+
+    internal TypeIdentifierExpression(Token token)
+    {
+        Token = token;
+
+        Positions = new TokenPositions(token.Position);
+    }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

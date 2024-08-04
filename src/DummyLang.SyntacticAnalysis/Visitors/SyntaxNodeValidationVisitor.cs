@@ -43,7 +43,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Binary operator expected. How did this happen?");
 
         if (expression.Right is null)
-            CaptureDiagnosticsInfo(expression.Operator, BinaryExpression.RightExpressionMissing);
+        {
+            var op = expression.Operator;
+            CaptureDiagnosticsInfo(op.Type, op.Value, expression.Positions[1], BinaryExpression.RightExpressionMissing);
+        }
 
         expression.Left.Accept(this);
         expression.Right?.Accept(this);
@@ -71,8 +74,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 message = CharacterLiteralExpression.InvalidEscapedCharacter;
         }
 
-        if (!string.IsNullOrWhiteSpace(message))
-            CaptureDiagnosticsInfo(expression.CharacterToken, message);
+        if (string.IsNullOrWhiteSpace(message))
+            return;
+
+        var ch = expression.CharacterToken;
+        CaptureDiagnosticsInfo(ch.Type, ch.Value, expression.Positions[0], message);
     }
 
     public void Visit(FunctionCallExpression expression)
@@ -148,7 +154,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (expression.Member is null)
             CaptureDiagnosticsInfo(expression.Access, MemberAccessExpression.IdentifierExpected);
 
-        expression.Identifier.Accept(this);
+        expression.Identifier?.Accept(this);
         expression.Member?.Accept(this);
     }
 
@@ -660,5 +666,26 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         _diagnostics[sourcePath]
             .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column));
+    }
+
+    private void CaptureDiagnosticsInfo(TokenType type, string value, TokenPosition position, string message)
+    {
+        if (type is TokenType.None or TokenType.Eof)
+        {
+            message = "Syntax Error: Invalid token. " + message.TrimStart();
+        }
+        else
+        {
+            message = $"Syntax Error: Invalid token ({value}). " + message.TrimStart();
+        }
+
+        // TODO: Update when actual file path will be used
+        const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
+
+        if (!_diagnostics.ContainsKey(sourcePath))
+            _diagnostics[sourcePath] = [];
+
+        _diagnostics[sourcePath]
+            .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, position.Line, position.Column));
     }
 }

@@ -4,6 +4,5 @@ namespace DummyLang.SyntacticAnalysis.Abstractions;
 
 public interface ITypeExpression : ISyntaxNode
 {
-    TokenPosition Start { get; }
-    TokenPosition End   { get; }
+    TokenPositions Positions { get; }
 }
