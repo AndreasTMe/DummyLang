@@ -1,8 +1,5 @@
-﻿using DummyLang.LexicalAnalysis;
+﻿namespace DummyLang.SyntacticAnalysis.Abstractions;
 
-namespace DummyLang.SyntacticAnalysis.Abstractions;
+public interface IExpression : ISyntaxNode, ISyntaxNodeWithPositions;
 
-public interface IExpression : ISyntaxNode
-{
-    TokenPositions Positions { get; }
-}
+public interface ITypeExpression : ISyntaxNode, ISyntaxNodeWithPositions;

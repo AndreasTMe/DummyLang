@@ -25,8 +25,8 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
     public void Visit(ArgumentExpression expression)
     {
-        if (expression.Argument is null && expression.Comma.IsNone())
-            LanguageSyntax.Throw("Empty argument added. How did this happen?");
+        if (expression.Argument is null)
+            LanguageSyntax.Throw("Argument is null. How did this happen?");
 
         if (!expression.Comma.IsNone() && expression.Comma.Type != TokenType.Comma)
             LanguageSyntax.Throw("Invalid comma token added. How did this happen?");
@@ -43,10 +43,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Binary operator expected. How did this happen?");
 
         if (expression.Right is null)
-        {
-            var op = expression.Operator;
-            CaptureDiagnosticsInfo(op.Type, op.Value, expression.Positions[1], BinaryExpression.RightExpressionMissing);
-        }
+            CaptureDiagnosticsInfo(
+                expression.Operator,
+                expression.Positions[1],
+                BinaryExpression.RightExpressionMissing);
 
         expression.Left.Accept(this);
         expression.Right?.Accept(this);
@@ -77,8 +77,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (string.IsNullOrWhiteSpace(message))
             return;
 
-        var ch = expression.CharacterToken;
-        CaptureDiagnosticsInfo(ch.Type, ch.Value, expression.Positions[0], message);
+        CaptureDiagnosticsInfo(expression.CharacterToken, expression.Positions[0], message);
     }
 
     public void Visit(FunctionCallExpression expression)
@@ -91,24 +90,21 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.RightParenthesis.Type != TokenType.RightParenthesis)
         {
-            CaptureDiagnosticsInfo(expression.LeftParenthesis, FunctionCallExpression.RightParenthesisExpected);
+            CaptureDiagnosticsInfo(
+                expression.RightParenthesis,
+                expression.Positions[1],
+                FunctionCallExpression.RightParenthesisExpected);
         }
         else if (expression.Arguments is { Count: > 0 })
         {
-            if (!expression.Arguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.RightParenthesis, FunctionCallExpression.LastArgumentHasComma);
-
-            for (var i = 0; i < expression.Arguments.Count; i++)
-            {
-                var argument = expression.Arguments[i];
-
-                if (argument.Argument is null)
-                    LanguageSyntax.Throw("Argument is null. How did this happen?");
-                else if (i != expression.Arguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, FunctionCallExpression.CommaExpected);
-
+            foreach (var argument in expression.Arguments)
                 argument.Accept(this);
-            }
+
+            if (!expression.Arguments[^1].Comma.IsNone())
+                CaptureDiagnosticsInfo(
+                    expression.Arguments[^1].Comma,
+                    expression.Arguments[^1].Argument?.LastTokenPosition() ?? expression.Arguments[^1].Positions[1],
+                    FunctionCallExpression.LastArgumentHasComma);
         }
     }
 
@@ -254,18 +250,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.InputTypes is { Count: > 0 })
         {
+            foreach (var inputType in expression.InputTypes)
+                inputType.Accept(this);
+
             if (!expression.InputTypes[^1].Comma.IsNone())
                 CaptureDiagnosticsInfo(expression.LeftParen, TypeFunctionExpression.LastParameterHasComma);
-
-            for (var i = 0; i < expression.InputTypes.Count; i++)
-            {
-                var inputType = expression.InputTypes[i];
-
-                if (i != expression.InputTypes.Count - 1 && inputType.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.CommaExpected);
-
-                inputType.Accept(this);
-            }
         }
         else if (expression.RightParen.Type != TokenType.RightParenthesis)
         {
@@ -277,20 +266,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         }
         else if (expression.OutputTypes is { Count: > 0 })
         {
+            foreach (var outputType in expression.OutputTypes)
+                outputType.Accept(this);
+
             if (!expression.OutputTypes[^1].Comma.IsNone())
                 CaptureDiagnosticsInfo(expression.LambdaAssign, TypeFunctionExpression.LastArgumentHasComma);
-
-            for (var i = 0; i < expression.OutputTypes.Count; i++)
-            {
-                var argument = expression.OutputTypes[i];
-
-                if (argument.Argument is null)
-                    LanguageSyntax.Throw("Argument is null. How did this happen?");
-                else if (i != expression.OutputTypes.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.CommaExpected);
-
-                argument.Accept(this);
-            }
         }
     }
 
@@ -308,20 +288,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         }
         else if (expression.TypeArguments is { Count: > 0 })
         {
+            foreach (var typeArgument in expression.TypeArguments)
+                typeArgument.Accept(this);
+
             if (!expression.TypeArguments[^1].Comma.IsNone())
                 CaptureDiagnosticsInfo(expression.GreaterThan, TypeGenericExpression.LastArgumentHasComma);
-
-            for (var i = 0; i < expression.TypeArguments.Count; i++)
-            {
-                var argument = expression.TypeArguments[i];
-
-                if (argument.Argument is null)
-                    LanguageSyntax.Throw("Argument is null. How did this happen?");
-                else if (i != expression.TypeArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, TypeGenericExpression.CommaExpected);
-
-                argument.Accept(this);
-            }
         }
     }
 
@@ -567,20 +538,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         }
         else if (statement.ReturnArguments is { Count: > 0 })
         {
+            foreach (var returnArgument in statement.ReturnArguments)
+                returnArgument.Accept(this);
+
             if (!statement.ReturnArguments[^1].Comma.IsNone())
                 CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.LastArgumentHasComma);
-
-            for (var i = 0; i < statement.ReturnArguments.Count; i++)
-            {
-                var argument = statement.ReturnArguments[i];
-
-                if (argument.Argument is null)
-                    LanguageSyntax.Throw("Argument is null. How did this happen?");
-                else if (i != statement.ReturnArguments.Count - 1 && argument.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, ReturnStatement.CommaExpected);
-
-                argument.Accept(this);
-            }
         }
     }
 
@@ -647,7 +609,28 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             statement.Block.Accept(this);
     }
 
+    [System.Obsolete]
     private void CaptureDiagnosticsInfo(Token token, string message)
+    {
+        if (token.Type is TokenType.None or TokenType.Eof)
+        {
+            message = "Syntax Error: Invalid token. " + message.TrimStart();
+        }
+        else
+        {
+            message = $"Syntax Error: Invalid token ({token.Value}). " + message.TrimStart();
+        }
+
+        const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
+
+        if (!_diagnostics.ContainsKey(sourcePath))
+            _diagnostics[sourcePath] = [];
+
+        _diagnostics[sourcePath]
+            .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column));
+    }
+
+    private void CaptureDiagnosticsInfo(Token token, TokenPosition errorPosition, string message)
     {
         if (token.Type is TokenType.None or TokenType.Eof)
         {
@@ -665,27 +648,6 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             _diagnostics[sourcePath] = [];
 
         _diagnostics[sourcePath]
-            .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, token.Position.Line, token.Position.Column));
-    }
-
-    private void CaptureDiagnosticsInfo(TokenType type, string value, TokenPosition position, string message)
-    {
-        if (type is TokenType.None or TokenType.Eof)
-        {
-            message = "Syntax Error: Invalid token. " + message.TrimStart();
-        }
-        else
-        {
-            message = $"Syntax Error: Invalid token ({value}). " + message.TrimStart();
-        }
-
-        // TODO: Update when actual file path will be used
-        const string sourcePath = "C:/ProjectPath/ProjectFile.dum";
-
-        if (!_diagnostics.ContainsKey(sourcePath))
-            _diagnostics[sourcePath] = [];
-
-        _diagnostics[sourcePath]
-            .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, position.Line, position.Column));
+            .Add(new DiagnosticInfo(message.TrimEnd(), sourcePath, errorPosition.Line, errorPosition.Column));
     }
 }

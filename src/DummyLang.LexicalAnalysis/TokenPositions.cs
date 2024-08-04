@@ -1,4 +1,6 @@
-﻿namespace DummyLang.LexicalAnalysis;
+﻿using System;
+
+namespace DummyLang.LexicalAnalysis;
 
 public readonly struct TokenPositions
 {
@@ -28,8 +30,8 @@ public readonly struct TokenPositions
         Length = _tokenPositions.Length;
     }
 
-    public TokenPosition this[int index, bool ascending = true] =>
-        ascending ? GetClosestToLast(index) : GetClosestToFirst(index);
+    public TokenPosition this[Index index, bool ascending = true] =>
+        ascending ? GetClosestToLast(index.Value) : GetClosestToFirst(index.Value);
 
     private TokenPosition GetClosestToFirst(int index)
     {
