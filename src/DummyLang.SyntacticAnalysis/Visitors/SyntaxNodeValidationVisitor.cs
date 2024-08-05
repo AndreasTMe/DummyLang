@@ -48,7 +48,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 expression.Positions[1],
                 BinaryExpression.RightExpressionMissing);
 
-        expression.Left.Accept(this);
+        expression.Left?.Accept(this);
         expression.Right?.Accept(this);
     }
 
@@ -134,9 +134,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid left bracket token added. How did this happen?");
 
         if (expression.Indices is null || expression.Indices.Count == 0)
-            CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.IndexerExpected);
+            CaptureDiagnosticsInfo(
+                expression.LeftBracket,
+                expression.Positions[1],
+                IndexerExpression.IndexerExpected);
         else if (expression.RightBracket.Type != TokenType.RightBracket)
-            CaptureDiagnosticsInfo(expression.LeftBracket, IndexerExpression.RightBracketExpected);
+            CaptureDiagnosticsInfo(
+                expression.LeftBracket,
+                expression.Positions[1],
+                IndexerExpression.RightBracketExpected);
         else
             foreach (var index in expression.Indices)
                 index.Accept(this);
@@ -148,7 +154,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid access token added. How did this happen?");
 
         if (expression.Member is null)
-            CaptureDiagnosticsInfo(expression.Access, MemberAccessExpression.IdentifierExpected);
+            CaptureDiagnosticsInfo(
+                expression.Access,
+                expression.Positions[1],
+                MemberAccessExpression.IdentifierExpected);
 
         expression.Identifier?.Accept(this);
         expression.Member?.Accept(this);
@@ -175,9 +184,32 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid left parenthesis token added. How did this happen?");
 
         if (expression.Expression is null)
-            CaptureDiagnosticsInfo(expression.LeftParen, ParenthesisedExpression.ExpressionExpected);
+        {
+            CaptureDiagnosticsInfo(
+                expression.LeftParen,
+                expression.Positions[0],
+                ParenthesisedExpression.ExpressionExpected);
+        }
         else if (expression.RightParen.Type != TokenType.RightParenthesis)
-            CaptureDiagnosticsInfo(expression.LeftParen, ParenthesisedExpression.RightParenthesisExpected);
+        {
+            var position = TokenPosition.Zero;
+            switch (expression.Expression)
+            {
+                case IExpression expr:
+                    position = expr.Positions[^1];
+                    break;
+                case ITypeExpression typeExpr:
+                    position = typeExpr.Positions[^1];
+                    break;
+                default:
+                    LanguageSyntax.Throw("");
+                    break;
+            }
+            CaptureDiagnosticsInfo(
+                expression.RightParen,
+                position,
+                ParenthesisedExpression.RightParenthesisExpected);
+        }
 
         expression.Expression?.Accept(this);
     }
@@ -214,7 +246,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             message = StringLiteralExpression.InvalidEscapedCharacters;
 
         if (!string.IsNullOrWhiteSpace(message))
-            CaptureDiagnosticsInfo(expression.StringToken, message);
+            CaptureDiagnosticsInfo(
+                expression.StringToken,
+                expression.Positions[0],
+                message);
     }
 
     public void Visit(TypeArgumentExpression expression)
@@ -237,9 +272,12 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Left side of a type binary expression is null. How did this happen?");
 
         if (expression.Right is null)
-            CaptureDiagnosticsInfo(expression.Operator, TypeBinaryExpression.RightExpressionMissing);
+            CaptureDiagnosticsInfo(
+                expression.Operator,
+                expression.Positions[1],
+                TypeBinaryExpression.RightExpressionMissing);
 
-        expression.Left.Accept(this);
+        expression.Left?.Accept(this);
         expression.Right?.Accept(this);
     }
 
@@ -254,15 +292,24 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 inputType.Accept(this);
 
             if (!expression.InputTypes[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.LeftParen, TypeFunctionExpression.LastParameterHasComma);
+                CaptureDiagnosticsInfo(
+                    expression.InputTypes[^1].Comma,
+                    expression.InputTypes[^1].Argument?.LastTokenPosition() ?? expression.InputTypes[^1].Positions[1],
+                    TypeFunctionExpression.LastParameterHasComma);
         }
         else if (expression.RightParen.Type != TokenType.RightParenthesis)
         {
-            CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.RightParenthesisExpected);
+            CaptureDiagnosticsInfo(
+                expression.RightParen,
+                expression.InputTypes?[^1].Argument?.LastTokenPosition() ?? expression.Positions[0],
+                TypeFunctionExpression.RightParenthesisExpected);
         }
         else if (expression.LambdaAssign.Type != TokenType.LambdaAssign)
         {
-            CaptureDiagnosticsInfo(Token.None, TypeFunctionExpression.LambdaAssignExpected);
+            CaptureDiagnosticsInfo(
+                expression.LambdaAssign,
+                expression.Positions[2],
+                TypeFunctionExpression.LambdaAssignExpected);
         }
         else if (expression.OutputTypes is { Count: > 0 })
         {
@@ -270,7 +317,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 outputType.Accept(this);
 
             if (!expression.OutputTypes[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.LambdaAssign, TypeFunctionExpression.LastArgumentHasComma);
+                CaptureDiagnosticsInfo(
+                    expression.OutputTypes[^1].Comma,
+                    expression.OutputTypes[^1].Argument?.LastTokenPosition() ?? expression.OutputTypes[^1].Positions[1],
+                    TypeFunctionExpression.LastArgumentHasComma);
         }
     }
 
@@ -284,7 +334,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (expression.GreaterThan.Type != TokenType.GreaterThan)
         {
-            CaptureDiagnosticsInfo(expression.LessThan, TypeGenericExpression.RightGenericBracketMissing);
+            CaptureDiagnosticsInfo(
+                expression.GreaterThan,
+                expression.Positions[^3],
+                TypeGenericExpression.RightGenericBracketMissing);
         }
         else if (expression.TypeArguments is { Count: > 0 })
         {
@@ -292,7 +345,11 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 typeArgument.Accept(this);
 
             if (!expression.TypeArguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(expression.GreaterThan, TypeGenericExpression.LastArgumentHasComma);
+                CaptureDiagnosticsInfo(
+                    expression.TypeArguments[^1].Comma,
+                    expression.TypeArguments[^1].Argument?.LastTokenPosition()
+                    ?? expression.TypeArguments[^1].Positions[1],
+                    TypeGenericExpression.LastArgumentHasComma);
         }
     }
 
@@ -333,13 +390,16 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid unary operator token added. How did this happen?");
 
         if (expression.Expression is null)
-            CaptureDiagnosticsInfo(expression.Token, UnaryExpression.ExpressionExpected);
+            CaptureDiagnosticsInfo(
+                expression.Token,
+                expression.Positions[0],
+                UnaryExpression.ExpressionExpected);
 
         // TODO: A lot of checks here for the inner expression
     }
 
     public void Visit(UnexpectedTokenExpression expression) =>
-        CaptureDiagnosticsInfo(expression.Token, UnexpectedTokenExpression.UnexpectedToken);
+        CaptureDiagnosticsInfo(expression.Token, expression.Positions[0], UnexpectedTokenExpression.UnexpectedToken);
 
     public void Visit(BreakStatement statement)
     {
