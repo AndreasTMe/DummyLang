@@ -7,7 +7,14 @@ public sealed class NoOpStatement : IStatement
 {
     public Token Terminator { get; }
 
-    internal NoOpStatement(Token terminator) => Terminator = terminator;
+    public TokenPositions Positions { get; }
+
+    internal NoOpStatement(Token terminator)
+    {
+        Terminator = terminator;
+
+        Positions = new TokenPositions(terminator.Position);
+    }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);
 }

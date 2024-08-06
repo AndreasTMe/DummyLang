@@ -18,6 +18,8 @@ public sealed class WhileStatement : IStatement
     public Token              RightParenthesis { get; }
     public CompoundStatement? Block            { get; }
 
+    public TokenPositions Positions { get; }
+
     internal WhileStatement(Token whileKeyword,
                             Token label,
                             Token leftParenthesis,
@@ -31,6 +33,14 @@ public sealed class WhileStatement : IStatement
         Condition        = condition;
         RightParenthesis = rightParenthesis;
         Block            = block;
+
+        Positions = new TokenPositions(
+            whileKeyword.Position,
+            label.Position,
+            leftParenthesis.Position,
+            condition?.Positions[0],
+            rightParenthesis.Position,
+            block?.Positions[0]);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

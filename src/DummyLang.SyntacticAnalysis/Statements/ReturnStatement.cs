@@ -12,8 +12,10 @@ public sealed class ReturnStatement : IStatement
     internal const string CommaExpected        = "Comma expected.";
 
     public Token                              ReturnKeyword   { get; }
-    public Token                              Terminator      { get; }
     public IReadOnlyList<ArgumentExpression>? ReturnArguments { get; }
+    public Token                              Terminator      { get; }
+
+    public TokenPositions Positions { get; }
 
     internal ReturnStatement(Token returnKeyword,
                              Token terminator,
@@ -22,6 +24,11 @@ public sealed class ReturnStatement : IStatement
         ReturnKeyword   = returnKeyword;
         Terminator      = terminator;
         ReturnArguments = returnArguments is { Count: > 0 } ? returnArguments : null;
+
+        Positions = new TokenPositions(
+            returnKeyword.Position,
+            returnArguments?[0].Positions[0],
+            terminator.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

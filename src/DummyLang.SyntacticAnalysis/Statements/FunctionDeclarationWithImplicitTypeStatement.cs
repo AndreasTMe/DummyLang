@@ -26,6 +26,8 @@ public sealed class FunctionDeclarationWithImplicitTypeStatement : IStatement
     public Token                                   LambdaAssign     { get; }
     public CompoundStatement?                      Block            { get; }
 
+    public TokenPositions Positions { get; }
+
     internal FunctionDeclarationWithImplicitTypeStatement(Token funcKeyword,
                                                           Token identifier,
                                                           Token typeAssignment,
@@ -45,6 +47,17 @@ public sealed class FunctionDeclarationWithImplicitTypeStatement : IStatement
         RightParenthesis = rightParenthesis;
         LambdaAssign     = lambdaAssign;
         Block            = block;
+
+        Positions = new TokenPositions(
+            funcKeyword.Position,
+            identifier.Position,
+            typeAssignment.Position,
+            valueAssignment.Position,
+            leftParenthesis.Position,
+            typedParameters?[0].Positions[0],
+            rightParenthesis.Position,
+            lambdaAssign.Position,
+            block?.Positions[0]);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

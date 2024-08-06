@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace DummyLang.LexicalAnalysis;
 
-public readonly struct TokenPositions
+public readonly struct TokenPositions : IEnumerable<TokenPosition>
 {
     private readonly TokenPosition[] _tokenPositions;
 
@@ -32,6 +34,11 @@ public readonly struct TokenPositions
 
     public TokenPosition this[Index index, bool ascending = true] =>
         ascending ? GetClosestToLast(index.Value) : GetClosestToFirst(index.Value);
+
+    // ReSharper disable once NotDisposedResourceIsReturned
+    public IEnumerator<TokenPosition> GetEnumerator() => ((IEnumerable<TokenPosition>)_tokenPositions).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => _tokenPositions.GetEnumerator();
 
     private TokenPosition GetClosestToFirst(int index)
     {

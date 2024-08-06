@@ -1,3 +1,3 @@
 ﻿namespace DummyLang.SyntacticAnalysis.Abstractions;
 
-public interface IStatement : ISyntaxNode;
+public interface IStatement : ISyntaxNode, ISyntaxNodeWithPositions;

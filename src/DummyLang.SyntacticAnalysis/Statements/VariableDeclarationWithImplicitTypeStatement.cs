@@ -18,6 +18,8 @@ public sealed class VariableDeclarationWithImplicitTypeStatement : IStatement
     public IExpression?     Value              { get; }
     public Token            Terminator         { get; }
 
+    public TokenPositions Positions { get; }
+
     internal VariableDeclarationWithImplicitTypeStatement(Token declarationKeyword,
                                                           Token identifier,
                                                           Token typeAssignment,
@@ -31,6 +33,14 @@ public sealed class VariableDeclarationWithImplicitTypeStatement : IStatement
         ValueAssignment    = valueAssignment;
         Value              = value;
         Terminator         = terminator;
+
+        Positions = new TokenPositions(
+            declarationKeyword.Position,
+            identifier.Position,
+            typeAssignment.Position,
+            valueAssignment.Position,
+            value?.Positions[0],
+            terminator.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

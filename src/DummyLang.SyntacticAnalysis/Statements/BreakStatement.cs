@@ -12,11 +12,15 @@ public sealed class BreakStatement : IStatement
     public Token Label        { get; }
     public Token Terminator   { get; }
 
+    public TokenPositions Positions { get; }
+
     internal BreakStatement(Token breakKeyword, Token label, Token terminator)
     {
         BreakKeyword = breakKeyword;
         Label        = label;
         Terminator   = terminator;
+
+        Positions = new TokenPositions(breakKeyword.Position, label.Position, terminator.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

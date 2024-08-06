@@ -20,6 +20,8 @@ public sealed class VariableDeclarationStatement : IStatement
     public IExpression?     Value              { get; }
     public Token            Terminator         { get; }
 
+    public TokenPositions Positions { get; }
+
     internal VariableDeclarationStatement(Token declarationKeyword,
                                           Token identifier,
                                           Token typeAssignment,
@@ -35,6 +37,15 @@ public sealed class VariableDeclarationStatement : IStatement
         ValueAssignment    = valueAssignment;
         Value              = value;
         Terminator         = terminator;
+
+        Positions = new TokenPositions(
+            declarationKeyword.Position,
+            identifier.Position,
+            typeAssignment.Position,
+            type?.Positions[0],
+            valueAssignment.Position,
+            value?.Positions[0],
+            terminator.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

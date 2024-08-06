@@ -12,11 +12,18 @@ public sealed class ContinueStatement : IStatement
     public         Token  Label           { get; }
     public         Token  Terminator      { get; }
 
+    public TokenPositions Positions { get; }
+
     internal ContinueStatement(Token continueKeyword, Token label, Token terminator)
     {
         ContinueKeyword = continueKeyword;
         Label           = label;
         Terminator      = terminator;
+
+        Positions = new TokenPositions(
+            continueKeyword.Position,
+            label.Position,
+            terminator.Position);
     }
 
     public void Accept(ISyntaxNodeVisitor visitor) => visitor.Visit(this);

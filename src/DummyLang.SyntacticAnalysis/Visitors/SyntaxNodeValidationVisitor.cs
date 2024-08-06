@@ -100,11 +100,14 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             foreach (var argument in expression.Arguments)
                 argument.Accept(this);
 
-            if (!expression.Arguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(
-                    expression.Arguments[^1].Comma,
-                    expression.Arguments[^1].Argument?.LastTokenPosition() ?? expression.Arguments[^1].Positions[1],
-                    FunctionCallExpression.LastArgumentHasComma);
+            if (expression.Arguments[^1].Comma.IsNone())
+                return;
+
+            var arguments = expression.Arguments[^1];
+            CaptureDiagnosticsInfo(
+                arguments.Comma,
+                arguments.Argument?.Positions[^1, false] ?? arguments.Positions[1],
+                FunctionCallExpression.LastArgumentHasComma);
         }
     }
 
@@ -291,17 +294,20 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             foreach (var inputType in expression.InputTypes)
                 inputType.Accept(this);
 
-            if (!expression.InputTypes[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(
-                    expression.InputTypes[^1].Comma,
-                    expression.InputTypes[^1].Argument?.LastTokenPosition() ?? expression.InputTypes[^1].Positions[1],
-                    TypeFunctionExpression.LastParameterHasComma);
+            if (expression.InputTypes[^1].Comma.IsNone())
+                return;
+
+            var inputTypes = expression.InputTypes[^1];
+            CaptureDiagnosticsInfo(
+                inputTypes.Comma,
+                inputTypes.Argument?.Positions[^1, false] ?? inputTypes.Positions[1],
+                TypeFunctionExpression.LastParameterHasComma);
         }
         else if (expression.RightParen.Type != TokenType.RightParenthesis)
         {
             CaptureDiagnosticsInfo(
                 expression.RightParen,
-                expression.InputTypes?[^1].Argument?.LastTokenPosition() ?? expression.Positions[0],
+                expression.InputTypes?[^1].Argument?.Positions[^1, false] ?? expression.Positions[0],
                 TypeFunctionExpression.RightParenthesisExpected);
         }
         else if (expression.LambdaAssign.Type != TokenType.LambdaAssign)
@@ -316,11 +322,14 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             foreach (var outputType in expression.OutputTypes)
                 outputType.Accept(this);
 
-            if (!expression.OutputTypes[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(
-                    expression.OutputTypes[^1].Comma,
-                    expression.OutputTypes[^1].Argument?.LastTokenPosition() ?? expression.OutputTypes[^1].Positions[1],
-                    TypeFunctionExpression.LastArgumentHasComma);
+            if (expression.OutputTypes[^1].Comma.IsNone())
+                return;
+
+            var outputTypes = expression.OutputTypes[^1];
+            CaptureDiagnosticsInfo(
+                outputTypes.Comma,
+                outputTypes.Argument?.Positions[^1, false] ?? outputTypes.Positions[1],
+                TypeFunctionExpression.LastArgumentHasComma);
         }
     }
 
@@ -344,12 +353,14 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             foreach (var typeArgument in expression.TypeArguments)
                 typeArgument.Accept(this);
 
-            if (!expression.TypeArguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(
-                    expression.TypeArguments[^1].Comma,
-                    expression.TypeArguments[^1].Argument?.LastTokenPosition()
-                    ?? expression.TypeArguments[^1].Positions[1],
-                    TypeGenericExpression.LastArgumentHasComma);
+            if (expression.TypeArguments[^1].Comma.IsNone())
+                return;
+
+            var typeArguments = expression.TypeArguments[^1];
+            CaptureDiagnosticsInfo(
+                typeArguments.Comma,
+                typeArguments.Argument?.Positions[^1, false] ?? typeArguments.Positions[1],
+                TypeGenericExpression.LastArgumentHasComma);
         }
     }
 
