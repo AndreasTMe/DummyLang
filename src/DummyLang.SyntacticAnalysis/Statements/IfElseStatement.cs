@@ -27,9 +27,15 @@ public sealed class IfElseStatement : IStatement
 
         Positions = new TokenPositions(
         [
-            ..ifBlock?.Positions ?? [],
+            ..ifBlock?.Positions
+              ?? new TokenPositions(
+                  TokenPosition.Zero,
+                  TokenPosition.Zero,
+                  TokenPosition.Zero,
+                  TokenPosition.Zero,
+                  TokenPosition.Zero),
             ..elseIfBlocks?.SelectMany(b => b.Positions) ?? [],
-            ..elseBlock?.Positions ?? []
+            ..elseBlock?.Positions ?? new TokenPositions(TokenPosition.Zero, TokenPosition.Zero)
         ]);
     }
 

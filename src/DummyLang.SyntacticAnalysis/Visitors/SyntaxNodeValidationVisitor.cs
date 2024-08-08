@@ -418,9 +418,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'break' token added. How did this happen?");
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
-            CaptureDiagnosticsInfo(statement.Label, BreakStatement.InvalidToken);
+            CaptureDiagnosticsInfo(
+                statement.Label,
+                statement.Positions[1],
+                BreakStatement.InvalidToken);
         else if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, BreakStatement.SemicolonExpected);
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                statement.Positions[2],
+                BreakStatement.SemicolonExpected);
     }
 
     public void Visit(CompoundStatement statement)
@@ -429,7 +435,12 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid left brace token added. How did this happen?");
 
         if (statement.RightBrace.Type != TokenType.RightBrace)
-            CaptureDiagnosticsInfo(statement.RightBrace, CompoundStatement.RightBraceExpected);
+            CaptureDiagnosticsInfo(
+                statement.RightBrace,
+                !statement.RightBrace.IsNone()
+                    ? statement.Positions[2]
+                    : statement.Statements?[^1].Positions[^1] ?? statement.Positions[0],
+                CompoundStatement.RightBraceExpected);
 
         if (statement.Statements is null)
             return;
@@ -444,9 +455,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'continue' token added. How did this happen?");
 
         if (!statement.Label.IsNone() && statement.Label.Type != TokenType.Identifier)
-            CaptureDiagnosticsInfo(statement.Label, ContinueStatement.InvalidToken);
+            CaptureDiagnosticsInfo(
+                statement.Label,
+                statement.Positions[1],
+                ContinueStatement.InvalidToken);
         else if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, ContinueStatement.SemicolonExpected);
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                statement.Positions[2],
+                ContinueStatement.SemicolonExpected);
     }
 
     public void Visit(ExpressionStatement statement)
@@ -455,7 +472,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw($"This should have been a {nameof(NoOpStatement)}. How did this happen?");
 
         if (statement.Terminator.Type != TokenType.Semicolon)
-            CaptureDiagnosticsInfo(statement.Terminator, ExpressionStatement.SemicolonExpected);
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                statement.Positions[1],
+                ExpressionStatement.SemicolonExpected);
 
         statement.Expression?.Accept(this);
     }
@@ -467,19 +487,31 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (statement.Identifier.Type != TokenType.Identifier)
         {
-            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationStatement.InvalidToken);
+            CaptureDiagnosticsInfo(
+                statement.Identifier,
+                statement.Positions[1],
+                FunctionDeclarationStatement.InvalidToken);
         }
         else if (statement.TypeAssignment.Type != TokenType.Colon)
         {
-            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationStatement.TypeAssignmentExpected);
+            CaptureDiagnosticsInfo(
+                statement.TypeAssignment,
+                statement.Positions[2],
+                FunctionDeclarationStatement.TypeAssignmentExpected);
         }
         else if (statement.Type is null)
         {
-            CaptureDiagnosticsInfo(statement.TypeAssignment, FunctionDeclarationStatement.TypeExpressionExpected);
+            CaptureDiagnosticsInfo(
+                statement.TypeAssignment,
+                statement.Positions[3],
+                FunctionDeclarationStatement.TypeExpressionExpected);
         }
         else if (statement.Block is null)
         {
-            CaptureDiagnosticsInfo(statement.FuncKeyword, FunctionDeclarationStatement.CompoundStatementExpected);
+            CaptureDiagnosticsInfo(
+                statement.LambdaAssign,
+                statement.Positions[8],
+                FunctionDeclarationStatement.CompoundStatementExpected);
         }
         else
         {
@@ -495,34 +527,51 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (statement.Identifier.Type != TokenType.Identifier)
         {
-            CaptureDiagnosticsInfo(statement.Identifier, FunctionDeclarationWithImplicitTypeStatement.InvalidToken);
+            CaptureDiagnosticsInfo(
+                statement.Identifier,
+                statement.Positions[1],
+                FunctionDeclarationWithImplicitTypeStatement.InvalidToken);
         }
         else if (statement.TypeAssignment.Type != TokenType.Colon)
         {
             CaptureDiagnosticsInfo(
-                statement.Identifier,
+                statement.TypeAssignment,
+                statement.Positions[2],
                 FunctionDeclarationWithImplicitTypeStatement.TypeAssignmentExpected);
         }
 
         if (statement.TypedParameters is { Count: > 0 })
         {
             if (!statement.TypedParameters[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.LastArgumentHasComma);
+                CaptureDiagnosticsInfo(
+                    statement.TypedParameters[^1].Comma,
+                    statement.TypedParameters[^1].Positions[^1],
+                    FunctionDeclarationWithImplicitTypeStatement.LastArgumentHasComma);
 
             for (var i = 0; i < statement.TypedParameters.Count; i++)
             {
                 var typedParameter = statement.TypedParameters[i];
 
                 if (typedParameter.Identifier.Type != TokenType.Identifier)
-                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.IdentifierExpected);
+                    CaptureDiagnosticsInfo(
+                        typedParameter.Identifier,
+                        typedParameter.Positions[0],
+                        FunctionDeclarationWithImplicitTypeStatement.IdentifierExpected);
                 else if (typedParameter.Colon.Type != TokenType.Colon)
-                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.ColonExpected);
+                    CaptureDiagnosticsInfo(
+                        typedParameter.Colon,
+                        typedParameter.Positions[1],
+                        FunctionDeclarationWithImplicitTypeStatement.ColonExpected);
                 else if (typedParameter.Type is null)
                     CaptureDiagnosticsInfo(
-                        Token.None,
+                        typedParameter.Colon,
+                        typedParameter.Positions[2],
                         FunctionDeclarationWithImplicitTypeStatement.TypeExpressionExpected);
                 else if (i != statement.TypedParameters.Count - 1 && typedParameter.Comma.Type != TokenType.Comma)
-                    CaptureDiagnosticsInfo(Token.None, FunctionDeclarationWithImplicitTypeStatement.CommaExpected);
+                    CaptureDiagnosticsInfo(
+                        typedParameter.Comma,
+                        typedParameter.Positions[3],
+                        FunctionDeclarationWithImplicitTypeStatement.CommaExpected);
 
                 typedParameter.Accept(this);
             }
@@ -532,6 +581,7 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         {
             CaptureDiagnosticsInfo(
                 statement.FuncKeyword,
+                statement.Positions[8],
                 FunctionDeclarationWithImplicitTypeStatement.CompoundStatementExpected);
         }
         else
@@ -545,9 +595,15 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
         if (statement.If is not null)
             Visit(statement.If);
         else if (statement.ElseIfs is not null)
-            CaptureDiagnosticsInfo(statement.ElseIfs[0].ElseKeyword, IfElseStatement.ElseBeforeIf);
+            CaptureDiagnosticsInfo(
+                statement.ElseIfs[0].ElseKeyword,
+                statement.Positions[5],
+                IfElseStatement.ElseBeforeIf);
         else if (statement.Else is not null)
-            CaptureDiagnosticsInfo(statement.Else.ElseKeyword, IfElseStatement.ElseBeforeIf);
+            CaptureDiagnosticsInfo(
+                statement.Else.ElseKeyword,
+                statement.Positions[^2],
+                IfElseStatement.ElseBeforeIf);
 
         if (statement.ElseIfs is { Count: > 0 })
         {
@@ -570,7 +626,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'else' token added. How did this happen?");
 
         if (statement.Else.Block is null)
-            CaptureDiagnosticsInfo(statement.Else.ElseKeyword, IfElseStatement.CompoundStatementExpected);
+            CaptureDiagnosticsInfo(
+                statement.Else.ElseKeyword,
+                statement.Positions[^2],
+                IfElseStatement.CompoundStatementExpected);
         else
             statement.Else.Block.Accept(this);
     }
@@ -581,13 +640,25 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
             LanguageSyntax.Throw("Invalid 'if' token added. How did this happen?");
 
         if (block.LeftParenthesis.Type != TokenType.LeftParenthesis)
-            CaptureDiagnosticsInfo(block.IfKeyword, IfElseStatement.LeftParenthesisExpected);
+            CaptureDiagnosticsInfo(
+                block.IfKeyword,
+                block.Positions[1],
+                IfElseStatement.LeftParenthesisExpected);
         else if (block.Condition is null)
-            CaptureDiagnosticsInfo(block.LeftParenthesis, IfElseStatement.ExpressionExpected);
+            CaptureDiagnosticsInfo(
+                block.LeftParenthesis,
+                block.Positions[2],
+                IfElseStatement.ExpressionExpected);
         else if (block.RightParenthesis.Type != TokenType.RightParenthesis)
-            CaptureDiagnosticsInfo(block.IfKeyword, IfElseStatement.RightParenthesisExpected);
+            CaptureDiagnosticsInfo(
+                block.RightParenthesis,
+                block.Positions[2],
+                IfElseStatement.RightParenthesisExpected);
         else if (block.Block is null)
-            CaptureDiagnosticsInfo(block.RightParenthesis, IfElseStatement.CompoundStatementExpected);
+            CaptureDiagnosticsInfo(
+                block.RightParenthesis,
+                block.Positions[3],
+                IfElseStatement.CompoundStatementExpected);
         else
             block.Block.Accept(this);
     }
@@ -605,7 +676,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
 
         if (statement.Terminator.Type != TokenType.Semicolon)
         {
-            CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.SemicolonExpected);
+            CaptureDiagnosticsInfo(
+                statement.Terminator,
+                statement.Positions[2],
+                ReturnStatement.SemicolonExpected);
         }
         else if (statement.ReturnArguments is { Count: > 0 })
         {
@@ -613,7 +687,10 @@ internal sealed class SyntaxNodeValidationVisitor : ISyntaxNodeVisitor
                 returnArgument.Accept(this);
 
             if (!statement.ReturnArguments[^1].Comma.IsNone())
-                CaptureDiagnosticsInfo(statement.Terminator, ReturnStatement.LastArgumentHasComma);
+                CaptureDiagnosticsInfo(
+                    statement.ReturnArguments[^1].Comma,
+                    statement.ReturnArguments[^1].Positions[1],
+                    ReturnStatement.LastArgumentHasComma);
         }
     }
 
